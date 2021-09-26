@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31612.314
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlishHUD.EventTable", "BlishHUD.EventTable\BlishHUD.EventTable.csproj", "{1E28A93E-64B4-42B6-9995-549DAB0B014C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E28A93E-64B4-42B6-9995-549DAB0B014C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E28A93E-64B4-42B6-9995-549DAB0B014C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E28A93E-64B4-42B6-9995-549DAB0B014C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E28A93E-64B4-42B6-9995-549DAB0B014C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B88F1AF1-5F46-4066-97F5-0FCC9E7434D2}
+	EndGlobalSection
+EndGlobal
