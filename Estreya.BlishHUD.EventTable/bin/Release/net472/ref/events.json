@@ -587,25 +587,6 @@
       }
     ]
   },
-  /*{
-    "key": "invadingAwakened",
-    "name": "Defeat the invading Awakened",
-    "showCombined": true,
-    "events": [
-      {
-        "name": "Southsun Cove",
-        "offset": "00:30",
-        "repeat": "07:00",
-        "difficulty": "none",
-        "location": "Heart of the Mists",
-        "waypoint": "",
-        "wiki": "https://wiki.guildwars2.com/wiki/Automated_Tournaments",
-        "duration": 60,
-        "icon": "7F4E2835316DE912B1493CCF500A9D5CF4A83B4A/42676",
-        "color": "#42c8d7"
-      }
-    ]
-  },*/
   {
     "key": "dryTop",
     "name": "Dry Top",

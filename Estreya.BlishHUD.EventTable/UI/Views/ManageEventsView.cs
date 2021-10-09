@@ -120,7 +120,7 @@
                         {
                             Parent = button,
                             ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView("Waypoint", "Click to Copy")),
+                            Tooltip = new Tooltip(new TooltipView("Waypoint", "Click to Copy", icon: "waypoint")),
                             Icon = GameService.Content.GetTexture("waypoint") // TODO: Own icon
                         };
 
@@ -136,7 +136,7 @@
                         {
                             Parent = button,
                             ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView("Wiki", "Click to Open")),
+                            Tooltip = new Tooltip(new TooltipView("Wiki", "Click to Open", icon: "102530")),
                             Icon = GameService.Content.GetTexture("102530") // TODO: Own icon
                         };
 

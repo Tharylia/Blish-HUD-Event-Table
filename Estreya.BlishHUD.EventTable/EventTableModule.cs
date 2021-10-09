@@ -13,6 +13,7 @@
     using Estreya.BlishHUD.EventTable.Json;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.UI.Container;
+    using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
     using Newtonsoft.Json;
     using System;
@@ -38,9 +39,11 @@
 
         internal ModuleSettings ModuleSettings;
 
-        private WindowTab ManageEventTab {  get; set; }
+        private WindowTab ManageEventTab { get; set; }
 
         private IEnumerable<EventCategory> EventCategories { get; set; }
+
+        private bool visibleStateFromTick = true;
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -55,7 +58,6 @@
 
         protected override void Initialize()
         {
-
         }
 
         protected override async Task LoadAsync()
@@ -78,9 +80,6 @@
                 Opacity = 0f,
                 Visible = false
             };
-
-            this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
-            this.Container.UpdateSize(ModuleSettings.Width.Value, this.ModuleSettings.Height.Value);
 
             this.ModuleSettings.ModuleSettingsChanged += (sender, eventArgs) =>
             {
@@ -128,15 +127,39 @@
             // Base handler must be called
             base.OnModuleLoaded(e);
 
+            this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
+            this.Container.UpdateSize(ModuleSettings.Width.Value, this.ModuleSettings.Height.Value);
+
             this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(EventCategories, this.ModuleSettings.AllEvents));
 
             if (this.ModuleSettings.GlobalEnabled.Value)
                 ToggleContainer(true);
+
+            GameService.Gw2Mumble.UI.IsMapOpenChanged += (s, eventArgs) => ToggleContainer(!eventArgs.Value);
+            GameService.Gw2Mumble.CurrentMap.MapChanged += (s, eventArgs) => ToggleContainer(GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate);
+
         }
 
         protected override void Update(GameTime gameTime)
         {
+            CheckMumble();
             //this.Container.Update(gameTime);
+        }
+
+        private void CheckMumble()
+        {
+            if (Container != null)
+            {
+                if (GameService.Gw2Mumble.IsAvailable && this.ModuleSettings.HideOnMissingMumbleTicks.Value)
+                {
+                    bool tickState = GameService.Gw2Mumble.TimeSinceTick.TotalSeconds < 0.5;
+                    if (tickState != visibleStateFromTick)
+                    {
+                        visibleStateFromTick = tickState;
+                        ToggleContainer(visibleStateFromTick);
+                    }
+                }
+            }
         }
 
         /// <inheritdoc />

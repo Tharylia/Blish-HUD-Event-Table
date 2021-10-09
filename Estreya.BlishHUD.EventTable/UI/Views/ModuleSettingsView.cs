@@ -22,7 +22,7 @@
 
             var parentPanel = new FlowPanel()
             {
-                Size = buildPanel.Size,
+                Size = bounds.Size,
                 FlowDirection = ControlFlowDirection.SingleTopToBottom,
                 ControlPadding = new Vector2(5, 2),
                 OuterControlPadding = new Vector2(10, 15),
@@ -33,7 +33,10 @@
             };
 
             RenderSetting(parentPanel, ModuleSettings.GlobalEnabled);
+#if DEBUG
             RenderSetting(parentPanel, ModuleSettings.DebugEnabled);
+#endif
+            RenderSetting(parentPanel, ModuleSettings.HideOnMissingMumbleTicks);
             RenderSetting(parentPanel, ModuleSettings.ShowTooltips);
             RenderSetting(parentPanel, ModuleSettings.CopyWaypointOnClick);
             RenderEmptyLine(parentPanel);

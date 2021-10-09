@@ -51,9 +51,17 @@
 
         public void CopyWaypoint()
         {
-            ClipboardUtil.WindowsClipboardService.SetTextAsync(this.Waypoint);
-            ScreenNotification.ShowNotification($"Waypoint copied to clipboard!");
-            ScreenNotification.ShowNotification($"{this.Name}");
+            if (!string.IsNullOrWhiteSpace(this.Waypoint))
+            {
+                ClipboardUtil.WindowsClipboardService.SetTextAsync(this.Waypoint);
+                ScreenNotification.ShowNotification($"Waypoint copied to clipboard!");
+                ScreenNotification.ShowNotification($"{this.Name}");
+            }
+            else
+            {
+                ScreenNotification.ShowNotification($"No Waypoint found!");
+                ScreenNotification.ShowNotification($"{this.Name}");
+            }
         }
 
         public void OpenWiki()

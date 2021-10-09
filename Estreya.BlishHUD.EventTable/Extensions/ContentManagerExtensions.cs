@@ -4,6 +4,7 @@
     using Blish_HUD.Content;
     using Blish_HUD.Controls;
     using Blish_HUD.Modules.Managers;
+    using Microsoft.Xna.Framework.Graphics;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -26,7 +27,13 @@
                 }
                 else
                 {
-                    icon.SwapTexture(EventTableModule.ModuleInstance.ContentsManager.GetTexture(identifier));
+                    Texture2D texture = EventTableModule.ModuleInstance.ContentsManager.GetTexture(identifier);
+                    if (texture == ContentService.Textures.Error)
+                    {
+                        texture = GameService.Content.GetTexture(identifier);
+                    }
+
+                    icon.SwapTexture(texture);
                 }
             }
 

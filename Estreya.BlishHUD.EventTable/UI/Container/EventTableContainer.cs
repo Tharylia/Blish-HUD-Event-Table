@@ -185,14 +185,15 @@
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
         {
-            //Debug.WriteLine($"Paint: {ElapsedSeconds}");
             base.PaintBeforeChildren(spriteBatch, bounds);
 
             if (this.DebugEnabled)
             {
                 spriteBatch.DrawStringOnCtrl(this, $"Pixels per Minute: {this.PixelPerMinute}", this.Font, new Rectangle(0, 0, bounds.Width, this.EVENT_HEIGHT), Color.Aqua);
             }
+
             int y = 0;
+
             foreach (EventCategory eventCategory in this.EventCategories)
             {
                 foreach (Event e in eventCategory.Events)
@@ -209,7 +210,6 @@
                     foreach (DateTime eventOccurence in eventOccurences)
                     {
                         double eventWidth = this.GetEventWidth(e, eventOccurence, bounds);
-
 
                         #region Prepare Y
 
@@ -277,6 +277,8 @@
                         #endregion
                     }
 
+                    #region Draw Tooltip
+
                     if (this.Settings.ShowTooltips.Value && this.MouseOver)
                     {
                         IEnumerable<IGrouping<string, Event>> groups = eventCategory.Events.GroupBy(ev => ev.Name);
@@ -305,12 +307,14 @@
                             }
                         }
                     }
+
+                    #endregion
                 }
             }
 
             if (this.Settings.SnapHeight.Value)
             {
-                this.UpdateSize(bounds.Width, y + this.EVENT_HEIGHT, true);
+                this.Size = new Point(bounds.Width, y + this.EVENT_HEIGHT);
             }
 
             this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
@@ -336,17 +340,14 @@
                 return e.Name;
             }
 
-            if (e.Name.Length <= 3)
+            for (int i = 0; i < e.Name.Length; i++)
             {
-                return "...";
-            }
+                string name = e.Name.Substring(0, e.Name.Length - i);
+                size = this.MeasureStringWidth(name);
 
-            for (int i = 0; i < e.Name.Length - 3; i++)
-            {
-                size = this.MeasureStringWidth(e.Name.Substring(0, e.Name.Length - 3 - i));
                 if (size <= maxSize)
                 {
-                    return e.Name.Substring(0, e.Name.Length - 3 - i);
+                    return name;
                 }
             }
 
@@ -454,25 +455,33 @@
             return minutesSinceMin * this.PixelPerMinute;
         }
 
-        public new Tween Show()
+        public new void Show()
         {
+            if (this.Visible) return;
+
             this.Visible = true;
-            return Animation.Tweener.Tween(this, new { Opacity = 1f }, 0.2f);
+            Animation.Tweener.Tween(this, new { Opacity = 1f }, 0.2f);
         }
 
-        public new Tween Hide()
+        public new void Hide()
         {
+            if (!this.Visible) return;
+
             Tween tween = Animation.Tweener.Tween(this, new { Opacity = 0f }, 0.2f);
-            return tween.OnComplete(() => this.Visible = false);
+            tween.OnComplete(() => this.Visible = false);
         }
 
         public void UpdatePosition(int x, int y)
         {
+            x = (int)Math.Ceiling(x * GameService.Graphics.UIScaleMultiplier);
+            y = (int)Math.Ceiling(y * GameService.Graphics.UIScaleMultiplier);
             this.Location = new Point(x, y);
         }
 
         public void UpdateSize(int width, int height, bool overrideHeight = false)
         {
+            width = (int)Math.Ceiling(width * GameService.Graphics.UIScaleMultiplier);
+            height = (int)Math.Ceiling(height * GameService.Graphics.UIScaleMultiplier);
             this.Size = new Point(width, this.Settings.SnapHeight.Value && !overrideHeight ? this.Size.Y : height);
         }
 

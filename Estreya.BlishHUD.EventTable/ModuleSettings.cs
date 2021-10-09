@@ -19,6 +19,7 @@
         private const string GLOBAL_SETTINGS = "event-table-global-settings";
         public SettingCollection GlobalSettings { get; private set; }
         public SettingEntry<bool> GlobalEnabled { get; private set; }
+        public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
@@ -76,6 +77,9 @@
 
             this.GlobalEnabled = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabled), true, () => "Event Table Enabled", () => "Whether the event table should be displayed.");
             this.GlobalEnabled.SettingChanged += this.SettingChanged;
+
+            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on missing Mumble Tick", () => "Whether the event table should hide when mumble ticks are missing.");
+            this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;
 
             this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), 120, () => "Event Timespan", () => "The timespan the event table should cover.");
             this.EventTimeSpan.SetRange(30, 60 * 5);
