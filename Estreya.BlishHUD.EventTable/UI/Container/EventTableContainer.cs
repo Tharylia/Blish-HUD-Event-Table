@@ -105,7 +105,7 @@
 
         private Texture2D Texture { get; set; }
 
-        private Dictionary<string, Tooltip> Tooltips { get; set; } = new Dictionary<string, Tooltip>();
+        private Dictionary<string, Tooltip> EventTooltips { get; set; } = new Dictionary<string, Tooltip>();
 
         public EventTableContainer(IEnumerable<EventCategory> eventCategories, ModuleSettings settings)
         {
@@ -122,14 +122,14 @@
             {
                 foreach (Event e in category.Events)
                 {
-                    if (this.Tooltips.ContainsKey(e.Name))
+                    if (this.EventTooltips.ContainsKey(e.Name))
                     {
                         continue;
                     }
 
                     Tooltip tooltip = new Tooltip(new UI.Views.TooltipView(e.Name, $"{e.Location}", e.Icon));
 
-                    this.Tooltips.Add(e.Name, tooltip);
+                    this.EventTooltips.Add(e.Name, tooltip);
                 }
             }
         }
@@ -287,7 +287,7 @@
 
                         if (!eventCategory.ShowCombined || events.Contains(e))
                         {
-                            if (this.Tooltips.TryGetValue(e.Name, out Tooltip tooltip))
+                            if (this.EventTooltips.TryGetValue(e.Name, out Tooltip tooltip))
                             {
                                 bool isMouseOver = eventOccurences.Any(eo =>
                                 {
@@ -535,15 +535,15 @@
                 this.Texture = null;
             }
 
-            if (this.Tooltips != null)
+            if (this.EventTooltips != null)
             {
-                foreach (KeyValuePair<string, Tooltip> tooltip in this.Tooltips)
+                foreach (KeyValuePair<string, Tooltip> tooltip in this.EventTooltips)
                 {
                     tooltip.Value.Dispose();
                 }
 
-                this.Tooltips.Clear();
-                this.Tooltips = null;
+                this.EventTooltips.Clear();
+                this.EventTooltips = null;
             }
 
             base.DisposeControl();

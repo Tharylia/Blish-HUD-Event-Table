@@ -15,29 +15,37 @@
 
     public static class ContentManagerExtensions
     {
+        private static Dictionary<string, AsyncTexture2D> IconCache { get; set; } = new Dictionary<string, AsyncTexture2D>();
 
         public static AsyncTexture2D GetRenderIcon(this ContentsManager manager, string identifier)
         {
-            AsyncTexture2D icon = new AsyncTexture2D(Textures.TransparentPixel.Duplicate());
-            if (!string.IsNullOrWhiteSpace(identifier))
+            lock (IconCache)
             {
-                if (identifier.Contains("/"))
+                if (IconCache.ContainsKey(identifier)) return IconCache[identifier];
+
+                AsyncTexture2D icon = new AsyncTexture2D(Textures.TransparentPixel.Duplicate());
+                if (!string.IsNullOrWhiteSpace(identifier))
                 {
-                    icon = GameService.Content.GetRenderServiceTexture(identifier);
-                }
-                else
-                {
-                    Texture2D texture = EventTableModule.ModuleInstance.ContentsManager.GetTexture(identifier);
-                    if (texture == ContentService.Textures.Error)
+                    if (identifier.Contains("/"))
                     {
-                        texture = GameService.Content.GetTexture(identifier);
+                        icon = GameService.Content.GetRenderServiceTexture(identifier);
                     }
+                    else
+                    {
+                        Texture2D texture = EventTableModule.ModuleInstance.ContentsManager.GetTexture(identifier);
+                        if (texture == ContentService.Textures.Error)
+                        {
+                            texture = GameService.Content.GetTexture(identifier);
+                        }
 
-                    icon.SwapTexture(texture);
+                        icon.SwapTexture(texture);
+                    }
                 }
-            }
 
-            return icon;
+                IconCache.Add(identifier, icon);
+
+                return icon;
+            }
         }
     }
 }

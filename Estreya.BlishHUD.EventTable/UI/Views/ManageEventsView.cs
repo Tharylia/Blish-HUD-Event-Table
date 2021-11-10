@@ -33,7 +33,7 @@
 
         private void UpdateToggleButton(GlowButton button)
         {
-            button.Icon = button.Checked ? GameService.Content.GetTexture("minus") : GameService.Content.GetTexture("plus"); // TODO: Own icon
+            button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\plus.png"); // TODO: Own icon
         }
 
         protected override void Build(Container buildPanel)
@@ -42,7 +42,7 @@
             {
                 Width = buildPanel.Width,
                 Height = buildPanel.Height,
-                FlowDirection = ControlFlowDirection.LeftToRight,
+                FlowDirection = ControlFlowDirection.TopToBottom,
                 Top = 0,
                 CanScroll = true,
                 //ControlPadding = new Vector2(5, 2),
@@ -69,7 +69,57 @@
             eventPanel.ShowBorder = true;
             eventPanel.Parent = FlowPanel;
             eventPanel.Location = new Point(0, contentRegion.Y);
-            eventPanel.Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - Panel.MenuStandard.PanelOffset.X, contentRegion.Height - (int)FlowPanel.OuterControlPadding.Y);
+            eventPanel.Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - (int)FlowPanel.OuterControlPadding.X, contentRegion.Height - (int)FlowPanel.OuterControlPadding.Y - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
+
+            Panel buttons = new Panel()
+            {
+                Parent = FlowPanel,
+                Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - (int)FlowPanel.OuterControlPadding.X, (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1)),
+            };
+
+            StandardButton checkAllButton = new StandardButton()
+            {
+                Text = "Check all",
+                Parent = buttons,
+                Right = buttons.Width,
+                Bottom = buttons.Height
+            };
+            checkAllButton.Click += (s, e) =>
+            {
+                eventPanel.Children.ToList().ForEach(control =>
+                {
+                    DetailsButton detailsButton = control as DetailsButton;
+
+                    if (detailsButton.Visible)
+                    {
+                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
+                        glowButton.Checked = true;
+                    }
+                });
+            };
+
+            StandardButton uncheckAllButton = new StandardButton()
+            {
+                Text = "Uncheck all",
+                Parent = buttons,
+                Right = checkAllButton.Left,
+                Bottom = buttons.Height
+            };
+            uncheckAllButton.Click += (s, e) =>
+            {
+                eventPanel.Children.ToList().ForEach(control =>
+                {
+                    DetailsButton detailsButton = control as DetailsButton;
+
+                    if (detailsButton.Visible)
+                    {
+                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
+                        glowButton.Checked = false;
+                    }
+                });
+            };
+
+            #region Register Categories
 
             Dictionary<string, MenuItem> menus = new Dictionary<string, MenuItem>();
 
@@ -91,6 +141,8 @@
                     return menuItem == menus[nameof(allEvents)] || categories.Any(ec => ec.Name == menuItem.Text);
                 });
             });
+
+            #endregion
 
             foreach (EventCategory category in EventCategories)
             {
@@ -120,8 +172,8 @@
                         {
                             Parent = button,
                             ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView("Waypoint", "Click to Copy", icon: "waypoint")),
-                            Icon = GameService.Content.GetTexture("waypoint") // TODO: Own icon
+                            Tooltip = new Tooltip(new TooltipView("Waypoint", "Click to Copy", icon: "images\\waypoint.png")),
+                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\waypoint.png") // TODO: Own icon
                         };
 
                         waypointButton.Click += (s, eventArgs) =>
@@ -136,8 +188,8 @@
                         {
                             Parent = button,
                             ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView("Wiki", "Click to Open", icon: "102530")),
-                            Icon = GameService.Content.GetTexture("102530") // TODO: Own icon
+                            Tooltip = new Tooltip(new TooltipView("Wiki", "Click to Open", icon: "images\\wiki.png")),
+                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\wiki.png") // TODO: Own icon
                         };
 
                         wikiButton.Click += (s, eventArgs) =>
@@ -155,15 +207,20 @@
 
                     UpdateToggleButton(toggleButton);
 
-                    toggleButton.Click += (s, eventArgs) =>
+                    toggleButton.CheckedChanged += (s, eventArgs) =>
                     {
                         if (setting != null)
                         {
-                            setting.Value = !setting.Value;
+                            setting.Value = eventArgs.Checked;
                             toggleButton.Checked = setting.Value;
                             settings.Where(x => x.EntryKey != setting.EntryKey).ToList().ForEach(x => x.Value = setting.Value);
                             UpdateToggleButton(toggleButton);
                         }
+                    };
+
+                    toggleButton.Click += (s, eventArgs) =>
+                    {
+                        toggleButton.Checked = !toggleButton.Checked;
                     };
                 }
             }
