@@ -21,6 +21,7 @@ namespace Estreya.BlishHUD.EventTable
         public SettingCollection GlobalSettings { get; private set; }
         public SettingEntry<bool> GlobalEnabled { get; private set; }
         public SettingEntry<KeyBinding> GlobalEnabledHotkey { get; private set; }
+        public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> BackgroundColor { get; private set; }
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }

@@ -6,14 +6,32 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
     using Blish_HUD.Graphics.UI;
     using Blish_HUD.Input;
     using Blish_HUD.Settings;
+    using System.Threading.Tasks;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class ModuleSettingsView : View
     {
-        private ModuleSettings ModuleSettings {  get; set; }
+        private ModuleSettings ModuleSettings { get; set; }
+
+        private static IEnumerable<Gw2Sharp.WebApi.V2.Models.Color> Colors { get; set; }
 
         public ModuleSettingsView(ModuleSettings settings)
         {
             this.ModuleSettings = settings;
+        }
+
+        protected override async Task<bool> Load(IProgress<string> progress)
+        {
+            if (Colors == null)
+            {
+                progress.Report("Loading Colors...");
+                Colors = await EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.AllAsync();
+            }
+
+            progress.Report("");
+            return true;
         }
 
         protected override void Build(Container buildPanel)
@@ -58,14 +76,14 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
 
         private void RenderEmptyLine(Panel parent)
         {
-            var lastSettingContainer = new ViewContainer()
+            var settingContainer = new ViewContainer()
             {
                 WidthSizingMode = SizingMode.Fill,
                 HeightSizingMode = SizingMode.AutoSize,
                 Parent = parent
             };
 
-            lastSettingContainer.Show(new EmptySettingsLineView(25));
+            settingContainer.Show(new EmptySettingsLineView(25));
         }
 
         private void RenderSetting(Panel parent, SettingEntry setting)
@@ -73,7 +91,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
             var settingView = SettingView.FromType(setting, parent.Width);
             if (settingView != null)
             {
-                var lastSettingContainer = new ViewContainer()
+                var settingContainer = new ViewContainer()
                 {
                     WidthSizingMode = SizingMode.Fill,
                     HeightSizingMode = SizingMode.AutoSize,
@@ -81,7 +99,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
                 };
 
 
-                lastSettingContainer.Show(settingView);
+                settingContainer.Show(settingView);
 
                 if (settingView is SettingsView subSettingsView)
                 {
