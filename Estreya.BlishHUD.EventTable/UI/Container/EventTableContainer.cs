@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -73,13 +73,13 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             {
                 if (this._font == null)
                 {
-                //TODO: When fixed in core
-                string name = Enum.GetName(typeof(EventTableContainer.FontSize), this.Settings.EventFontSize.Value);
+                    //TODO: When fixed in core
+                    string name = Enum.GetName(typeof(EventTableContainer.FontSize), this.Settings.EventFontSize.Value);
 
-                if (!Enum.TryParse(name, out ContentService.FontSize size))
-                {
-                    size = ContentService.FontSize.Size16;
-                }
+                    if (!Enum.TryParse(name, out ContentService.FontSize size))
+                    {
+                        size = ContentService.FontSize.Size16;
+                    }
 
                     this._font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, size /* this.Settings.EventFontSize.Value*/, ContentService.FontStyle.Regular);
                 }
@@ -264,7 +264,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
                         Color color = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
 
-                        Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Floor(eventWidth), this.EVENT_HEIGHT);
+                        Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(eventWidth), this.EVENT_HEIGHT);
 
                         this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, this.Settings.DrawEventBorder.Value ? 1 : 0, Color.Black);
 

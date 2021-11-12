@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD.Controls;
     using Microsoft.Xna.Framework;
