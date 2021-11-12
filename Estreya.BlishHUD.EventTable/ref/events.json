@@ -466,8 +466,8 @@
     ]
   },
   {
-    "key": "marionette",
-    "name": "The Twisted Marionette",
+    "key": "eotn",
+    "name": "Eye of the North",
     "showCombined": false,
     "events": [
       {
@@ -481,6 +481,18 @@
         "duration": 20,
         "icon": "0D5CD907A06D0AD70750505CC49AB149DABAEFE7/710687",
         "color": "#8c03fc"
+      },
+      {
+        "name": "Dragonstorm",
+        "offset": "01:00",
+        "repeat": "02:00",
+        "difficulty": "none",
+        "location": "Eye of the North",
+        "waypoint": "[&BAkMAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Dragonstorm",
+        "duration": 20,
+        "icon": "245AA24CF4D3D529AAAB123CE5B9EBB0DF534F49/2352419",
+        "color": "#4299d7"
       }
     ]
   },
@@ -1106,25 +1118,6 @@
         "duration": 35,
         "icon": "4B6BDF0614656A310E5041F454AA0AE40B26B709/2248191",
         "color": "#8079afff"
-      }
-    ]
-  },
-  {
-    "key": "dragonstorm",
-    "name": "Dragonstorm",
-    "showCombined": false,
-    "events": [
-      {
-        "name": "Dragonstorm",
-        "offset": "01:00",
-        "repeat": "02:00",
-        "difficulty": "none",
-        "location": "Eye of the North",
-        "waypoint": "[&BAkMAAA=]",
-        "wiki": "https://wiki.guildwars2.com/wiki/Dragonstorm",
-        "duration": 20,
-        "icon": "245AA24CF4D3D529AAAB123CE5B9EBB0DF534F49/2352419",
-        "color": "#4299d7"
       }
     ]
   }
