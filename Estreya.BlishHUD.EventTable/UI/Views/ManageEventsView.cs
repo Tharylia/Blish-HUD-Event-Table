@@ -71,53 +71,6 @@
             eventPanel.Location = new Point(0, contentRegion.Y);
             eventPanel.Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - (int)FlowPanel.OuterControlPadding.X, contentRegion.Height - (int)FlowPanel.OuterControlPadding.Y - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
 
-            Panel buttons = new Panel()
-            {
-                Parent = FlowPanel,
-                Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - (int)FlowPanel.OuterControlPadding.X, (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1)),
-            };
-
-            StandardButton checkAllButton = new StandardButton()
-            {
-                Text = "Check all",
-                Parent = buttons,
-                Right = buttons.Width,
-                Bottom = buttons.Height
-            };
-            checkAllButton.Click += (s, e) =>
-            {
-                eventPanel.Children.ToList().ForEach(control =>
-                {
-                    DetailsButton detailsButton = control as DetailsButton;
-
-                    if (detailsButton.Visible)
-                    {
-                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
-                        glowButton.Checked = true;
-                    }
-                });
-            };
-
-            StandardButton uncheckAllButton = new StandardButton()
-            {
-                Text = "Uncheck all",
-                Parent = buttons,
-                Right = checkAllButton.Left,
-                Bottom = buttons.Height
-            };
-            uncheckAllButton.Click += (s, e) =>
-            {
-                eventPanel.Children.ToList().ForEach(control =>
-                {
-                    DetailsButton detailsButton = control as DetailsButton;
-
-                    if (detailsButton.Visible)
-                    {
-                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
-                        glowButton.Checked = false;
-                    }
-                });
-            };
 
             #region Register Categories
 
@@ -144,12 +97,70 @@
 
             #endregion
 
+            Panel buttons = new Panel()
+            {
+                Parent = FlowPanel,
+                Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - (int)FlowPanel.OuterControlPadding.X, (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1)),
+            };
+
+            StandardButton checkAllButton = new StandardButton()
+            {
+                Text = "Check all",
+                Parent = buttons,
+                Right = buttons.Width,
+                Bottom = buttons.Height
+            };
+            checkAllButton.Click += (s, e) =>
+            {
+                eventPanel.Children.ToList().ForEach(control =>
+                {
+                    if (menus[nameof(allEvents)].Selected)
+                    {
+                        // Check Yes - No
+                    }
+
+                    DetailsButton detailsButton = control as DetailsButton;
+
+                    if (detailsButton.Visible)
+                    {
+                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
+                        glowButton.Checked = true;
+                    }
+                });
+            };
+
+            StandardButton uncheckAllButton = new StandardButton()
+            {
+                Text = "Uncheck all",
+                Parent = buttons,
+                Right = checkAllButton.Left,
+                Bottom = buttons.Height
+            };
+            uncheckAllButton.Click += (s, e) =>
+            {
+                eventPanel.Children.ToList().ForEach(control =>
+                {
+                    if (menus[nameof(allEvents)].Selected)
+                    {
+                        // Check Yes - No
+                    }
+
+                    DetailsButton detailsButton = control as DetailsButton;
+
+                    if (detailsButton.Visible)
+                    {
+                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
+                        glowButton.Checked = false;
+                    }
+                });
+            };
+
             foreach (EventCategory category in EventCategories)
             {
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
-                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey.Contains(e.Name));
+                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.Name);
 
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
