@@ -1,10 +1,10 @@
 {
   "name": "Event Table",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "namespace": "estreya.bh.eventTable",
   "package": "Estreya.BlishHUD.EventTable.dll",
   "manifest_version": 1,
-  "description": "Creates an Event Table in Taco Style.",
+  "description": "Creates an event table in taco style.",
   "dependencies": {
     "bh.blishhud": ">=0.11.0"
   },
