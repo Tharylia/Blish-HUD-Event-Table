@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -160,7 +160,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
-                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey.Contains(e.Name));
+                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.Name);
 
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
