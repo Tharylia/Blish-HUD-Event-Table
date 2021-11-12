@@ -23,11 +23,19 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 return this.Settings.EventHeight.Value;
             }
         }
+
+        private TimeSpan _eventTimeSpan = TimeSpan.Zero;
+
         private TimeSpan EventTimeSpan
         {
             get
             {
-                return TimeSpan.FromMinutes(this.Settings.EventTimeSpan.Value);
+                if (this._eventTimeSpan == TimeSpan.Zero)
+                {
+                    this._eventTimeSpan = TimeSpan.FromMinutes(this.Settings.EventTimeSpan.Value);
+                }
+
+                return this._eventTimeSpan;
             }
         }
 
@@ -57,10 +65,14 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             }
         }
 
+        private BitmapFont _font;
+
         private BitmapFont Font
         {
             get
             {
+                if (this._font == null)
+                {
                 //TODO: When fixed in core
                 string name = Enum.GetName(typeof(EventTableContainer.FontSize), this.Settings.EventFontSize.Value);
 
@@ -69,7 +81,10 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                     size = ContentService.FontSize.Size16;
                 }
 
-                return GameService.Content.GetFont(ContentService.FontFace.Menomonia, size /* this.Settings.EventFontSize.Value*/, ContentService.FontStyle.Regular);
+                    this._font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, size /* this.Settings.EventFontSize.Value*/, ContentService.FontStyle.Regular);
+                }
+
+                return this._font;
             }
         }
 
@@ -112,9 +127,23 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
         {
             this.EventCategories = eventCategories;
             this.Settings = settings;
+            this.Settings.ModuleSettingsChanged += this.Settings_ModuleSettingsChanged;
             this.Click += this.EventTableContainer_Click;
 
             this.BuildTooltips();
+        }
+
+        private void Settings_ModuleSettingsChanged(object sender, ModuleSettings.ModuleSettingsChangedEventArgs e)
+        {
+            switch (e.Name)
+            {
+                case nameof(ModuleSettings.EventFontSize):
+                    this._font = null;
+                    break;
+                case nameof(ModuleSettings.EventTimeSpan):
+                    this._eventTimeSpan = TimeSpan.Zero;
+                    break;
+            }
         }
 
         private void BuildTooltips()
