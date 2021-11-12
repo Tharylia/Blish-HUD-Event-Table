@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -46,6 +46,7 @@ namespace Estreya.BlishHUD.EventTable
         public SettingCollection EventSettings { get; private set; }
         public SettingEntry<int> EventTimeSpan { get; private set; } // Is listed in global
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
+        public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
         public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
@@ -107,6 +108,9 @@ namespace Estreya.BlishHUD.EventTable
 
             this.EventFontSize = this.GlobalSettings.DefineSetting(nameof(this.EventFontSize), EventTableContainer.FontSize.Size16 /*ContentService.FontSize.Size16*/, () => "Event Font Size", () => "Defines the size of the font used for events.");
             this.EventFontSize.SettingChanged += this.SettingChanged;
+
+            this.DrawEventBorder = this.GlobalSettings.DefineSetting(nameof(this.DrawEventBorder), true, () => "Draw Event Border", () => "Whether the events should have a small border.");
+            this.DrawEventBorder.SettingChanged += this.SettingChanged;
 
             this.DebugEnabled = this.GlobalSettings.DefineSetting(nameof(this.DebugEnabled), false, () => "Debug Enabled", () => "Whether the event table should be running in debug mode.");
             this.DebugEnabled.SettingChanged += this.SettingChanged;

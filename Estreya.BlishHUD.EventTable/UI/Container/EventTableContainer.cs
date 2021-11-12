@@ -266,7 +266,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
                         Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Floor(eventWidth), this.EVENT_HEIGHT);
 
-                        this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, 2, Color.Black);
+                        this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, this.Settings.DrawEventBorder.Value ? 1 : 0, Color.Black);
 
                         #endregion
 

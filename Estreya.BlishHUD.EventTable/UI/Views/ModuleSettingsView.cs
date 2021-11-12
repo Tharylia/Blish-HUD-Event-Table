@@ -62,6 +62,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
             RenderSetting(parentPanel, ModuleSettings.EventHeight);
             RenderSetting(parentPanel, ModuleSettings.EventFontSize);
             RenderSetting(parentPanel, ModuleSettings.EventTimeSpan);
+            RenderSetting(parentPanel, ModuleSettings.DrawEventBorder);
             RenderSetting(parentPanel, ModuleSettings.Opacity);
             RenderEmptyLine(parentPanel);
             RenderSetting(parentPanel, ModuleSettings.LocationX);
