@@ -103,7 +103,7 @@
 
         private void ToggleContainer(bool show)
         {
-            if (show)
+            if (this.ModuleSettings.GlobalEnabled.Value && show)
             {
                 Container.Show();
             }

@@ -1,6 +1,7 @@
 namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
+    using Blish_HUD.Input;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.UI.Container;
@@ -19,6 +20,7 @@ namespace Estreya.BlishHUD.EventTable
         private const string GLOBAL_SETTINGS = "event-table-global-settings";
         public SettingCollection GlobalSettings { get; private set; }
         public SettingEntry<bool> GlobalEnabled { get; private set; }
+        public SettingEntry<KeyBinding> GlobalEnabledHotkey { get; private set; }
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
@@ -78,6 +80,11 @@ namespace Estreya.BlishHUD.EventTable
 
             this.GlobalEnabled = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabled), true, () => "Event Table Enabled", () => "Whether the event table should be displayed.");
             this.GlobalEnabled.SettingChanged += this.SettingChanged;
+
+            this.GlobalEnabledHotkey = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabledHotkey), new KeyBinding(Microsoft.Xna.Framework.Input.ModifierKeys.Alt, Microsoft.Xna.Framework.Input.Keys.E), () => "Event Table Hotkey", () => "The keybinding which will toggle the event table.");
+            this.GlobalEnabledHotkey.SettingChanged += this.SettingChanged;
+            this.GlobalEnabledHotkey.Value.Enabled = true;
+            this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
 
             this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on missing Mumble Tick", () => "Whether the event table should hide when mumble ticks are missing.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;

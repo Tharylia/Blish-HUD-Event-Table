@@ -33,6 +33,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
             };
 
             RenderSetting(parentPanel, ModuleSettings.GlobalEnabled);
+            RenderSetting(parentPanel, ModuleSettings.GlobalEnabledHotkey);
 #if DEBUG
             RenderSetting(parentPanel, ModuleSettings.DebugEnabled);
 #endif
