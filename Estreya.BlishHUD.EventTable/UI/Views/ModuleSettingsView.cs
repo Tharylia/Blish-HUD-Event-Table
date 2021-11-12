@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views
+namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD.Controls;
     using Microsoft.Xna.Framework;
@@ -50,6 +50,9 @@
             RenderSetting(parentPanel, ModuleSettings.Width);
             RenderSetting(parentPanel, ModuleSettings.Height);
             RenderSetting(parentPanel, ModuleSettings.SnapHeight);
+            RenderEmptyLine(parentPanel);
+            RenderSetting(parentPanel, ModuleSettings.BackgroundColorOpacity);
+            RenderColorSetting(parentPanel, ModuleSettings.BackgroundColor);
         }
 
         private void RenderEmptyLine(Panel parent)
@@ -84,6 +87,56 @@
                     subSettingsView.LockBounds = false;
                 }
             }
+        }
+        private void RenderColorSetting(Panel parent, SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> setting)
+        {
+            var settingContainer = new ViewContainer()
+            {
+                WidthSizingMode = SizingMode.Fill,
+                HeightSizingMode = SizingMode.AutoSize,
+                Parent = parent
+            };
+            var label = new Label()
+            {
+                Location = new Point(5, 0),
+                AutoSizeWidth = true,
+                Parent = settingContainer,
+                Text = setting.DisplayName
+            };
+            var colorBox = new ColorBox()
+            {
+                Location = new Point(Math.Max(185, label.Left + 10), 0),
+                Parent = settingContainer,
+                Color = setting.Value
+            };
+
+
+            var colorPicker = new ColorPicker()
+            {
+                Location = new Point(colorBox.Right + 30, 0),
+                Size = new Point(parent.Width - colorBox.Right - 60, 850),
+                Parent = settingContainer,
+                CanScroll = true,
+                Visible = false,
+                AssociatedColorBox = colorBox
+            };
+
+            colorPicker.SelectedColorChanged += (s, e) =>
+            {
+                setting.Value = colorPicker.SelectedColor;
+                colorPicker.Visible = false;
+            };
+
+            colorBox.LeftMouseButtonPressed += (s, e) =>
+            {
+                colorPicker.Visible = !colorPicker.Visible;
+            };
+
+            foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+            {
+                colorPicker.Colors.Add(color);
+            }
+
         }
     }
 }

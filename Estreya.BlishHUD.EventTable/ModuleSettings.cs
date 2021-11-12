@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Settings;
@@ -19,6 +19,7 @@
         private const string GLOBAL_SETTINGS = "event-table-global-settings";
         public SettingCollection GlobalSettings { get; private set; }
         public SettingEntry<bool> GlobalEnabled { get; private set; }
+        public SettingEntry<float> BackgroundColorOpacity { get; private set; }
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
@@ -80,6 +81,13 @@
 
             this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on missing Mumble Tick", () => "Whether the event table should hide when mumble ticks are missing.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;
+
+            this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Background Color", () => "Defines the background color.");
+            this.BackgroundColor.SettingChanged += this.SettingChanged;
+
+            this.BackgroundColorOpacity = this.GlobalSettings.DefineSetting(nameof(BackgroundColorOpacity), 0.0f, () => "Background Color Opacity", () => "Defines the opacity of the background.");
+            this.BackgroundColorOpacity.SetRange(0.0f, 1f);
+            this.BackgroundColorOpacity.SettingChanged += this.SettingChanged;
 
             this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), 120, () => "Event Timespan", () => "The timespan the event table should cover.");
             this.EventTimeSpan.SetRange(30, 60 * 5);

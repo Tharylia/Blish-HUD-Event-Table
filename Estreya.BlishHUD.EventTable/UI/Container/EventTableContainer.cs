@@ -1,6 +1,7 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
+    using Blish_HUD._Extensions;
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Models;
@@ -185,7 +186,9 @@
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
         {
-            base.PaintBeforeChildren(spriteBatch, bounds);
+            Color backgroundColor = this.Settings.BackgroundColor.Value.Id == 1 ? Color.Transparent : this.Settings.BackgroundColor.Value.Cloth.ToXnaColor();// new Color(this.Settings.BackgroundColor.Value.BaseRgb[2], this.Settings.BackgroundColor.Value.BaseRgb[1], this.Settings.BackgroundColor.Value.BaseRgb[0]);
+
+            this.BackgroundColor = backgroundColor * this.Settings.BackgroundColorOpacity.Value;
 
             if (this.DebugEnabled)
             {
