@@ -66,7 +66,10 @@
 
         public void OpenWiki()
         {
-            Process.Start(this.Wiki);
+            if (!string.IsNullOrWhiteSpace(this.Wiki))
+            {
+                Process.Start(this.Wiki);
+            }
         }
     }
 }
