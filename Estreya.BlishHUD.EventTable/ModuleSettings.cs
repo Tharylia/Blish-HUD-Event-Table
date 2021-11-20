@@ -48,6 +48,9 @@
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
         public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
+        public SettingEntry<bool> UseFiller { get; private set; } // Is listed in global
+        public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
+        //public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerColor { get; private set; } // Is listed in global
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -124,6 +127,15 @@
             this.Opacity = this.GlobalSettings.DefineSetting(nameof(this.Opacity), 1f, () => "Opacity", () => "Defines the opacity of the event table.");
             this.Opacity.SetRange(0.1f, 1f);
             this.Opacity.SettingChanged += this.SettingChanged;
+
+            this.UseFiller = this.GlobalSettings.DefineSetting(nameof(this.UseFiller), false, () => "Use Filler Events", () => "Whether the event table should fill empty spaces with filler events.");
+            this.UseFiller.SettingChanged += this.SettingChanged;
+
+            this.UseFillerEventNames = this.GlobalSettings.DefineSetting(nameof(this.UseFillerEventNames), false, () => "Use Filler Event Names", () => "Whether the event fillers should have names.");
+            this.UseFillerEventNames.SettingChanged += this.SettingChanged;
+
+            /*this.FillerColor = this.GlobalSettings.DefineSetting(nameof(FillerColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Color", () => "Defines the color of filler events.");
+            this.FillerColor.SettingChanged += this.SettingChanged;*/
         }
 
         private void InitializeLocationSettings(SettingCollection settings)

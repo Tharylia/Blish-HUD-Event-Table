@@ -4,6 +4,7 @@
     using Blish_HUD._Extensions;
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
+    using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
     using Glide;
     using Microsoft.Xna.Framework;
@@ -116,7 +117,18 @@
             }
         }
         private bool DebugEnabled { get => this.Settings.DebugEnabled.Value; }
-        private IEnumerable<EventCategory> EventCategories { get; set; }
+
+        private IEnumerable<EventCategory> _eventCategories;
+        private IEnumerable<EventCategory> EventCategories { get
+            {
+                var categories = _eventCategories.DeepCopy();
+                return categories;
+            }
+            set
+            {
+                this._eventCategories = value;
+            }
+        }
         private ModuleSettings Settings { get; set; }
 
         private Texture2D Texture { get; set; }
@@ -152,7 +164,7 @@
             {
                 foreach (Event e in category.Events)
                 {
-                    if (this.EventTooltips.ContainsKey(e.Name))
+                    if (e.Filler || this.EventTooltips.ContainsKey(e.Name))
                     {
                         continue;
                     }
@@ -175,9 +187,7 @@
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    List<DateTime> eventOccurences = this.GetEventStartOccurences(ev);
-
-                    if (eventOccurences.Any(eo => this.IsEventOccurenceHovered(ev, eo, this.GetMinY(ev), this.ContentRegion)))
+                    if (ev.IsHovered(EventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow,EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EVENT_HEIGHT, DebugEnabled))
                     {
                         ev.CopyWaypoint();
                     }
@@ -190,31 +200,10 @@
             return CaptureType.DoNotBlock;
         }
 
-        private int GetMinY(Event ev)
-        {
-            int minY = 0;
-
-            if (this.DebugEnabled)
-            {
-                minY += this.EVENT_HEIGHT; // Pixel per Minute
-                foreach (EventCategory eventCategory in this.EventCategories)
-                {
-                    foreach (Event e in eventCategory.Events)
-                    {
-                        minY += this.EVENT_HEIGHT;
-                        if (ev == e)
-                        {
-                            return minY;
-                        }
-                    }
-                }
-            }
-
-            return minY;
-        }
-
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
         {
+            IEnumerable<EventCategory> eventCategories = this.EventCategories;
+
             Color backgroundColor = this.Settings.BackgroundColor.Value.Id == 1 ? Color.Transparent : this.Settings.BackgroundColor.Value.Cloth.ToXnaColor();// new Color(this.Settings.BackgroundColor.Value.BaseRgb[2], this.Settings.BackgroundColor.Value.BaseRgb[1], this.Settings.BackgroundColor.Value.BaseRgb[0]);
 
             this.BackgroundColor = backgroundColor * this.Settings.BackgroundColorOpacity.Value;
@@ -226,114 +215,100 @@
 
             int y = 0;
 
-            foreach (EventCategory eventCategory in this.EventCategories)
+            
+
+            foreach (EventCategory eventCategory in eventCategories)
             {
-                foreach (Event e in eventCategory.Events)
+                var eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
+
+                foreach (var eventStart in eventStarts)
                 {
-                    int minY = this.GetMinY(e);
-                    SettingEntry<bool> setting = this.Settings.AllEvents.Find(eventSetting => eventSetting.EntryKey == e.Name);
-                    if (!setting.Value)
+                    double width = eventStart.Value.GetWidth(eventStart.Key, EventTimeMin, bounds, this.PixelPerMinute);
+                    y = eventStart.Value.GetYPosition(eventCategories, this.Settings.AllEvents, eventCategory, this.EVENT_HEIGHT, DebugEnabled);
+                    double x = eventStart.Value.GetXPosition(eventStart.Key, EventTimeMin, PixelPerMinute);
+                    x = Math.Max(x, 0);
+
+                    #region Draw Event Rectangle
+
+                    Color color = Color.White;
+
+                    if (!eventStart.Value.Filler)
                     {
-                        continue;
+                        System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(eventStart.Value.Color) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(eventStart.Value.Color);
+                        color = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
+                    }
+                    else
+                    {
+                        color = Color.Transparent;// this.Settings.FillerColor.Value.Id == 1 ? Color.Transparent : this.Settings.FillerColor.Value.Cloth.ToXnaColor();
                     }
 
-                    List<DateTime> eventOccurences = this.GetEventStartOccurences(e);
 
-                    foreach (DateTime eventOccurence in eventOccurences)
+                    Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(width), this.EVENT_HEIGHT);
+
+                    this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, this.Settings.DrawEventBorder.Value ? 1 : 0, Color.Black);
+
+                    #endregion
+
+                    #region Draw Event Name
+
+                    Rectangle eventTextPosition = Rectangle.Empty;
+                    if (!string.IsNullOrWhiteSpace(eventStart.Value.Name) && (!eventStart.Value.Filler || (eventStart.Value.Filler && this.Settings.UseFillerEventNames.Value)))
                     {
-                        double eventWidth = this.GetEventWidth(e, eventOccurence, bounds);
-
-                        #region Prepare Y
-
-                        y = this.GetYFromEvent(minY, e);
-
-                        #endregion
-
-                        #region Prepare X
-
-                        double x = this.GetXFromEventOccurence(eventOccurence);
-
-                        // Start event at min 0
-                        x = Math.Max(x, 0);
-
-                        #endregion
-
-                        #region Draw Event Rectangle
-
-                        System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(e.Color) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(e.Color);
-
-                        Color color = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
-
-                        Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(eventWidth), this.EVENT_HEIGHT);
-
-                        this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, this.Settings.DrawEventBorder.Value ? 1 : 0, Color.Black);
-
-                        #endregion
-
-                        #region Draw Event Name
-
-                        Rectangle eventTextPosition = Rectangle.Empty;
-                        if (!string.IsNullOrWhiteSpace(e.Name))
-                        {
-                            string eventName = this.GetLongestEventName(e, eventTexturePosition.Width);
-                            eventTextPosition = new Rectangle(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, (int)Math.Floor(this.MeasureStringWidth(eventName)), eventTexturePosition.Height - 10);
-                            spriteBatch.DrawStringOnCtrl(this, eventName, this.Font, eventTextPosition, Color.Black);
-                        }
-
-                        #endregion
-
-                        #region Draw Event Remaining Time
-
-                        bool running = eventOccurence <= this.DateTimeNow && eventOccurence.AddMinutes(e.Duration) > this.DateTimeNow;
-                        if (running)
-                        {
-                            DateTime end = eventOccurence.AddMinutes(e.Duration);
-                            TimeSpan timeRemaining = end.Subtract(this.DateTimeNow);
-                            string timeRemainingString = timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
-                            int timeRemainingWidth = (int)Math.Ceiling(this.MeasureStringWidth(timeRemainingString));
-                            int timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
-                            if (timeRemainingX < eventTextPosition.X + eventTextPosition.Width)
-                            {
-                                timeRemainingX = eventTextPosition.X + eventTextPosition.Width + 10;
-                            }
-
-                            Rectangle eventTimeRemainingPosition = new Rectangle(timeRemainingX, eventTexturePosition.Y + 5, timeRemainingWidth, eventTexturePosition.Height - 10);
-
-                            if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
-                            {
-                                // Only draw if it fits in event bounds
-                                spriteBatch.DrawStringOnCtrl(this, timeRemainingString, this.Font, eventTimeRemainingPosition, Color.Black);
-                            }
-                        }
-
-                        #endregion
+                        string eventName = this.GetLongestEventName(eventStart.Value, eventTexturePosition.Width);
+                        eventTextPosition = new Rectangle(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, (int)Math.Floor(this.MeasureStringWidth(eventName)), eventTexturePosition.Height - 10);
+                        spriteBatch.DrawStringOnCtrl(this, eventName, this.Font, eventTextPosition, Color.Black);
                     }
+
+                    #endregion
+
+                    #region Draw Event Remaining Time
+
+                    bool running = eventStart.Key <= this.DateTimeNow && eventStart.Key.AddMinutes(eventStart.Value.Duration) > this.DateTimeNow;
+                    if (running)
+                    {
+                        DateTime end = eventStart.Key.AddMinutes(eventStart.Value.Duration);
+                        TimeSpan timeRemaining = end.Subtract(this.DateTimeNow);
+                        string timeRemainingString = timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
+                        int timeRemainingWidth = (int)Math.Ceiling(this.MeasureStringWidth(timeRemainingString));
+                        int timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
+                        if (timeRemainingX < eventTextPosition.X + eventTextPosition.Width)
+                        {
+                            timeRemainingX = eventTextPosition.X + eventTextPosition.Width + 10;
+                        }
+
+                        Rectangle eventTimeRemainingPosition = new Rectangle(timeRemainingX, eventTexturePosition.Y + 5, timeRemainingWidth, eventTexturePosition.Height - 10);
+
+                        if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
+                        {
+                            // Only draw if it fits in event bounds
+                            spriteBatch.DrawStringOnCtrl(this, timeRemainingString, this.Font, eventTimeRemainingPosition, Color.Black);
+                        }
+                    }
+
+                    #endregion
 
                     #region Draw Tooltip
 
-                    if (this.Settings.ShowTooltips.Value && this.MouseOver)
+                    if (this.Settings.ShowTooltips.Value && !eventStart.Value.Filler && this.MouseOver)
                     {
                         IEnumerable<IGrouping<string, Event>> groups = eventCategory.Events.GroupBy(ev => ev.Name);
-                        IEnumerable<Event> eventFilter = groups.SelectMany(g => g.Select(innerG => innerG)).Where(ev => this.GetEventStartOccurences(ev).Count > 0);
+                        IEnumerable<Event> eventFilter = groups.SelectMany(g => g.Select(innerG => innerG)).Where(ev => ev.GetStartOccurences(DateTimeNow, EventTimeMax, EventTimeMin).Count > 0);
                         IEnumerable<Event> events = eventCategory.ShowCombined ? eventFilter : eventCategory.Events;
 
-                        if (!eventCategory.ShowCombined || events.Contains(e))
+                        if (!eventCategory.ShowCombined || events.Contains(eventStart.Value))
                         {
-                            if (this.EventTooltips.TryGetValue(e.Name, out Tooltip tooltip))
+                            if (this.EventTooltips.TryGetValue(eventStart.Value.Name, out Tooltip tooltip))
                             {
-                                bool isMouseOver = eventOccurences.Any(eo =>
-                                {
-                                    return this.IsEventOccurenceHovered(e, eo, minY, bounds);
-                                });
+                                bool isMouseOver = eventStart.Value.IsHovered(eventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow, EventTimeMax, EventTimeMin, bounds, this.RelativeMousePosition, PixelPerMinute, EVENT_HEIGHT, DebugEnabled);
 
                                 if (isMouseOver && !tooltip.Visible)
                                 {
-                                    Debug.WriteLine($"Show Tooltip for Event: {e.Name}");
+                                    Debug.WriteLine($"Show Tooltip for Event: {eventStart.Value.Name}");
                                     tooltip.Show(0, 0);
                                 }
                                 else if (!isMouseOver && tooltip.Visible)
                                 {
-                                    Debug.WriteLine($"Hide Tooltip for Event: {e.Name}");
+                                    Debug.WriteLine($"Hide Tooltip for Event: {eventStart.Value.Name}");
                                     tooltip.Hide();
                                 }
                             }
@@ -350,17 +325,6 @@
             }
 
             this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
-        }
-
-        private bool IsEventOccurenceHovered(Event e, DateTime eo, int minY, Rectangle bounds)
-        {
-            double x = this.GetXFromEventOccurence(eo);
-            int eo_y = this.GetYFromEvent(minY, e);
-            double width = this.GetEventWidth(e, eo, bounds);
-
-            x = Math.Max(x, 0);
-
-            return (this.RelativeMousePosition.X >= x && this.RelativeMousePosition.X < x + width) && (this.RelativeMousePosition.Y >= eo_y && this.RelativeMousePosition.Y < eo_y + this.EVENT_HEIGHT);
         }
 
         private string GetLongestEventName(Event e, int maxSize)
@@ -394,97 +358,6 @@
             }
 
             return this.Font.MeasureString(text).Width + 10; // TODO: Why is +10 needed?
-        }
-
-        private double GetEventWidth(Event e, DateTime eventOccurence, Rectangle bounds)
-        {
-            double eventWidth = e.Duration * this.PixelPerMinute;
-
-            double x = this.GetXFromEventOccurence(eventOccurence);
-
-            if (x < 0)
-            {
-                eventWidth -= Math.Abs(x);
-            }
-
-            // Only draw event until end of form
-            eventWidth = Math.Min(eventWidth, bounds.Width);
-
-            return eventWidth;
-        }
-
-        private List<DateTime> GetEventStartOccurences(Event e)
-        {
-            DateTime zero = new DateTime(this.DateTimeNow.Year, this.DateTimeNow.Month, this.DateTimeNow.Day - (e.Repeat.TotalMinutes == 0 ? 0 : 1), 0, 0, 0);
-
-            TimeSpan offset = e.Offset;
-            offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now));
-
-            DateTime eventStart = zero.Add(offset);
-
-            List<DateTime> startOccurences = new List<DateTime>();
-
-            while (eventStart < this.EventTimeMax)
-            {
-
-                bool startAfterMin = eventStart > this.EventTimeMin;
-                bool endAfterMin = eventStart.AddMinutes(e.Duration) > this.EventTimeMin;
-
-                if ((startAfterMin || endAfterMin) && eventStart < this.EventTimeMax)
-                {
-                    startOccurences.Add(eventStart);
-                }
-
-                if (e.Repeat.TotalMinutes == 0)
-                {
-                    eventStart = eventStart.Add(TimeSpan.FromDays(1));
-                }
-                else
-                {
-                    eventStart = eventStart.Add(e.Repeat);
-                }
-            }
-
-            return startOccurences;
-        }
-
-        private int GetYFromEvent(int minY, Event ev)
-        {
-            int y = minY;
-            foreach (EventCategory categories in this.EventCategories)
-            {
-                bool anyFromCategoryRendered = false;
-                foreach (Event e in categories.Events)
-                {
-                    SettingEntry<bool> setting = this.Settings.AllEvents.Find(eventSetting => eventSetting.EntryKey == e.Name);
-                    if (!setting.Value)
-                    {
-                        continue;
-                    }
-
-                    anyFromCategoryRendered = true;
-
-                    if (e.Name != ev.Name)
-                    {
-                        continue;
-                    }
-
-                    return y;
-                }
-
-                if (anyFromCategoryRendered)
-                {
-                    y += this.EVENT_HEIGHT;
-                }
-            }
-
-            return y;
-        }
-
-        private double GetXFromEventOccurence(DateTime start)
-        {
-            double minutesSinceMin = start.Subtract(this.EventTimeMin).TotalMinutes;
-            return minutesSinceMin * this.PixelPerMinute;
         }
 
         public new void Show()
