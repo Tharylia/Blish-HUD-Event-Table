@@ -80,7 +80,7 @@
 
         public List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
         {
-            DateTime zero = new DateTime(min.Year, min.Month, min.Day - (this.Repeat.TotalMinutes == 0 ? 0 : 1), 0, 0, 0);
+            DateTime zero = new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
             TimeSpan offset = this.Offset;
             if (addTimezoneOffset)
@@ -196,7 +196,7 @@
             }
 
             // Only draw event until end of form
-            eventWidth = Math.Min(eventWidth, bounds.Width);
+            eventWidth = Math.Min(eventWidth, bounds.Width - x);
 
             return eventWidth;
         }
