@@ -50,7 +50,8 @@
         public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
         public SettingEntry<bool> UseFiller { get; private set; } // Is listed in global
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
-        //public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerColor { get; private set; } // Is listed in global
+        public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
+        public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -134,8 +135,11 @@
             this.UseFillerEventNames = this.GlobalSettings.DefineSetting(nameof(this.UseFillerEventNames), false, () => "Use Filler Event Names", () => "Whether the event fillers should have names.");
             this.UseFillerEventNames.SettingChanged += this.SettingChanged;
 
-            /*this.FillerColor = this.GlobalSettings.DefineSetting(nameof(FillerColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Color", () => "Defines the color of filler events.");
-            this.FillerColor.SettingChanged += this.SettingChanged;*/
+            this.TextColor = this.GlobalSettings.DefineSetting(nameof(TextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Text Color", () => "Defines the text color of events.");
+            this.TextColor.SettingChanged += this.SettingChanged;
+
+            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Text Color", () => "Defines the text color of filler events.");
+            this.FillerTextColor.SettingChanged += this.SettingChanged;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)

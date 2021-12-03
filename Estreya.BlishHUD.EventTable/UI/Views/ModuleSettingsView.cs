@@ -100,18 +100,20 @@
             RenderSetting(parentPanel, ModuleSettings.EventTimeSpan);
             RenderSetting(parentPanel, ModuleSettings.DrawEventBorder);
             RenderSetting(parentPanel, ModuleSettings.Opacity);
+            RenderColorSetting(parentPanel, ModuleSettings.TextColor);
+            RenderEmptyLine(parentPanel);
             RenderSetting(parentPanel, ModuleSettings.UseFiller);
             RenderSetting(parentPanel, ModuleSettings.UseFillerEventNames);
-            //RenderColorSetting(parentPanel, ModuleSettings.FillerColor);
+            RenderColorSetting(parentPanel, ModuleSettings.FillerTextColor);
+            RenderEmptyLine(parentPanel);
+            RenderSetting(parentPanel, ModuleSettings.BackgroundColorOpacity);
+            RenderColorSetting(parentPanel, ModuleSettings.BackgroundColor);
             RenderEmptyLine(parentPanel);
             RenderSetting(parentPanel, ModuleSettings.LocationX);
             RenderSetting(parentPanel, ModuleSettings.LocationY);
             RenderSetting(parentPanel, ModuleSettings.Width);
             RenderSetting(parentPanel, ModuleSettings.Height);
             RenderSetting(parentPanel, ModuleSettings.SnapHeight);
-            RenderEmptyLine(parentPanel);
-            RenderSetting(parentPanel, ModuleSettings.BackgroundColorOpacity);
-            RenderColorSetting(parentPanel, ModuleSettings.BackgroundColor);
         }
 
         private void RenderEmptyLine(Panel parent)
