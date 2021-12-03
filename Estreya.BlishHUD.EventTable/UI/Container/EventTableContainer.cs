@@ -17,13 +17,15 @@
 
     public class EventTableContainer : Blish_HUD.Controls.Container
     {
-        private int EVENT_HEIGHT
+        private int EventHeight
         {
             get
             {
                 return this.Settings.EventHeight.Value;
             }
         }
+
+        private TimeSpan TimeSinceDraw { get; set; }
 
         private TimeSpan _eventTimeSpan = TimeSpan.Zero;
 
@@ -129,6 +131,9 @@
                 this._eventCategories = value;
             }
         }
+
+        private Tween CurrentVisibilityAnimation { get;set;  }
+
         private ModuleSettings Settings { get; set; }
 
         private Texture2D Texture { get; set; }
@@ -187,7 +192,7 @@
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow,EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EVENT_HEIGHT, DebugEnabled))
+                    if (ev.IsHovered(EventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow,EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventHeight, DebugEnabled))
                     {
                         ev.CopyWaypoint();
                     }
@@ -204,13 +209,13 @@
         {
             IEnumerable<EventCategory> eventCategories = this.EventCategories;
 
-            Color backgroundColor = this.Settings.BackgroundColor.Value.Id == 1 ? Color.Transparent : this.Settings.BackgroundColor.Value.Cloth.ToXnaColor();// new Color(this.Settings.BackgroundColor.Value.BaseRgb[2], this.Settings.BackgroundColor.Value.BaseRgb[1], this.Settings.BackgroundColor.Value.BaseRgb[0]);
+            Color backgroundColor = this.Settings.BackgroundColor.Value.Id == 1 ? Color.Transparent : this.Settings.BackgroundColor.Value.Cloth.ToXnaColor();
 
             this.BackgroundColor = backgroundColor * this.Settings.BackgroundColorOpacity.Value;
 
             if (this.DebugEnabled)
             {
-                spriteBatch.DrawStringOnCtrl(this, $"Pixels per Minute: {this.PixelPerMinute}", this.Font, new Rectangle(0, 0, bounds.Width, this.EVENT_HEIGHT), Color.Aqua);
+                spriteBatch.DrawStringOnCtrl(this, $"Pixels per Minute: {this.PixelPerMinute}", this.Font, new Rectangle(0, 0, bounds.Width, this.EventHeight), Color.Aqua);
             }
 
             int y = 0;
@@ -219,35 +224,40 @@
 
             foreach (EventCategory eventCategory in eventCategories)
             {
-                var eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
+                List<KeyValuePair<DateTime, Event>> eventStarts  = eventCategory.GetEventOccurences(this.Settings.AllEvents, DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
 
                 foreach (var eventStart in eventStarts)
                 {
                     double width = eventStart.Value.GetWidth(eventStart.Key, EventTimeMin, bounds, this.PixelPerMinute);
-                    y = eventStart.Value.GetYPosition(eventCategories, this.Settings.AllEvents, eventCategory, this.EVENT_HEIGHT, DebugEnabled);
+                    y = eventStart.Value.GetYPosition(eventCategories, this.Settings.AllEvents, eventCategory, this.EventHeight, DebugEnabled);
                     double x = eventStart.Value.GetXPosition(eventStart.Key, EventTimeMin, PixelPerMinute);
                     x = Math.Max(x, 0);
 
                     #region Draw Event Rectangle
 
-                    Color color = Color.White;
+                    Color color = Color.Transparent;
 
                     if (!eventStart.Value.Filler)
                     {
                         System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(eventStart.Value.Color) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(eventStart.Value.Color);
                         color = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
                     }
-                    else
-                    {
-                        color = Color.Transparent;// this.Settings.FillerColor.Value.Id == 1 ? Color.Transparent : this.Settings.FillerColor.Value.Cloth.ToXnaColor();
-                    }
 
 
-                    Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(width), this.EVENT_HEIGHT);
+                    Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(width), this.EventHeight);
 
-                    this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, this.Settings.DrawEventBorder.Value ? 1 : 0, Color.Black);
+                    this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, this.Settings.DrawEventBorder.Value && (!eventStart.Value.Filler || backgroundColor != Color.Transparent) ? 1 : 0, Color.Black);
 
                     #endregion
+
+                    Color textColor = Color.Black;
+                    if (eventStart.Value.Filler)
+                    {
+                        textColor = this.Settings.FillerTextColor.Value.Id == 1 ? textColor : this.Settings.FillerTextColor.Value.Cloth.ToXnaColor();
+                    } else
+                    {
+                        textColor = this.Settings.TextColor.Value.Id == 1 ? textColor : this.Settings.TextColor.Value.Cloth.ToXnaColor();
+                    }
 
                     #region Draw Event Name
 
@@ -256,7 +266,9 @@
                     {
                         string eventName = this.GetLongestEventName(eventStart.Value, eventTexturePosition.Width);
                         eventTextPosition = new Rectangle(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, (int)Math.Floor(this.MeasureStringWidth(eventName)), eventTexturePosition.Height - 10);
-                        spriteBatch.DrawStringOnCtrl(this, eventName, this.Font, eventTextPosition, Color.Black);
+                        
+                        
+                        spriteBatch.DrawStringOnCtrl(this, eventName, this.Font, eventTextPosition, textColor);
                     }
 
                     #endregion
@@ -281,7 +293,7 @@
                         if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
                         {
                             // Only draw if it fits in event bounds
-                            spriteBatch.DrawStringOnCtrl(this, timeRemainingString, this.Font, eventTimeRemainingPosition, Color.Black);
+                            spriteBatch.DrawStringOnCtrl(this, timeRemainingString, this.Font, eventTimeRemainingPosition, textColor);
                         }
                     }
 
@@ -299,7 +311,7 @@
                         {
                             if (this.EventTooltips.TryGetValue(eventStart.Value.Name, out Tooltip tooltip))
                             {
-                                bool isMouseOver = eventStart.Value.IsHovered(eventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow, EventTimeMax, EventTimeMin, bounds, this.RelativeMousePosition, PixelPerMinute, EVENT_HEIGHT, DebugEnabled);
+                                bool isMouseOver = eventStart.Value.IsHovered(eventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow, EventTimeMax, EventTimeMin, bounds, this.RelativeMousePosition, PixelPerMinute, EventHeight, DebugEnabled);
 
                                 if (isMouseOver && !tooltip.Visible)
                                 {
@@ -321,7 +333,7 @@
 
             if (this.Settings.SnapHeight.Value)
             {
-                this.Size = new Point(bounds.Width, y + this.EVENT_HEIGHT);
+                this.Size = new Point(bounds.Width, y + this.EventHeight);
             }
 
             this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
@@ -362,18 +374,36 @@
 
         public new void Show()
         {
-            if (this.Visible) return;
+            if (this.Visible && this.CurrentVisibilityAnimation == null) return;
+
+            if (this.CurrentVisibilityAnimation != null)
+            {
+                this.CurrentVisibilityAnimation.Cancel();
+            }
 
             this.Visible = true;
-            Animation.Tweener.Tween(this, new { Opacity = 1f }, 0.2f);
+            this.CurrentVisibilityAnimation = Animation.Tweener.Tween(this, new { Opacity = 1f }, 0.2f);
+            this.CurrentVisibilityAnimation.OnComplete(() =>
+            {
+                this.CurrentVisibilityAnimation = null;
+            });
         }
 
         public new void Hide()
         {
-            if (!this.Visible) return;
+            if (!this.Visible && this.CurrentVisibilityAnimation == null) return;
 
-            Tween tween = Animation.Tweener.Tween(this, new { Opacity = 0f }, 0.2f);
-            tween.OnComplete(() => this.Visible = false);
+            if (this.CurrentVisibilityAnimation != null)
+            {
+                this.CurrentVisibilityAnimation.Cancel();
+            }
+
+            this.CurrentVisibilityAnimation = Animation.Tweener.Tween(this, new { Opacity = 0f }, 0.2f);
+            this.CurrentVisibilityAnimation.OnComplete(() =>
+            {
+                this.Visible = false;
+                this.CurrentVisibilityAnimation = null;
+            });
         }
 
         public void UpdatePosition(int x, int y)
@@ -393,6 +423,8 @@
         public override void UpdateContainer(GameTime gameTime)
         {
             base.UpdateContainer(gameTime);
+
+            TimeSinceDraw += gameTime.ElapsedGameTime;
         }
 
         private void InitializeBaseTexture()
@@ -424,10 +456,13 @@
 
             this.DrawRectangle(spriteBatch, coords, color);
 
-            spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-            spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-            spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-            spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+            if (borderSize > 0 && borderColor != Color.Transparent)
+            {
+                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+            }
         }
 
         protected override void DisposeControl()
