@@ -1,6 +1,7 @@
 ﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
+    using Blish_HUD.Contexts;
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
     using Microsoft.Xna.Framework;
@@ -46,14 +47,9 @@
         public string Color { get; set; }
 
         [JsonProperty("filler")]
-        public bool Filler { get; set; }
-
-        public enum EventDifficulty
-        {
-            None,
-            Standard,
-            Hardcore
-        }
+        internal bool Filler { get; set; }
+        [JsonProperty("api")]
+        internal string APICode { get; set; }
 
         public void CopyWaypoint()
         {

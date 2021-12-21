@@ -18,6 +18,7 @@
         public string Name { get; set; }
         [JsonProperty("showCombined")]
         public bool ShowCombined { get; set; }
+
         [JsonProperty("events")]
         public List<Event> Events { get; set; }
 

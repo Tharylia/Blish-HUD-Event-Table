@@ -90,6 +90,17 @@
             RenderSetting(parentPanel, ModuleSettings.GlobalEnabledHotkey);
 #if DEBUG
             RenderSetting(parentPanel, ModuleSettings.DebugEnabled);
+            RenderButton(parentPanel, "Open Settings", () =>
+            {
+                if (EventTableModule.ModuleInstance.SettingsWindow.Visible)
+                {
+                    EventTableModule.ModuleInstance.SettingsWindow.Hide();
+                }
+                else
+                {
+                    EventTableModule.ModuleInstance.SettingsWindow.Show();
+                }
+            });
 #endif
             RenderSetting(parentPanel, ModuleSettings.HideOnMissingMumbleTicks);
             RenderSetting(parentPanel, ModuleSettings.ShowTooltips);
@@ -149,6 +160,25 @@
                 }
             }
         }
+
+        private void RenderButton(Panel parent,string text, Action action)
+        {
+                var settingContainer = new ViewContainer()
+                {
+                    WidthSizingMode = SizingMode.Fill,
+                    HeightSizingMode = SizingMode.AutoSize,
+                    Parent = parent
+                };
+
+            StandardButton button = new StandardButton()
+            {
+                Parent = settingContainer,
+                Text = text
+            };
+
+            button.Click += (s, e) => action.Invoke();
+        }
+
         private void RenderColorSetting(Panel parent, SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> setting)
         {
             var settingContainer = new ViewContainer()

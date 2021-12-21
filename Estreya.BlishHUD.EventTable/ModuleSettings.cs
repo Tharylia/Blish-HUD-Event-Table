@@ -91,6 +91,7 @@
             this.GlobalEnabledHotkey.SettingChanged += this.SettingChanged;
             this.GlobalEnabledHotkey.Value.Enabled = true;
             this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
+            this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
 
             this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on missing Mumble Tick", () => "Whether the event table should hide when mumble ticks are missing.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;

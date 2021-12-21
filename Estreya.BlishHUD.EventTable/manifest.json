@@ -1,12 +1,12 @@
 {
   "name": "Event Table",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "namespace": "estreya.bh.eventTable",
   "package": "Estreya.BlishHUD.EventTable.dll",
   "manifest_version": 1,
   "description": "Creates an event table in taco style.",
   "dependencies": {
-    "bh.blishhud": ">=0.11.0"
+    "bh.blishhud": ">=0.11.2"
   },
   "url": "https://github.com/Tharylia/Blish-HUD-Event-Table",
   "author": {
@@ -18,5 +18,13 @@
   "actions": [],
   "enabled_without_gw2": false,
   "api_permissions": {
+    "account": {
+      "optional": true,
+      "details": "Needed to strike out the completed worldbosses."
+    },
+    "progression": {
+      "optional": true,
+      "details": "Needed to strike out the completed worldbosses."
+    }
   }
 }

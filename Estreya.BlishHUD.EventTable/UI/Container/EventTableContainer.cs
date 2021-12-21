@@ -118,12 +118,14 @@
                 return pixelPerMinute;
             }
         }
-        private bool DebugEnabled { get => this.Settings.DebugEnabled.Value; }
 
         private IEnumerable<EventCategory> _eventCategories;
-        private IEnumerable<EventCategory> EventCategories { get
+        private IEnumerable<EventCategory> EventCategories
+        {
+            get
             {
                 var categories = _eventCategories.DeepCopy();
+
                 return categories;
             }
             set
@@ -132,7 +134,7 @@
             }
         }
 
-        private Tween CurrentVisibilityAnimation { get;set;  }
+        private Tween CurrentVisibilityAnimation { get; set; }
 
         private ModuleSettings Settings { get; set; }
 
@@ -192,7 +194,7 @@
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow,EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventHeight, DebugEnabled))
+                    if (ev.IsHovered(EventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow, EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
                         ev.CopyWaypoint();
                     }
@@ -213,23 +215,23 @@
 
             this.BackgroundColor = backgroundColor * this.Settings.BackgroundColorOpacity.Value;
 
-            if (this.DebugEnabled)
+            if (EventTableModule.ModuleInstance.Debug)
             {
                 spriteBatch.DrawStringOnCtrl(this, $"Pixels per Minute: {this.PixelPerMinute}", this.Font, new Rectangle(0, 0, bounds.Width, this.EventHeight), Color.Aqua);
             }
 
             int y = 0;
 
-            
+
 
             foreach (EventCategory eventCategory in eventCategories)
             {
-                List<KeyValuePair<DateTime, Event>> eventStarts  = eventCategory.GetEventOccurences(this.Settings.AllEvents, DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
+                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
 
                 foreach (var eventStart in eventStarts)
                 {
                     double width = eventStart.Value.GetWidth(eventStart.Key, EventTimeMin, bounds, this.PixelPerMinute);
-                    y = eventStart.Value.GetYPosition(eventCategories, this.Settings.AllEvents, eventCategory, this.EventHeight, DebugEnabled);
+                    y = eventStart.Value.GetYPosition(eventCategories, this.Settings.AllEvents, eventCategory, this.EventHeight, EventTableModule.ModuleInstance.Debug);
                     double x = eventStart.Value.GetXPosition(eventStart.Key, EventTimeMin, PixelPerMinute);
                     x = Math.Max(x, 0);
 
@@ -254,7 +256,8 @@
                     if (eventStart.Value.Filler)
                     {
                         textColor = this.Settings.FillerTextColor.Value.Id == 1 ? textColor : this.Settings.FillerTextColor.Value.Cloth.ToXnaColor();
-                    } else
+                    }
+                    else
                     {
                         textColor = this.Settings.TextColor.Value.Id == 1 ? textColor : this.Settings.TextColor.Value.Cloth.ToXnaColor();
                     }
@@ -266,8 +269,8 @@
                     {
                         string eventName = this.GetLongestEventName(eventStart.Value, eventTexturePosition.Width);
                         eventTextPosition = new Rectangle(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, (int)Math.Floor(this.MeasureStringWidth(eventName)), eventTexturePosition.Height - 10);
-                        
-                        
+
+
                         spriteBatch.DrawStringOnCtrl(this, eventName, this.Font, eventTextPosition, textColor);
                     }
 
@@ -299,6 +302,17 @@
 
                     #endregion
 
+                    #region Draw Cross out
+
+                    if (!eventStart.Value.Filler && !string.IsNullOrWhiteSpace(eventStart.Value.APICode))
+                    {
+                        if (EventTableModule.ModuleInstance.CompletedWorldbosses.Contains(eventStart.Value.APICode))
+                        {
+                            this.DrawCrossOut(spriteBatch, eventTexturePosition);
+                        }
+                    }
+                    #endregion
+
                     #region Draw Tooltip
 
                     if (this.Settings.ShowTooltips.Value && !eventStart.Value.Filler && this.MouseOver)
@@ -311,7 +325,7 @@
                         {
                             if (this.EventTooltips.TryGetValue(eventStart.Value.Name, out Tooltip tooltip))
                             {
-                                bool isMouseOver = eventStart.Value.IsHovered(eventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow, EventTimeMax, EventTimeMin, bounds, this.RelativeMousePosition, PixelPerMinute, EventHeight, DebugEnabled);
+                                bool isMouseOver = eventStart.Value.IsHovered(eventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow, EventTimeMax, EventTimeMin, bounds, this.RelativeMousePosition, PixelPerMinute, EventHeight, EventTableModule.ModuleInstance.Debug);
 
                                 if (isMouseOver && !tooltip.Visible)
                                 {
@@ -448,6 +462,29 @@
             this.InitializeBaseTexture();
 
             spriteBatch.DrawOnCtrl(this, this.Texture, coords, color);
+        }
+
+        private void DrawCrossOut(SpriteBatch spriteBatch, Rectangle coords)
+        {
+            InitializeBaseTexture();
+
+            Point topLeft = new Point(coords.Left, coords.Top);
+            Point topRight = new Point(coords.Right, coords.Top);
+            Point bottomLeft = new Point(coords.Left, coords.Bottom);
+            Point bottomRight = new Point(coords.Right, coords.Bottom);
+
+            this.DrawAngledLine(spriteBatch, topLeft, bottomRight);
+            this.DrawAngledLine(spriteBatch, bottomLeft, topRight);
+        }
+
+        private void DrawAngledLine(SpriteBatch spriteBatch, Point start, Point end)
+        {
+            InitializeBaseTexture();
+
+            int length = (int)Math.Floor(Helpers.MathHelper.CalculeDistance(start, end));
+            Rectangle lineRectangle = new Rectangle(start.X, start.Y, length, 1);
+            float angle = (float)Helpers.MathHelper.CalculeAngle(start, end);
+            spriteBatch.DrawOnCtrl(this, this.Texture, lineRectangle, null, Color.Red, angle, new Vector2(0f, 0f));
         }
 
         private void DrawRectangle(SpriteBatch spriteBatch, Rectangle coords, Color color, int borderSize, Color borderColor)
