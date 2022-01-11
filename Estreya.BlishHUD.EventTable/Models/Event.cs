@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -114,7 +114,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             foreach (var eventStart in startOccurences)
             {
                 double width = this.GetWidth(eventStart, min, bounds, pixelPerMinute);
-                int y = this.GetYPosition(allCategories, EventTableModule.ModuleInstance.ModuleSettings.AllEvents, currentCategory, eventHeight, EventTableModule.ModuleInstance.Debug);
+                int y = this.GetYPosition(allCategories, currentCategory, eventHeight, EventTableModule.ModuleInstance.Debug);
                 double x = this.GetXPosition(eventStart, min, pixelPerMinute);
                 x = Math.Max(x, 0);
 
@@ -214,7 +214,7 @@ namespace Estreya.BlishHUD.EventTable.Models
 
                 if (!currentCategory.ShowCombined || events.Contains(this))
                 {
-                    bool isMouseOver = this.IsHovered(allCategories, EventTableModule.ModuleInstance.ModuleSettings.AllEvents, currentCategory, now, max, min, bounds, control.RelativeMousePosition, pixelPerMinute, eventHeight, EventTableModule.ModuleInstance.Debug);
+                    bool isMouseOver = this.IsHovered(allCategories, currentCategory, now, max, min, bounds, control.RelativeMousePosition, pixelPerMinute, eventHeight, EventTableModule.ModuleInstance.Debug);
 
                     if (isMouseOver && !this.Tooltip.Visible)
                     {
@@ -404,7 +404,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             return minY;
         }
 
-        public int GetYPosition(IEnumerable<EventCategory> eventCategories, List<SettingEntry<bool>> eventSettings, EventCategory evc, int eventHeight, bool debugEnabled)
+        public int GetYPosition(IEnumerable<EventCategory> eventCategories, EventCategory evc, int eventHeight, bool debugEnabled)
         {
             int y = this.GetMinYPosition(eventCategories, eventHeight, debugEnabled);
             foreach (EventCategory category in eventCategories)
@@ -412,8 +412,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                 bool anyFromCategoryRendered = false;
                 foreach (Event e in category.Events)
                 {
-                    SettingEntry<bool> setting = eventSettings.Find(eventSetting => eventSetting.EntryKey == e.Name);
-                    if (setting == null || !setting.Value)
+                    if (e.isDisabled())
                     {
                         continue;
                     }
@@ -457,14 +456,14 @@ namespace Estreya.BlishHUD.EventTable.Models
             return eventWidth;
         }
 
-        public bool IsHovered(IEnumerable<EventCategory> eventCategories, List<SettingEntry<bool>> eventSettings, EventCategory eventCategory, DateTime now, DateTime max, DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute, int eventHeight, bool debugEnabled)
+        public bool IsHovered(IEnumerable<EventCategory> eventCategories, EventCategory eventCategory, DateTime now, DateTime max, DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute, int eventHeight, bool debugEnabled)
         {
             var occurences = this.GetStartOccurences(now, max, min);
 
             foreach (var occurence in occurences)
             {
                 double x = this.GetXPosition(occurence, min, pixelPerMinute);
-                int eo_y = this.GetYPosition(eventCategories, eventSettings, eventCategory, eventHeight, debugEnabled);
+                int eo_y = this.GetYPosition(eventCategories, eventCategory, eventHeight, debugEnabled);
                 double width = this.GetWidth(occurence, min, bounds, pixelPerMinute);
 
                 x = Math.Max(x, 0);
@@ -484,23 +483,23 @@ namespace Estreya.BlishHUD.EventTable.Models
             {
                 if (EventTableModule.ModuleInstance.ModuleSettings.CopyWaypointOnClick.Value)
                 {
-                this.CopyWaypoint();
+                    this.CopyWaypoint();
                 }
             }
             else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed)
             {
                 if (EventTableModule.ModuleInstance.ModuleSettings.ShowContextMenuOnClick.Value)
                 {
-                int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
-                                ? -this.ContextMenuStrip.Height
-                                : 0;
+                    int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
+                                    ? -this.ContextMenuStrip.Height
+                                    : 0;
 
-                int leftPos = e.MousePosition.X + this.ContextMenuStrip.Width < GameService.Graphics.SpriteScreen.Width
-                                  ? 0
-                                  : -this.ContextMenuStrip.Width;
+                    int leftPos = e.MousePosition.X + this.ContextMenuStrip.Width < GameService.Graphics.SpriteScreen.Width
+                                      ? 0
+                                      : -this.ContextMenuStrip.Width;
 
                     Point menuPosition = e.MousePosition + new Point(leftPos, topPos);
-                this.ContextMenuStrip.Show(menuPosition);
+                    this.ContextMenuStrip.Show(menuPosition);
                 }
             }
         }

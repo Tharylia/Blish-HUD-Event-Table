@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -162,7 +162,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, this.Settings.AllEvents, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
                         ev.HandleClick(sender, e);
                         return;
@@ -207,7 +207,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 }
 
                 if (anyEventDrawn)
-                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, Settings.AllEvents, eventCategory, EventHeight, EventTableModule.ModuleInstance.Debug);
+                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventHeight, EventTableModule.ModuleInstance.Debug);
             }
 
             if (this.Settings.SnapHeight.Value)
