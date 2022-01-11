@@ -1,6 +1,6 @@
 {
   "name": "Event Table",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "namespace": "estreya.bh.eventTable",
   "package": "Estreya.BlishHUD.EventTable.dll",
   "manifest_version": 1,
@@ -8,13 +8,12 @@
   "dependencies": {
     "bh.blishhud": ">=0.11.2"
   },
-  "url": "https://github.com/Tharylia/Blish-HUD-Event-Table",
+  "url": "https://github.com/Tharylia/Blish-HUD-Module-Releases",
   "author": {
     "name": "Estreya",
     "username": "Dominik.8620"
   },
-
-  "directories": [],
+  "directories": ["events"],
   "actions": [],
   "enabled_without_gw2": false,
   "api_permissions": {
