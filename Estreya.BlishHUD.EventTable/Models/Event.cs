@@ -506,9 +506,9 @@
 
         private void Finish()
         {
-            var now = EventTableModule.ModuleInstance.DateTimeNow;
+            var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until);
+            EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until, true);
         }
 
         private void Disable()

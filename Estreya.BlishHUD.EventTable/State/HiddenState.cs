@@ -35,6 +35,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
+            DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             lock (Instances)
             {
                 for (int i = Instances.Count - 1; i >= 0; i--)
@@ -43,7 +44,7 @@
                     string name = instance.Key;
                     DateTime hiddenUntil = instance.Value;
 
-                    bool remove = EventTableModule.ModuleInstance.DateTimeNow >= hiddenUntil;
+                    bool remove = now >= hiddenUntil;
 
                     if (remove)
                     {
@@ -53,13 +54,18 @@
             }
         }
 
-        public void Add(string name, DateTime hideUntil)
+        public void Add(string name, DateTime hideUntil, bool isUTC)
         {
             lock (Instances)
             {
                 if (Instances.ContainsKey(name))
                 {
                     Instances.Remove(name);
+                }
+
+                if (!isUTC)
+                {
+                    hideUntil = hideUntil.ToUniversalTime();
                 }
 
                 Instances.Add(name, hideUntil);
