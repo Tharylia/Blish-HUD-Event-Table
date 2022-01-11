@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -15,8 +15,10 @@ namespace Estreya.BlishHUD.EventTable
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
 
     [Export(typeof(Blish_HUD.Modules.Module))]
@@ -41,7 +43,7 @@ namespace Estreya.BlishHUD.EventTable
 
         private WindowTab ManageEventTab { get; set; }
 
-        public TabbedWindow2 SettingsWindow { get; private set; }
+        internal TabbedWindow2 SettingsWindow { get; private set; }
 
         private IEnumerable<EventCategory> EventCategories { get; set; }
 
@@ -49,7 +51,7 @@ namespace Estreya.BlishHUD.EventTable
 
         internal bool Debug => this.ModuleSettings.DebugEnabled.Value;
 
-        public DateTime DateTimeNow
+        internal DateTime DateTimeNow
         {
             get
             {
@@ -60,6 +62,8 @@ namespace Estreya.BlishHUD.EventTable
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
 
         internal HiddenState HiddenState { get; private set; }
+
+        internal List<string> CompletedWorldbosses { get; private set; } = new List<string>();
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -273,7 +277,7 @@ namespace Estreya.BlishHUD.EventTable
 
             if (this.SettingsWindow != null)
             {
-                this.SettingsWindow.Dispose();
+                this.SettingsWindow.Hide();
             }
 
             Logger.Debug("Unloading states...");
