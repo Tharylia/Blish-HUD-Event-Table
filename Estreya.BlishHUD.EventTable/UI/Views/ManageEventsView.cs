@@ -163,7 +163,7 @@
                 foreach (Event e in events)
                 {
                     if (e.Filler) continue; 
-
+                    
                     IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.Name);
 
                     SettingEntry<bool> setting = settings.First();
