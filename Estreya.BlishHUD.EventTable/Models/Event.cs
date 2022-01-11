@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -59,6 +59,9 @@ namespace Estreya.BlishHUD.EventTable.Models
         private Tooltip _tooltip;
 
         [JsonIgnore]
+        private ContextMenuStrip _contextMenuStrip;
+
+        [JsonIgnore]
         private Tooltip Tooltip
         {
             get
@@ -69,6 +72,40 @@ namespace Estreya.BlishHUD.EventTable.Models
                 }
 
                 return _tooltip;
+            }
+        }
+
+        [JsonIgnore]
+        private ContextMenuStrip ContextMenuStrip
+        {
+            get
+            {
+                if (_contextMenuStrip == null)
+                {
+                    _contextMenuStrip = new ContextMenuStrip();
+
+                    ContextMenuStripItem copyWaypoint = new ContextMenuStripItem();
+                    copyWaypoint.Text = "Copy Waypoint";
+                    copyWaypoint.Click += (s,e) => this.CopyWaypoint();
+                    _contextMenuStrip.AddMenuItem(copyWaypoint);
+
+                    ContextMenuStripItem openWiki = new ContextMenuStripItem();
+                    openWiki.Text = "Open Wiki";
+                    openWiki.Click += (s, e) => this.OpenWiki();
+                    _contextMenuStrip.AddMenuItem(openWiki);
+
+                    ContextMenuStripItem finishedEvent = new ContextMenuStripItem();
+                    finishedEvent.Text = "Hide until Reset";
+                    finishedEvent.Click += (s, e) => this.Finish();
+                    _contextMenuStrip.AddMenuItem(finishedEvent);
+
+                    ContextMenuStripItem disable = new ContextMenuStripItem();
+                    disable.Text = "Disable";
+                    disable.Click += (s, e) => this.Disable();
+                    _contextMenuStrip.AddMenuItem(disable);
+                }
+
+                return _contextMenuStrip;
             }
         }
 
@@ -161,6 +198,8 @@ namespace Estreya.BlishHUD.EventTable.Models
                 #endregion
 
             }
+
+            this.DrawTooltip(control, bounds, allCategories, currentCategory, pixelPerMinute, eventHeight, now, min, max);
         }
 
         public void DrawTooltip(Control control, Rectangle bounds, List<EventCategory> allCategories, EventCategory currentCategory, double pixelPerMinute, int eventHeight, DateTime now, DateTime min, DateTime max)
@@ -437,6 +476,49 @@ namespace Estreya.BlishHUD.EventTable.Models
 
             return false;
         }
+
+        public void HandleClick(object sender, Blish_HUD.Input.MouseEventArgs e)
+        {
+
+            if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed)
+            {
+                this.CopyWaypoint();
+            }
+            else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed)
+            {
+                
+                int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
+                                ? -this.ContextMenuStrip.Height
+                                : 0;
+
+                int leftPos = e.MousePosition.X + this.ContextMenuStrip.Width < GameService.Graphics.SpriteScreen.Width
+                                  ? 0
+                                  : -this.ContextMenuStrip.Width;
+
+                Point menuPosition =  e.MousePosition + new Point(leftPos, topPos);
+                this.ContextMenuStrip.Show(menuPosition);
+            }
+        }
+
+        private void Finish()
+        {
+            if (EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.ContainsKey(this.Name))
+            {
+                EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.Remove(this.Name);
+            }
+
+            var now = EventTableModule.ModuleInstance.DateTimeNow;
+            EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.Add(this.Name, new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1));
+        }
+        private void Disable()
+        {
+            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
+            if (eventSetting.Any())
+            {
+                eventSetting.First().Value = false;
+            }
+        }
+
         public bool isDisabled()
         {
             var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);

@@ -52,6 +52,7 @@
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
+        public SettingEntry<Dictionary<string,DateTime>> TemporaryHiddenEvents { get; private set; }
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -141,6 +142,9 @@
 
             this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Text Color", () => "Defines the text color of filler events.");
             this.FillerTextColor.SettingChanged += this.SettingChanged;
+
+            this.TemporaryHiddenEvents = this.GlobalSettings.DefineSetting(nameof(TemporaryHiddenEvents), new Dictionary<string, DateTime>(), () => "Temporary Hidden Events", () => "Defines until when the specified events are hidden.");
+            this.TemporaryHiddenEvents.SettingChanged += this.SettingChanged;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)
