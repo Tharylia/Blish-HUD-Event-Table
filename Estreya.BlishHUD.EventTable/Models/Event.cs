@@ -293,6 +293,13 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         public List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
         {
+            List<DateTime> startOccurences = new List<DateTime>();
+
+                if (this.isDisabled())
+                {
+                    return startOccurences;
+                }
+
             DateTime zero = new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
             TimeSpan offset = this.Offset;
@@ -302,8 +309,6 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
 
             DateTime eventStart = zero.Add(offset);
-
-            List<DateTime> startOccurences = new List<DateTime>();
 
             while (eventStart < max)
             {
@@ -428,6 +433,29 @@ namespace Estreya.BlishHUD.EventTable.Models
                 bool hovered = (relativeMousePosition.X >= x && relativeMousePosition.X < x + width) && (relativeMousePosition.Y >= eo_y && relativeMousePosition.Y < eo_y + eventHeight);
 
                 if (hovered) return true;
+            }
+
+            return false;
+        }
+        public bool isDisabled()
+        {
+            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
+            if (eventSetting.Any())
+            {
+                bool enabled = eventSetting.First().Value;
+                if (enabled)
+                {
+                    if (EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.TryGetValue(this.Name, out var until))
+                    {
+                        enabled = EventTableModule.ModuleInstance.DateTimeNow >= until;
+                        if (enabled)
+                        {
+                            EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.Remove(this.Name);
+                        }
+                    }
+                }
+
+                return !enabled;
             }
 
             return false;
