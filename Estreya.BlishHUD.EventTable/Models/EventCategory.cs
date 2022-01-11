@@ -195,7 +195,7 @@
                 modifiedEventStarts.Add(new KeyValuePair<DateTime, Event>(prevEnd, filler));
             }
 
-            this.Events.AddRange(modifiedEventStarts.Where(e => e.Value.Filler).Select(e => e.Value));
+            //this.Events.AddRange(modifiedEventStarts.Where(e => e.Value.Filler).Select(e => e.Value));
 
             return modifiedEventStarts.OrderBy(mes => mes.Key).ToList();
         }

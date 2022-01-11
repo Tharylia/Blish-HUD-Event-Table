@@ -124,7 +124,7 @@
         {
             get
             {
-                var categories = _eventCategories.DeepCopy();
+                var categories = _eventCategories;
 
                 return categories;
             }
@@ -140,16 +140,12 @@
 
         private Texture2D Texture { get; set; }
 
-        private Dictionary<string, Tooltip> EventTooltips { get; set; } = new Dictionary<string, Tooltip>();
-
         public EventTableContainer(IEnumerable<EventCategory> eventCategories, ModuleSettings settings)
         {
             this.EventCategories = eventCategories;
             this.Settings = settings;
             this.Settings.ModuleSettingsChanged += this.Settings_ModuleSettingsChanged;
             this.Click += this.EventTableContainer_Click;
-
-            this.BuildTooltips();
         }
 
         private void Settings_ModuleSettingsChanged(object sender, ModuleSettings.ModuleSettingsChangedEventArgs e)
@@ -162,24 +158,6 @@
                 case nameof(ModuleSettings.EventTimeSpan):
                     this._eventTimeSpan = TimeSpan.Zero;
                     break;
-            }
-        }
-
-        private void BuildTooltips()
-        {
-            foreach (EventCategory category in this.EventCategories)
-            {
-                foreach (Event e in category.Events)
-                {
-                    if (e.Filler || this.EventTooltips.ContainsKey(e.Name))
-                    {
-                        continue;
-                    }
-
-                    Tooltip tooltip = new Tooltip(new UI.Views.TooltipView(e.Name, $"{e.Location}", e.Icon));
-
-                    this.EventTooltips.Add(e.Name, tooltip);
-                }
             }
         }
 
@@ -209,140 +187,36 @@
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
         {
+            spriteBatch.End();
+            spriteBatch.Begin(this.SpriteBatchParameters);
+
+            InitializeBaseTexture(spriteBatch.GraphicsDevice);
+
             IEnumerable<EventCategory> eventCategories = this.EventCategories;
 
             Color backgroundColor = this.Settings.BackgroundColor.Value.Id == 1 ? Color.Transparent : this.Settings.BackgroundColor.Value.Cloth.ToXnaColor();
 
             this.BackgroundColor = backgroundColor * this.Settings.BackgroundColorOpacity.Value;
 
-            if (EventTableModule.ModuleInstance.Debug)
-            {
-                spriteBatch.DrawStringOnCtrl(this, $"Pixels per Minute: {this.PixelPerMinute}", this.Font, new Rectangle(0, 0, bounds.Width, this.EventHeight), Color.Aqua);
-            }
-
             int y = 0;
-
-
 
             foreach (EventCategory eventCategory in eventCategories)
             {
                 List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
 
-                foreach (var eventStart in eventStarts)
+                var groups = eventStarts.GroupBy(ev => ev.Value);
+
+                bool anyEventDrawn = false;
+
+                foreach (var group in groups)
                 {
-                    double width = eventStart.Value.GetWidth(eventStart.Key, EventTimeMin, bounds, this.PixelPerMinute);
-                    y = eventStart.Value.GetYPosition(eventCategories, this.Settings.AllEvents, eventCategory, this.EventHeight, EventTableModule.ModuleInstance.Debug);
-                    double x = eventStart.Value.GetXPosition(eventStart.Key, EventTimeMin, PixelPerMinute);
-                    x = Math.Max(x, 0);
-
-                    #region Draw Event Rectangle
-
-                    Color color = Color.Transparent;
-
-                    if (!eventStart.Value.Filler)
-                    {
-                        System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(eventStart.Value.Color) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(eventStart.Value.Color);
-                        color = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
-                    }
-
-
-                    Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(width), this.EventHeight);
-
-                    this.DrawRectangle(spriteBatch, eventTexturePosition, color * this.Settings.Opacity.Value, this.Settings.DrawEventBorder.Value && (!eventStart.Value.Filler || backgroundColor != Color.Transparent) ? 1 : 0, Color.Black);
-
-                    #endregion
-
-                    Color textColor = Color.Black;
-                    if (eventStart.Value.Filler)
-                    {
-                        textColor = this.Settings.FillerTextColor.Value.Id == 1 ? textColor : this.Settings.FillerTextColor.Value.Cloth.ToXnaColor();
-                    }
-                    else
-                    {
-                        textColor = this.Settings.TextColor.Value.Id == 1 ? textColor : this.Settings.TextColor.Value.Cloth.ToXnaColor();
-                    }
-
-                    #region Draw Event Name
-
-                    Rectangle eventTextPosition = Rectangle.Empty;
-                    if (!string.IsNullOrWhiteSpace(eventStart.Value.Name) && (!eventStart.Value.Filler || (eventStart.Value.Filler && this.Settings.UseFillerEventNames.Value)))
-                    {
-                        string eventName = this.GetLongestEventName(eventStart.Value, eventTexturePosition.Width);
-                        eventTextPosition = new Rectangle(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, (int)Math.Floor(this.MeasureStringWidth(eventName)), eventTexturePosition.Height - 10);
-
-
-                        spriteBatch.DrawStringOnCtrl(this, eventName, this.Font, eventTextPosition, textColor);
-                    }
-
-                    #endregion
-
-                    #region Draw Event Remaining Time
-
-                    bool running = eventStart.Key <= this.DateTimeNow && eventStart.Key.AddMinutes(eventStart.Value.Duration) > this.DateTimeNow;
-                    if (running)
-                    {
-                        DateTime end = eventStart.Key.AddMinutes(eventStart.Value.Duration);
-                        TimeSpan timeRemaining = end.Subtract(this.DateTimeNow);
-                        string timeRemainingString = timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
-                        int timeRemainingWidth = (int)Math.Ceiling(this.MeasureStringWidth(timeRemainingString));
-                        int timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
-                        if (timeRemainingX < eventTextPosition.X + eventTextPosition.Width)
-                        {
-                            timeRemainingX = eventTextPosition.X + eventTextPosition.Width + 10;
-                        }
-
-                        Rectangle eventTimeRemainingPosition = new Rectangle(timeRemainingX, eventTexturePosition.Y + 5, timeRemainingWidth, eventTexturePosition.Height - 10);
-
-                        if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
-                        {
-                            // Only draw if it fits in event bounds
-                            spriteBatch.DrawStringOnCtrl(this, timeRemainingString, this.Font, eventTimeRemainingPosition, textColor);
-                        }
-                    }
-
-                    #endregion
-
-                    #region Draw Cross out
-
-                    if (!eventStart.Value.Filler && !string.IsNullOrWhiteSpace(eventStart.Value.APICode))
-                    {
-                        if (EventTableModule.ModuleInstance.CompletedWorldbosses.Contains(eventStart.Value.APICode))
-                        {
-                            this.DrawCrossOut(spriteBatch, eventTexturePosition);
-                        }
-                    }
-                    #endregion
-
-                    #region Draw Tooltip
-
-                    if (this.Settings.ShowTooltips.Value && !eventStart.Value.Filler && this.MouseOver)
-                    {
-                        IEnumerable<IGrouping<string, Event>> groups = eventCategory.Events.GroupBy(ev => ev.Name);
-                        IEnumerable<Event> eventFilter = groups.SelectMany(g => g.Select(innerG => innerG)).Where(ev => ev.GetStartOccurences(DateTimeNow, EventTimeMax, EventTimeMin).Count > 0);
-                        IEnumerable<Event> events = eventCategory.ShowCombined ? eventFilter : eventCategory.Events;
-
-                        if (!eventCategory.ShowCombined || events.Contains(eventStart.Value))
-                        {
-                            if (this.EventTooltips.TryGetValue(eventStart.Value.Name, out Tooltip tooltip))
-                            {
-                                bool isMouseOver = eventStart.Value.IsHovered(eventCategories, this.Settings.AllEvents, eventCategory, DateTimeNow, EventTimeMax, EventTimeMin, bounds, this.RelativeMousePosition, PixelPerMinute, EventHeight, EventTableModule.ModuleInstance.Debug);
-
-                                if (isMouseOver && !tooltip.Visible)
-                                {
-                                    Debug.WriteLine($"Show Tooltip for Event: {eventStart.Value.Name}");
-                                    tooltip.Show(0, 0);
-                                }
-                                else if (!isMouseOver && tooltip.Visible)
-                                {
-                                    Debug.WriteLine($"Hide Tooltip for Event: {eventStart.Value.Name}");
-                                    tooltip.Hide();
-                                }
-                            }
-                        }
-                    }
-
-                    #endregion
+                    var starts = group.Select(g => g.Key).ToList();
+                    anyEventDrawn = starts.Count > 0;
+                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, this.EventHeight, DateTimeNow, EventTimeMin, EventTimeMax, this.Font, starts);
                 }
+
+                if (anyEventDrawn)
+                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, Settings.AllEvents, eventCategory, EventHeight, EventTableModule.ModuleInstance.Debug);
             }
 
             if (this.Settings.SnapHeight.Value)
@@ -351,39 +225,10 @@
             }
 
             this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
-        }
 
-        private string GetLongestEventName(Event e, int maxSize)
-        {
-            float size = this.MeasureStringWidth(e.Name);
+            spriteBatch.End();
+            spriteBatch.Begin(this.SpriteBatchParameters);
 
-            if (size <= maxSize)
-            {
-                return e.Name;
-            }
-
-            for (int i = 0; i < e.Name.Length; i++)
-            {
-                string name = e.Name.Substring(0, e.Name.Length - i);
-                size = this.MeasureStringWidth(name);
-
-                if (size <= maxSize)
-                {
-                    return name;
-                }
-            }
-
-            return "...";
-        }
-
-        private float MeasureStringWidth(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-            {
-                return 0;
-            }
-
-            return this.Font.MeasureString(text).Width + 10; // TODO: Why is +10 needed?
         }
 
         public new void Show()
@@ -441,86 +286,30 @@
             TimeSinceDraw += gameTime.ElapsedGameTime;
         }
 
-        private void InitializeBaseTexture()
+        private void InitializeBaseTexture(GraphicsDevice graphicsDevice)
         {
             if (this.Texture == null)
             {
-                this.Texture = new Texture2D(GameService.Graphics.GraphicsDevice, 1, 1);
+                this.Texture = new Texture2D(graphicsDevice, 1, 1);
                 this.Texture.SetData(new[] { Color.White });
             }
         }
 
-        private void DrawRectangle(SpriteBatch spriteBatch, Rectangle coords, Color color)
-        {
-            this.InitializeBaseTexture();
-
-            spriteBatch.DrawOnCtrl(this, this.Texture, coords, color);
-        }
-
         private void DrawLine(SpriteBatch spriteBatch, Rectangle coords, Color color)
         {
-            this.InitializeBaseTexture();
+            this.InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
             spriteBatch.DrawOnCtrl(this, this.Texture, coords, color);
-        }
-
-        private void DrawCrossOut(SpriteBatch spriteBatch, Rectangle coords)
-        {
-            InitializeBaseTexture();
-
-            Point topLeft = new Point(coords.Left, coords.Top);
-            Point topRight = new Point(coords.Right, coords.Top);
-            Point bottomLeft = new Point(coords.Left, coords.Bottom);
-            Point bottomRight = new Point(coords.Right, coords.Bottom);
-
-            this.DrawAngledLine(spriteBatch, topLeft, bottomRight);
-            this.DrawAngledLine(spriteBatch, bottomLeft, topRight);
-        }
-
-        private void DrawAngledLine(SpriteBatch spriteBatch, Point start, Point end)
-        {
-            InitializeBaseTexture();
-
-            int length = (int)Math.Floor(Helpers.MathHelper.CalculeDistance(start, end));
-            Rectangle lineRectangle = new Rectangle(start.X, start.Y, length, 1);
-            float angle = (float)Helpers.MathHelper.CalculeAngle(start, end);
-            spriteBatch.DrawOnCtrl(this, this.Texture, lineRectangle, null, Color.Red, angle, new Vector2(0f, 0f));
-        }
-
-        private void DrawRectangle(SpriteBatch spriteBatch, Rectangle coords, Color color, int borderSize, Color borderColor)
-        {
-            this.InitializeBaseTexture();
-
-            this.DrawRectangle(spriteBatch, coords, color);
-
-            if (borderSize > 0 && borderColor != Color.Transparent)
-            {
-                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
-            }
         }
 
         protected override void DisposeControl()
         {
-            this.Visible = true;
+            this.Visible = false;
 
             if (this.Texture != null)
             {
                 this.Texture.Dispose();
                 this.Texture = null;
-            }
-
-            if (this.EventTooltips != null)
-            {
-                foreach (KeyValuePair<string, Tooltip> tooltip in this.EventTooltips)
-                {
-                    tooltip.Value.Dispose();
-                }
-
-                this.EventTooltips.Clear();
-                this.EventTooltips = null;
             }
 
             base.DisposeControl();
