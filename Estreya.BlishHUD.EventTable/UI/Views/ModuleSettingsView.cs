@@ -105,6 +105,7 @@
             RenderSetting(parentPanel, ModuleSettings.HideOnMissingMumbleTicks);
             RenderSetting(parentPanel, ModuleSettings.ShowTooltips);
             RenderSetting(parentPanel, ModuleSettings.CopyWaypointOnClick);
+            RenderSetting(parentPanel, ModuleSettings.ShowContextMenuOnClick);
             RenderEmptyLine(parentPanel);
             RenderSetting(parentPanel, ModuleSettings.EventHeight);
             RenderSetting(parentPanel, ModuleSettings.EventFontSize);

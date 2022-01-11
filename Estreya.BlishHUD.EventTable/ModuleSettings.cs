@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -27,6 +27,7 @@
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
+        public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
         public SettingEntry<float> Opacity { get; set; }
         #endregion
 
@@ -52,7 +53,6 @@
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
-        public SettingEntry<Dictionary<string,DateTime>> TemporaryHiddenEvents { get; private set; }
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -127,6 +127,9 @@
             this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => "Copy Waypoints", () => "Whether the event table should copy waypoints to clipboard if event has been clicked.");
             this.CopyWaypointOnClick.SettingChanged += this.SettingChanged;
 
+            this.ShowContextMenuOnClick = this.GlobalSettings.DefineSetting(nameof(this.ShowContextMenuOnClick), true, () => "Show Context Menu", () => "Whether the event table should show a context menu if an event has been right clicked.");
+            this.ShowContextMenuOnClick.SettingChanged += this.SettingChanged;
+
             this.Opacity = this.GlobalSettings.DefineSetting(nameof(this.Opacity), 1f, () => "Opacity", () => "Defines the opacity of the event table.");
             this.Opacity.SetRange(0.1f, 1f);
             this.Opacity.SettingChanged += this.SettingChanged;
@@ -142,9 +145,6 @@
 
             this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Text Color", () => "Defines the text color of filler events.");
             this.FillerTextColor.SettingChanged += this.SettingChanged;
-
-            this.TemporaryHiddenEvents = this.GlobalSettings.DefineSetting(nameof(TemporaryHiddenEvents), new Dictionary<string, DateTime>(), () => "Temporary Hidden Events", () => "Defines until when the specified events are hidden.");
-            this.TemporaryHiddenEvents.SettingChanged += this.SettingChanged;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)

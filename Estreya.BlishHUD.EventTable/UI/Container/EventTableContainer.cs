@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -158,11 +158,6 @@
 
         private void EventTableContainer_Click(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            if (!this.Settings.CopyWaypointOnClick.Value)
-            {
-                return;
-            }
-
             foreach (EventCategory eventCategory in this.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events)

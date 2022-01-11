@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -482,11 +482,15 @@
 
             if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed)
             {
+                if (EventTableModule.ModuleInstance.ModuleSettings.CopyWaypointOnClick.Value)
+                {
                 this.CopyWaypoint();
+                }
             }
             else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed)
             {
-                
+                if (EventTableModule.ModuleInstance.ModuleSettings.ShowContextMenuOnClick.Value)
+                {
                 int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
                                 ? -this.ContextMenuStrip.Height
                                 : 0;
@@ -495,21 +499,19 @@
                                   ? 0
                                   : -this.ContextMenuStrip.Width;
 
-                Point menuPosition =  e.MousePosition + new Point(leftPos, topPos);
+                    Point menuPosition = e.MousePosition + new Point(leftPos, topPos);
                 this.ContextMenuStrip.Show(menuPosition);
+                }
             }
         }
 
         private void Finish()
         {
-            if (EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.ContainsKey(this.Name))
-            {
-                EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.Remove(this.Name);
-            }
-
             var now = EventTableModule.ModuleInstance.DateTimeNow;
-            EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.Add(this.Name, new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1));
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until);
         }
+
         private void Disable()
         {
             var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
@@ -524,18 +526,7 @@
             var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
             if (eventSetting.Any())
             {
-                bool enabled = eventSetting.First().Value;
-                if (enabled)
-                {
-                    if (EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.TryGetValue(this.Name, out var until))
-                    {
-                        enabled = EventTableModule.ModuleInstance.DateTimeNow >= until;
-                        if (enabled)
-                        {
-                            EventTableModule.ModuleInstance.ModuleSettings.TemporaryHiddenEvents.Value.Remove(this.Name);
-                        }
-                    }
-                }
+                bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.HiddenState.IsHidden(this.Name);
 
                 return !enabled;
             }

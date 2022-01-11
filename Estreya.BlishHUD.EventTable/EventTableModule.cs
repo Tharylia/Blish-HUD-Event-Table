@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -8,6 +8,7 @@
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
+    using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Container;
     using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
@@ -56,7 +57,9 @@
             }
         }
 
-        public List<string> CompletedWorldbosses { get; set; } = new List<string>();
+        internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
+
+        internal HiddenState HiddenState { get; private set; }
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -118,6 +121,26 @@
                         break;
                 }
             };
+
+            await InitializeStates();
+
+        }
+
+        private async Task InitializeStates()
+        {
+            string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
+
+            this.HiddenState = new HiddenState(eventsDirectory);
+
+            lock (this.States)
+            {
+                this.States.Add(this.HiddenState);
+            }
+
+            foreach (ManagedState state in this.States)
+            {
+                await state.Start();
+            }
         }
 
         private async Task UpdateCompletedWorldbosses(GameTime gameTime)
@@ -217,6 +240,11 @@
             {
                 await UpdateCompletedWorldbosses(gameTime);
             });
+
+            foreach (ManagedState state in this.States)
+            {
+                state.Update(gameTime);
+            }
         }
 
         private void CheckMumble()
@@ -248,10 +276,9 @@
                 this.SettingsWindow.Dispose();
             }
 
-            if (this.Container != null)
-            {
-                this.Container.Dispose();
-            }
+            Logger.Debug("Unloading states...");
+            Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
+            Logger.Debug("Finished unloading states.");
         }
     }
 }
