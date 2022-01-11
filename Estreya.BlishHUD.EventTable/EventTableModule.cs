@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -47,6 +47,14 @@ namespace Estreya.BlishHUD.EventTable
         private bool visibleStateFromTick = true;
 
         internal bool Debug => this.ModuleSettings.DebugEnabled.Value;
+
+        public DateTime DateTimeNow
+        {
+            get
+            {
+                return DateTime.Now;
+            }
+        }
 
         public List<string> CompletedWorldbosses { get; set; } = new List<string>();
 
