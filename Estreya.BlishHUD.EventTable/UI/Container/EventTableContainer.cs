@@ -295,7 +295,7 @@
 
         protected override void DisposeControl()
         {
-            this.Visible = false;
+            this.Hide();
 
             if (this.Texture != null)
             {

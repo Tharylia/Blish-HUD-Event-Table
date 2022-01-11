@@ -275,6 +275,11 @@
                 GameService.Overlay.BlishHudWindow.RemoveTab(this.ManageEventTab);
             }
 
+            if (this.Container != null)
+            {
+                this.Container.Dispose();
+            }
+
             if (this.SettingsWindow != null)
             {
                 this.SettingsWindow.Hide();
