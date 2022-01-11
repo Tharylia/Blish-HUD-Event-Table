@@ -129,7 +129,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Triple_Trouble",
         "duration": 30,
         "icon": "B197F05D1FB333ABC87EAF09BE0A44C50B4AEC3C/710688",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "triple_trouble_wurm"
       },
       {
         "name": "Evolved Jungle Wurm",
@@ -141,7 +142,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Triple_Trouble",
         "duration": 30,
         "icon": "B197F05D1FB333ABC87EAF09BE0A44C50B4AEC3C/710688",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "triple_trouble_wurm"
       },
       {
         "name": "Evolved Jungle Wurm",
@@ -153,7 +155,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Triple_Trouble",
         "duration": 30,
         "icon": "B197F05D1FB333ABC87EAF09BE0A44C50B4AEC3C/710688",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "triple_trouble_wurm"
       },
       {
         "name": "Evolved Jungle Wurm",
@@ -165,7 +168,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Triple_Trouble",
         "duration": 30,
         "icon": "B197F05D1FB333ABC87EAF09BE0A44C50B4AEC3C/710688",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "triple_trouble_wurm"
       },
       {
         "name": "Evolved Jungle Wurm",
@@ -177,7 +181,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Triple_Trouble",
         "duration": 30,
         "icon": "B197F05D1FB333ABC87EAF09BE0A44C50B4AEC3C/710688",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "triple_trouble_wurm"
       },
       {
         "name": "Evolved Jungle Wurm",
@@ -190,7 +195,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Triple_Trouble",
         "duration": 30,
         "icon": "B197F05D1FB333ABC87EAF09BE0A44C50B4AEC3C/710688",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "triple_trouble_wurm"
       },
       {
         "name": "Karka Queen",
@@ -202,7 +208,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Karka_Queen_threatening_the_settlements",
         "duration": 30,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "karka_queen"
       },
       {
         "name": "Karka Queen",
@@ -214,7 +221,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Karka_Queen_threatening_the_settlements",
         "duration": 30,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "karka_queen"
       },
       {
         "name": "Karka Queen",
@@ -226,7 +234,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Karka_Queen_threatening_the_settlements",
         "duration": 30,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "karka_queen"
       },
       {
         "name": "Karka Queen",
@@ -238,7 +247,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Karka_Queen_threatening_the_settlements",
         "duration": 30,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "karka_queen"
       },
       {
         "name": "Karka Queen",
@@ -250,7 +260,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Karka_Queen_threatening_the_settlements",
         "duration": 30,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "karka_queen"
       },
       {
         "name": "Karka Queen",
@@ -262,7 +273,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Karka_Queen_threatening_the_settlements",
         "duration": 30,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "karka_queen"
       },
       {
         "name": "Tequatl the Sunless",
@@ -274,7 +286,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_Tequatl_the_Sunless",
         "duration": 30,
         "icon": "57490B059669DA64517C99BCA5A359082696DEC9/638120",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "tequatl_the_sunless"
       },
       {
         "name": "Tequatl the Sunless",
@@ -286,7 +299,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_Tequatl_the_Sunless",
         "duration": 30,
         "icon": "57490B059669DA64517C99BCA5A359082696DEC9/638120",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "tequatl_the_sunless"
       },
       {
         "name": "Tequatl the Sunless",
@@ -298,7 +312,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_Tequatl_the_Sunless",
         "duration": 30,
         "icon": "57490B059669DA64517C99BCA5A359082696DEC9/638120",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "tequatl_the_sunless"
       },
       {
         "name": "Tequatl the Sunless",
@@ -310,7 +325,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_Tequatl_the_Sunless",
         "duration": 30,
         "icon": "57490B059669DA64517C99BCA5A359082696DEC9/638120",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "tequatl_the_sunless"
       },
       {
         "name": "Tequatl the Sunless",
@@ -322,7 +338,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_Tequatl_the_Sunless",
         "duration": 30,
         "icon": "57490B059669DA64517C99BCA5A359082696DEC9/638120",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "tequatl_the_sunless"
       },
       {
         "name": "Tequatl the Sunless",
@@ -334,7 +351,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_Tequatl_the_Sunless",
         "duration": 30,
         "icon": "57490B059669DA64517C99BCA5A359082696DEC9/638120",
-        "color": "#80ea568f"
+        "color": "#80ea568f",
+        "api": "tequatl_the_sunless"
       }
     ]
   },
@@ -353,7 +371,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Admiral_Taidha_Covington",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#8063471c"
+        "color": "#8063471c",
+        "api": "admiral_taidha_covington"
       },
       {
         "name": "Claw of Jormag",
@@ -365,7 +384,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Claw_of_Jormag",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#8079afff"
+        "color": "#8079afff",
+        "api": "claw_of_jormag"
       },
       {
         "name": "Fire Elemental",
@@ -377,7 +397,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Destroy_the_fire_elemental_created_from_chaotic_energy_fusing_with_the_C.L.E.A.N._5000%27s_energy_core",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80eab700"
+        "color": "#80eab700",
+        "api": "fire_elemental"
       },
       {
         "name": "Great Jungle Wurm",
@@ -389,7 +410,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_great_jungle_wurm",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#806dac2f"
+        "color": "#806dac2f",
+        "api": "great_jungle_wurm"
       },
       {
         "name": "Inquest Golem Mark II",
@@ -401,7 +423,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Inquest%27s_golem_Mark_II",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80a0a0a0"
+        "color": "#80a0a0a0",
+        "api": "inquest_golem_mark_ii"
       },
       {
         "name": "Megadestroyer",
@@ -413,7 +436,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Kill_the_megadestroyer_before_it_blows_everyone_up",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80ff2e0d"
+        "color": "#80ff2e0d",
+        "api": "megadestroyer"
       },
       {
         "name": "Modniir Ulgoth",
@@ -425,7 +449,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_Ulgoth_the_Modniir_and_his_minions",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#8063471c"
+        "color": "#8063471c",
+        "api": "modniir_ulgoth"
       },
       {
         "name": "Shadow Behemoth",
@@ -437,7 +462,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_shadow_behemoth",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80303030"
+        "color": "#80303030",
+        "api": "shadow_behemoth"
       },
       {
         "name": "The Shatterer",
@@ -449,7 +475,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Slay_the_Shatterer",
         "duration": 15,
         "icon": "BEBC5CBBD70DB678FA3E329D3BE59DE27CECCA14/1341585",
-        "color": "#80aba6d3"
+        "color": "#80aba6d3",
+        "api": "the_shatterer"
       },
       {
         "name": "Svanir Shaman Chief",
@@ -461,7 +488,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Kill_the_Svanir_shaman_chief_to_break_his_control_over_the_ice_elemental",
         "duration": 15,
         "icon": "7554DCAF5A1EA1BDF5297352A203AF2357BE2B5B/498983",
-        "color": "#80b9d0d5"
+        "color": "#80b9d0d5",
+        "api": "svanir_shaman_chief"
       }
     ]
   },
@@ -496,6 +524,154 @@
       }
     ]
   },
+  {
+    "key": "halloween",
+    "name": "Halloween",
+    "showCombined": false,
+    "events": [
+      {
+        "name": "Your Mad King says...",
+        "offset": "00:00",
+        "repeat": "02:00",
+        "difficulty": "none",
+        "location": "Lion's Arch",
+        "waypoint": "[&BBAEAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Your_Mad_King_says...",
+        "duration": 10,
+        "icon": "7148FBEFC0071191C91BFD37D1346BF70DA65403/602778",
+        "color": "#fc8403"
+      }
+    ]
+  },
+  {
+    "key": "festivalOfTheFourWinds",
+    "name": "Festival of the Four Winds",
+    "showCombined": false,
+    "events": [
+      {
+        "name": "Dolyak Race",
+        "offset": "00:00",
+        "repeat": "02:00",
+        "difficulty": "none",
+        "location": "Labyrinthine Cliffs",
+        "waypoint": "[&BBwHAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Flying_Dolyak:_Reach_the_finish_line!",
+        "duration": 10,
+        "icon": "C40E7AC932F5FEEAF203E603C8DE300CCC9A1207/602785",
+        "color": "#c40075"
+      },
+      {
+        "name": "Treasure Hunt",
+        "offset": "00:30",
+        "repeat": "02:00",
+        "difficulty": "none",
+        "location": "Labyrinthine Cliffs",
+        "waypoint": "[&BBwHAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Participate_in_the_treasure_hunt!",
+        "duration": 30,
+        "icon": "C40E7AC932F5FEEAF203E603C8DE300CCC9A1207/602785",
+        "color": "#fc0398"
+      },
+      {
+        "name": "Skimmer Race",
+        "offset": "01:30",
+        "repeat": "02:00",
+        "difficulty": "none",
+        "location": "Labyrinthine Cliffs",
+        "waypoint": "[&BBwHAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Skimmer_Slalom:_Reach_the_finish_line!",
+        "duration": 10,
+        "icon": "C40E7AC932F5FEEAF203E603C8DE300CCC9A1207/602785",
+        "color": "#c71668"
+      }
+    ]
+  },
+  {
+    "key": "dragonBash",
+    "name": "Dragon Bash",
+    "showCombined": false,
+    "events": [
+      {
+        "name": "Wayfarer Foothills",
+        "offset": "00:00",
+        "repeat": "01:00",
+        "difficulty": "none",
+        "location": "Wayfarer Foothills",
+        "waypoint": "[&BH0BAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Dragon_Bash_Hologram_Stampede!",
+        "duration": 5,
+        "icon": "FF9DF23C6DE40E3F09EC1AE06169379048DA3C94/602783",
+        "color": "#1689c7"
+      },
+      {
+        "name": "Dredgehaunt Cliffs",
+        "offset": "00:15",
+        "repeat": "01:00",
+        "difficulty": "none",
+        "location": "Dredgehaunt Cliffs",
+        "waypoint": "[&BGMCAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Dragon_Bash_Hologram_Stampede!",
+        "duration": 5,
+        "icon": "FF9DF23C6DE40E3F09EC1AE06169379048DA3C94/602783",
+        "color": "#1689c7"
+      },
+      {
+        "name": "Lornar's Pass",
+        "offset": "00:30",
+        "repeat": "01:00",
+        "difficulty": "none",
+        "location": "Lornar's Pass",
+        "waypoint": "[&BJkBAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Dragon_Bash_Hologram_Stampede!",
+        "duration": 5,
+        "icon": "FF9DF23C6DE40E3F09EC1AE06169379048DA3C94/602783",
+        "color": "#1689c7"
+      },
+      {
+        "name": "Snowden Drifts",
+        "offset": "00:45",
+        "repeat": "01:00",
+        "difficulty": "none",
+        "location": "Snowden Drifts",
+        "waypoint": "[&BL4AAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Dragon_Bash_Hologram_Stampede!",
+        "duration": 5,
+        "icon": "FF9DF23C6DE40E3F09EC1AE06169379048DA3C94/602783",
+        "color": "#1689c7"
+      }
+    ]
+  },
+  /*{
+    "key": "beetleRaces",
+    "name": "Beetle Races",
+    "showCombined": false,
+    "events": [
+      {
+        "name": "Tropic Valley Raceway",
+        "offset": "00:00",
+        "repeat": "00:15",
+        "difficulty": "none",
+        "location": "Brisban Wildlands",
+        "waypoint": "[&BPkGAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Roller_Beetle_Time_Trial:_Tropic_Valley_Raceway",
+        "duration": 13,
+        "icon": "A0271015180B52A3EC7A2F96A55F18DA7F95AD0E/2069928",
+        "color": "#e0d100"
+      },
+      {
+        "name": "Jormag's Fang",
+        "offset": "00:00",
+        "repeat": "00:15",
+        "difficulty": "none",
+        "location": "Brisban Wildlands",
+        "waypoint": "[&BLsAAAA=]",
+        "wiki": "https://wiki.guildwars2.com/wiki/Roller_Beetle_Time_Trial:_Tropic_Valley_Raceway",
+        "duration": 5,
+        "icon": "A0271015180B52A3EC7A2F96A55F18DA7F95AD0E/2069928",
+        "color": "#e0d100"
+      }
+    ]
+  },*/
   {
     "key": "pvpTournaments",
     "name": "PvP Automated Tournaments",

@@ -27,6 +27,7 @@
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
+        public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
         public SettingEntry<float> Opacity { get; set; }
         #endregion
 
@@ -48,6 +49,10 @@
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
         public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
+        public SettingEntry<bool> UseFiller { get; private set; } // Is listed in global
+        public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
+        public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
+        public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -87,6 +92,7 @@
             this.GlobalEnabledHotkey.SettingChanged += this.SettingChanged;
             this.GlobalEnabledHotkey.Value.Enabled = true;
             this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
+            this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
 
             this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on missing Mumble Tick", () => "Whether the event table should hide when mumble ticks are missing.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;
@@ -118,12 +124,27 @@
             this.ShowTooltips = this.GlobalSettings.DefineSetting(nameof(this.ShowTooltips), true, () => "Show Tooltips", () => "Whether the event table should display event information on hover.");
             this.DebugEnabled.SettingChanged += this.SettingChanged;
 
-            this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => "Copy Waypoints", () => "Whether the event table should copy waypoints to clipboard if event has been clicked.");
+            this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => "Copy Waypoints", () => "Whether the event table should copy waypoints to clipboard if event has been left clicked.");
             this.CopyWaypointOnClick.SettingChanged += this.SettingChanged;
+
+            this.ShowContextMenuOnClick = this.GlobalSettings.DefineSetting(nameof(this.ShowContextMenuOnClick), true, () => "Show Context Menu", () => "Whether the event table should show a context menu if an event has been right clicked.");
+            this.ShowContextMenuOnClick.SettingChanged += this.SettingChanged;
 
             this.Opacity = this.GlobalSettings.DefineSetting(nameof(this.Opacity), 1f, () => "Opacity", () => "Defines the opacity of the event table.");
             this.Opacity.SetRange(0.1f, 1f);
             this.Opacity.SettingChanged += this.SettingChanged;
+
+            this.UseFiller = this.GlobalSettings.DefineSetting(nameof(this.UseFiller), false, () => "Use Filler Events", () => "Whether the event table should fill empty spaces with filler events.");
+            this.UseFiller.SettingChanged += this.SettingChanged;
+
+            this.UseFillerEventNames = this.GlobalSettings.DefineSetting(nameof(this.UseFillerEventNames), false, () => "Use Filler Event Names", () => "Whether the event fillers should have names.");
+            this.UseFillerEventNames.SettingChanged += this.SettingChanged;
+
+            this.TextColor = this.GlobalSettings.DefineSetting(nameof(TextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Text Color", () => "Defines the text color of events.");
+            this.TextColor.SettingChanged += this.SettingChanged;
+
+            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Text Color", () => "Defines the text color of filler events.");
+            this.FillerTextColor.SettingChanged += this.SettingChanged;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)

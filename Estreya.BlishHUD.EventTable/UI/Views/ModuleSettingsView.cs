@@ -17,6 +17,12 @@
 
         private static IEnumerable<Gw2Sharp.WebApi.V2.Models.Color> Colors { get; set; }
 
+        private static Panel ColorPickerPanel { get; set; }
+
+        private static string SelectedColorSetting {  get; set; }
+
+        private static ColorPicker ColorPicker {  get; set; }
+
         public ModuleSettingsView(ModuleSettings settings)
         {
             this.ModuleSettings = settings;
@@ -28,6 +34,36 @@
             {
                 progress.Report("Loading Colors...");
                 Colors = await EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.AllAsync();
+            }
+
+            if (ColorPicker == null)
+            {
+                progress.Report("Loading ColorPicker...");
+                // build initial colorpicker
+
+                ColorPickerPanel = new Panel()
+                {
+                    Location = new Point(10, 10),
+                    WidthSizingMode = SizingMode.AutoSize,
+                    HeightSizingMode = SizingMode.AutoSize,
+                    Visible = false,
+                    ZIndex = int.MaxValue,
+                    BackgroundColor = Color.Black,
+                    ShowBorder = false,
+                };
+
+                ColorPicker = new ColorPicker()
+                {
+                    Location = new Point(10, 10),
+                    Parent = ColorPickerPanel,
+                    Visible = true
+                };
+
+                progress.Report($"Adding Colors to ColorPicker...");
+                foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+                {
+                    ColorPicker.Colors.Add(color);
+                }
             }
 
             progress.Report("");
@@ -54,25 +90,42 @@
             RenderSetting(parentPanel, ModuleSettings.GlobalEnabledHotkey);
 #if DEBUG
             RenderSetting(parentPanel, ModuleSettings.DebugEnabled);
+            RenderButton(parentPanel, "Open Settings", () =>
+            {
+                if (EventTableModule.ModuleInstance.SettingsWindow.Visible)
+                {
+                    EventTableModule.ModuleInstance.SettingsWindow.Hide();
+                }
+                else
+                {
+                    EventTableModule.ModuleInstance.SettingsWindow.Show();
+                }
+            });
 #endif
             RenderSetting(parentPanel, ModuleSettings.HideOnMissingMumbleTicks);
             RenderSetting(parentPanel, ModuleSettings.ShowTooltips);
             RenderSetting(parentPanel, ModuleSettings.CopyWaypointOnClick);
+            RenderSetting(parentPanel, ModuleSettings.ShowContextMenuOnClick);
             RenderEmptyLine(parentPanel);
             RenderSetting(parentPanel, ModuleSettings.EventHeight);
             RenderSetting(parentPanel, ModuleSettings.EventFontSize);
             RenderSetting(parentPanel, ModuleSettings.EventTimeSpan);
             RenderSetting(parentPanel, ModuleSettings.DrawEventBorder);
             RenderSetting(parentPanel, ModuleSettings.Opacity);
+            RenderColorSetting(parentPanel, ModuleSettings.TextColor);
+            RenderEmptyLine(parentPanel);
+            RenderSetting(parentPanel, ModuleSettings.UseFiller);
+            RenderSetting(parentPanel, ModuleSettings.UseFillerEventNames);
+            RenderColorSetting(parentPanel, ModuleSettings.FillerTextColor);
+            RenderEmptyLine(parentPanel);
+            RenderSetting(parentPanel, ModuleSettings.BackgroundColorOpacity);
+            RenderColorSetting(parentPanel, ModuleSettings.BackgroundColor);
             RenderEmptyLine(parentPanel);
             RenderSetting(parentPanel, ModuleSettings.LocationX);
             RenderSetting(parentPanel, ModuleSettings.LocationY);
             RenderSetting(parentPanel, ModuleSettings.Width);
             RenderSetting(parentPanel, ModuleSettings.Height);
             RenderSetting(parentPanel, ModuleSettings.SnapHeight);
-            RenderEmptyLine(parentPanel);
-            RenderSetting(parentPanel, ModuleSettings.BackgroundColorOpacity);
-            RenderColorSetting(parentPanel, ModuleSettings.BackgroundColor);
         }
 
         private void RenderEmptyLine(Panel parent)
@@ -108,6 +161,25 @@
                 }
             }
         }
+
+        private void RenderButton(Panel parent,string text, Action action)
+        {
+                var settingContainer = new ViewContainer()
+                {
+                    WidthSizingMode = SizingMode.Fill,
+                    HeightSizingMode = SizingMode.AutoSize,
+                    Parent = parent
+                };
+
+            StandardButton button = new StandardButton()
+            {
+                Parent = settingContainer,
+                Text = text
+            };
+
+            button.Click += (s, e) => action.Invoke();
+        }
+
         private void RenderColorSetting(Panel parent, SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> setting)
         {
             var settingContainer = new ViewContainer()
@@ -130,33 +202,36 @@
                 Color = setting.Value
             };
 
-
-            var colorPicker = new ColorPicker()
-            {
-                Location = new Point(colorBox.Right + 30, 0),
-                Size = new Point(parent.Width - colorBox.Right - 60, 850),
-                Parent = settingContainer,
-                CanScroll = true,
-                Visible = false,
-                AssociatedColorBox = colorBox
-            };
-
-            colorPicker.SelectedColorChanged += (s, e) =>
-            {
-                setting.Value = colorPicker.SelectedColor;
-                colorPicker.Visible = false;
-            };
-
             colorBox.LeftMouseButtonPressed += (s, e) =>
             {
-                colorPicker.Visible = !colorPicker.Visible;
+                ColorPickerPanel.Parent = parent.Parent;
+                ColorPickerPanel.Size = new Point(parent.Width -  30, 850);
+                ColorPicker.Size = new Point(ColorPickerPanel.Size.X - 20, ColorPickerPanel.Size.Y - 20);
+
+                // Hack to get lineup right
+                Gw2Sharp.WebApi.V2.Models.Color tempColor = new Gw2Sharp.WebApi.V2.Models.Color()
+                {
+                    Id = int.MaxValue,
+                    Name = "temp"
+                };
+
+                ColorPicker.RecalculateLayout();
+                ColorPicker.Colors.Add(tempColor);
+                ColorPicker.Colors.Remove(tempColor);
+
+
+                ColorPickerPanel.Visible = !ColorPickerPanel.Visible;
+                SelectedColorSetting = setting.EntryKey;
             };
 
-            foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+            ColorPicker.SelectedColorChanged += (sender, eArgs) =>
             {
-                colorPicker.Colors.Add(color);
-            }
+                if (SelectedColorSetting != setting.EntryKey) return;
 
+                setting.Value = ColorPicker.SelectedColor;
+                ColorPickerPanel.Visible = false;
+                colorBox.Color = ColorPicker.SelectedColor;
+            };
         }
     }
 }

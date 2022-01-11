@@ -42,6 +42,8 @@
             {
                 Width = buildPanel.Width,
                 Height = buildPanel.Height,
+                HeightSizingMode = SizingMode.Fill,
+                WidthSizingMode = SizingMode.Fill,
                 FlowDirection = ControlFlowDirection.TopToBottom,
                 Top = 0,
                 CanScroll = true,
@@ -57,7 +59,7 @@
             eventCategoriesPanel.CanScroll = true;
             eventCategoriesPanel.ShowBorder = true;
             eventCategoriesPanel.Size = Panel.MenuStandard.Size - new Point(0, Panel.MenuStandard.ControlOffset.Y);
-            eventCategoriesPanel.Location = Panel.MenuStandard.PanelOffset;
+            eventCategoriesPanel.Location = new Point(0, contentRegion.Y);
             Menu eventCategories = new Menu();
             eventCategories.Parent = eventCategoriesPanel;
             eventCategories.Size = eventCategoriesPanel.ContentRegion.Size;
@@ -160,6 +162,8 @@
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
+                    if (e.Filler) continue; 
+                    
                     IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.Name);
 
                     SettingEntry<bool> setting = settings.First();
