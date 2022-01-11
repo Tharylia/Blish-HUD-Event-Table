@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -99,11 +99,8 @@
             {
                 switch (eventArgs.Name)
                 {
-                    case nameof(this.ModuleSettings.LocationX):
-                    case nameof(this.ModuleSettings.LocationY):
                     case nameof(this.ModuleSettings.Width):
                     case nameof(this.ModuleSettings.Height):
-                        this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
                         this.Container.UpdateSize(this.ModuleSettings.Width.Value, this.ModuleSettings.Height.Value);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
@@ -206,6 +203,7 @@
         {
             this.CheckMumble();
             //this.Container.Update(gameTime);
+            this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
 
             Task.Run(async () =>
             {
