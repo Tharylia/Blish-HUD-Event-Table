@@ -28,6 +28,7 @@
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
         public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
+        public SettingEntry<BuildDirection> BuildDirection { get; private set; }
         public SettingEntry<float> Opacity { get; set; }
         #endregion
 
@@ -129,6 +130,9 @@
 
             this.ShowContextMenuOnClick = this.GlobalSettings.DefineSetting(nameof(this.ShowContextMenuOnClick), true, () => "Show Context Menu", () => "Whether the event table should show a context menu if an event has been right clicked.");
             this.ShowContextMenuOnClick.SettingChanged += this.SettingChanged;
+
+            this.BuildDirection = this.GlobalSettings.DefineSetting(nameof(this.BuildDirection), Models.BuildDirection.Top, () => "Build Direction", () => "Whether the event table should be build from the top or the bottom.");
+            this.BuildDirection.SettingChanged += this.SettingChanged;
 
             this.Opacity = this.GlobalSettings.DefineSetting(nameof(this.Opacity), 1f, () => "Opacity", () => "Defines the opacity of the event table.");
             this.Opacity.SetRange(0.1f, 1f);

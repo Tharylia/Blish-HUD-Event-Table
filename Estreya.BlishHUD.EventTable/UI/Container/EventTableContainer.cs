@@ -222,6 +222,32 @@
 
         }
 
+        private int GetMaxYPosition()
+        {
+            IEnumerable<EventCategory> eventCategories = this.EventCategories;
+            int y = 0;
+
+            foreach (EventCategory eventCategory in eventCategories)
+            {
+                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, EventTableModule.ModuleInstance.DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
+
+                var groups = eventStarts.GroupBy(ev => ev.Value);
+
+                bool anyEventDrawn = false;
+
+                foreach (var group in groups)
+                {
+                    var starts = group.Select(g => g.Key).ToList();
+                    anyEventDrawn = starts.Count > 0;
+                }
+
+                if (anyEventDrawn)
+                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventHeight, EventTableModule.ModuleInstance.Debug);
+            }
+
+            return y;
+        }
+
         public new void Show()
         {
             if (this.Visible && this.CurrentVisibilityAnimation == null) return;
@@ -260,7 +286,17 @@
         {
             x = (int)Math.Ceiling(x * GameService.Graphics.UIScaleMultiplier);
             y = (int)Math.Ceiling(y * GameService.Graphics.UIScaleMultiplier);
-            this.Location = new Point(x, y);
+
+            bool buildFromBottom = EventTableModule.ModuleInstance.ModuleSettings.BuildDirection.Value == BuildDirection.Bottom;
+
+            if (buildFromBottom)
+            {
+                this.Location = new Point(x, y - GetMaxYPosition());
+            }
+            else
+            {
+                this.Location = new Point(x, y);
+            }
         }
 
         public void UpdateSize(int width, int height, bool overrideHeight = false)
