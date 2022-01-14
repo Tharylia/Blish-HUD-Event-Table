@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -222,32 +222,6 @@
 
         }
 
-        private int GetMaxYPosition()
-        {
-            IEnumerable<EventCategory> eventCategories = this.EventCategories;
-            int y = 0;
-
-            foreach (EventCategory eventCategory in eventCategories)
-            {
-                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, EventTableModule.ModuleInstance.DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
-
-                var groups = eventStarts.GroupBy(ev => ev.Value);
-
-                bool anyEventDrawn = false;
-
-                foreach (var group in groups)
-                {
-                    var starts = group.Select(g => g.Key).ToList();
-                    anyEventDrawn = starts.Count > 0;
-                }
-
-                if (anyEventDrawn)
-                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventHeight, EventTableModule.ModuleInstance.Debug);
-            }
-
-            return y;
-        }
-
         public new void Show()
         {
             if (this.Visible && this.CurrentVisibilityAnimation == null) return;
@@ -291,7 +265,7 @@
 
             if (buildFromBottom)
             {
-                this.Location = new Point(x, y - GetMaxYPosition());
+                this.Location = new Point(x, y - this.Height);
             }
             else
             {
