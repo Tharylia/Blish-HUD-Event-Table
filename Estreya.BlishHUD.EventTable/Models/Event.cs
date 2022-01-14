@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -190,7 +190,7 @@
 
                 if (!this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
                 {
-                    if (EventTableModule.ModuleInstance.CompletedWorldbosses.Contains(this.APICode))
+                    if (EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode))
                     {
                         this.DrawCrossOut(spriteBatch, control, baseTexture, eventTexturePosition, Microsoft.Xna.Framework.Color.Red);
                     }

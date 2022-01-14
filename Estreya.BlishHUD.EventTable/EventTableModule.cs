@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -25,8 +25,6 @@
     public class EventTableModule : Blish_HUD.Modules.Module
     {
         private static readonly Logger Logger = Logger.GetLogger<EventTableModule>();
-        private const double INTERVAL_UPDATE_WORLDBOSSES = 300010; // 5 minutes + 10ms
-        private TimeSpan TIME_SINCE_LAST_UPDATE_WORLDBOSSES = TimeSpan.FromMilliseconds(INTERVAL_UPDATE_WORLDBOSSES);
 
         internal static EventTableModule ModuleInstance;
 
@@ -62,8 +60,7 @@
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
 
         internal HiddenState HiddenState { get; private set; }
-
-        internal List<string> CompletedWorldbosses { get; private set; } = new List<string>();
+        internal WorldbossState WorldbossState { get; private set; }
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -78,15 +75,6 @@
 
         protected override void Initialize()
         {
-            Gw2ApiManager.SubtokenUpdated += this.Gw2ApiManager_SubtokenUpdated;
-        }
-
-        private void Gw2ApiManager_SubtokenUpdated(object sender, ValueEventArgs<IEnumerable<Gw2Sharp.WebApi.V2.Models.TokenPermission>> e)
-        {
-            Task.Run(async () =>
-            {
-                await this.UpdateCompletedWorldbosses(null);
-            });
         }
 
         protected override async Task LoadAsync()
@@ -135,48 +123,17 @@
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
             this.HiddenState = new HiddenState(eventsDirectory);
+            this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
 
             lock (this.States)
             {
                 this.States.Add(this.HiddenState);
+                this.States.Add(this.WorldbossState);
             }
 
             foreach (ManagedState state in this.States)
             {
                 await state.Start();
-            }
-        }
-
-        private async Task UpdateCompletedWorldbosses(GameTime gameTime)
-        {
-            if (gameTime != null)
-            {
-                TIME_SINCE_LAST_UPDATE_WORLDBOSSES += gameTime.ElapsedGameTime;
-            }
-            if (gameTime == null || TIME_SINCE_LAST_UPDATE_WORLDBOSSES.TotalMilliseconds >= INTERVAL_UPDATE_WORLDBOSSES)
-            {
-                try
-                {
-                    lock (this.CompletedWorldbosses)
-                    {
-                        this.CompletedWorldbosses.Clear();
-                    }
-
-                    if (this.Gw2ApiManager.HasPermissions(new[] { Gw2Sharp.WebApi.V2.Models.TokenPermission.Account, Gw2Sharp.WebApi.V2.Models.TokenPermission.Progression }))
-                    {
-                        Gw2Sharp.WebApi.V2.IApiV2ObjectList<string> bosses = await this.Gw2ApiManager.Gw2ApiClient.V2.Account.WorldBosses.GetAsync();
-                        lock (this.CompletedWorldbosses)
-                        {
-                            this.CompletedWorldbosses.AddRange(bosses);
-                        }
-
-                        TIME_SINCE_LAST_UPDATE_WORLDBOSSES = TimeSpan.Zero;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
             }
         }
 
@@ -240,10 +197,7 @@
             //this.Container.Update(gameTime);
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
 
-            Task.Run(async () =>
-            {
-                await UpdateCompletedWorldbosses(gameTime);
-            });
+            //UpdateCompletedWorldbosses(gameTime);
 
             foreach (ManagedState state in this.States)
             {

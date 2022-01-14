@@ -17,10 +17,28 @@
         private const string LINE_SPLIT = "<-->";
         private bool dirty;
 
+        private string BasePath { get; set; }
+
+        private string _path;
+
+        private string Path
+        {
+            get
+            {
+                if (this._path == null)
+                {
+                    this._path = System.IO.Path.Combine(this.BasePath, FILE_NAME);
+                }
+
+                return this._path;
+            }
+        }
+
         private Dictionary<string, DateTime> Instances { get; set; } = new Dictionary<string, DateTime>();
 
-        public HiddenState(string basePath) : base(basePath, FILE_NAME, 30000)
+        public HiddenState(string basePath) : base(30000)
         {
+            this.BasePath = basePath;
         }
 
         public override async Task Reload()
@@ -92,8 +110,9 @@
             }
         }
 
-        protected override async Task Initialize()
+        protected override  Task Initialize()
         {
+            return Task.CompletedTask;
         }
 
         protected override async Task Load()
@@ -136,9 +155,9 @@
             dirty = false;
         }
 
-        protected override async Task InternalUnload()
+        protected override Task InternalUnload()
         {
-            
+            return Task.CompletedTask;
         }
     }
 }

@@ -6,34 +6,15 @@
 
     internal abstract class ManagedState : IDisposable
     {
-        protected string BasePath { get; private set; }
-        protected string FileName { get; private set; }
         private int SaveInternal { get; set; }
 
         private TimeSpan TimeSinceSave { get; set; } = TimeSpan.Zero;
 
-        private string _path;
-
-        protected string Path
-        {
-            get
-            {
-                if (this._path == null)
-                {
-                    this._path = System.IO.Path.Combine(this.BasePath, this.FileName);
-                }
-
-                return this._path;
-            }
-        }
-
         public bool Running { get; private set; } = false;
 
 
-        protected ManagedState(string basePath, string fileName, int saveInterval = 60000)
+        protected ManagedState(int saveInterval = 60000)
         {
-            this.BasePath = basePath;
-            this.FileName = fileName;
             this.SaveInternal = saveInterval;
         }
 
