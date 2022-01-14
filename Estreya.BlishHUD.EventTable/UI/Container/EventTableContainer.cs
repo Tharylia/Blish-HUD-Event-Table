@@ -17,50 +17,8 @@
 
     public class EventTableContainer : Blish_HUD.Controls.Container
     {
-        private int EventHeight
-        {
-            get
-            {
-                return this.Settings.EventHeight.Value;
-            }
-        }
 
         private TimeSpan TimeSinceDraw { get; set; }
-
-        private TimeSpan _eventTimeSpan = TimeSpan.Zero;
-
-        private TimeSpan EventTimeSpan
-        {
-            get
-            {
-                if (this._eventTimeSpan == TimeSpan.Zero)
-                {
-                    this._eventTimeSpan = TimeSpan.FromMinutes(this.Settings.EventTimeSpan.Value);
-                }
-
-                return this._eventTimeSpan;
-            }
-        }
-
-        
-
-        private DateTime EventTimeMin
-        {
-            get
-            {
-                DateTime min = EventTableModule.ModuleInstance.DateTimeNow.Subtract(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
-                return min;
-            }
-        }
-
-        private DateTime EventTimeMax
-        {
-            get
-            {
-                DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
-                return max;
-            }
-        }
 
         private BitmapFont _font;
 
@@ -107,7 +65,7 @@
             {
                 int pixels = this.Size.X;
 
-                double pixelPerMinute = pixels / this.EventTimeSpan.TotalMinutes;
+                double pixelPerMinute = pixels / EventTableModule.ModuleInstance.EventTimeSpan.TotalMinutes;
 
                 return pixelPerMinute;
             }
@@ -116,16 +74,8 @@
         private IEnumerable<EventCategory> _eventCategories;
         private IEnumerable<EventCategory> EventCategories
         {
-            get
-            {
-                var categories = _eventCategories;
-
-                return categories;
-            }
-            set
-            {
-                this._eventCategories = value;
-            }
+            get => _eventCategories;
+            set => this._eventCategories = value;
         }
 
         private Tween CurrentVisibilityAnimation { get; set; }
@@ -141,6 +91,26 @@
             this.Settings.ModuleSettingsChanged += this.Settings_ModuleSettingsChanged;
             this.LeftMouseButtonPressed += this.EventTableContainer_Click;
             this.RightMouseButtonPressed += this.EventTableContainer_Click;
+            this.MouseMoved += this.EventTableContainer_MouseMoved;
+        }
+
+        private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
+        {
+            var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition,  e.IsDoubleClick, e.EventType);
+            foreach (EventCategory eventCategory in this.EventCategories)
+            {
+                foreach (Event ev in eventCategory.Events)
+                {
+                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    {
+                        ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
+                    }
+                    else
+                    {
+                        ev.HandleNonHover(sender, mouseEventArgs);
+                    }
+                }
+            }
         }
 
         private void Settings_ModuleSettingsChanged(object sender, ModuleSettings.ModuleSettingsChangedEventArgs e)
@@ -149,9 +119,6 @@
             {
                 case nameof(ModuleSettings.EventFontSize):
                     this._font = null;
-                    break;
-                case nameof(ModuleSettings.EventTimeSpan):
-                    this._eventTimeSpan = TimeSpan.Zero;
                     break;
             }
         }
@@ -162,7 +129,7 @@
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTimeMax, EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
                         ev.HandleClick(sender, e);
                         return;
@@ -193,7 +160,7 @@
 
             foreach (EventCategory eventCategory in eventCategories)
             {
-                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, EventTableModule.ModuleInstance.DateTimeNow, EventTimeMax, EventTimeMin, this.Settings.UseFiller.Value);
+                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.Settings.UseFiller.Value);
 
                 var groups = eventStarts.GroupBy(ev => ev.Value);
 
@@ -203,16 +170,16 @@
                 {
                     var starts = group.Select(g => g.Key).ToList();
                     anyEventDrawn = starts.Count > 0;
-                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, this.EventHeight, EventTableModule.ModuleInstance.DateTimeNow, EventTimeMin, EventTimeMax, this.Font, starts);
+                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, this.Font, starts);
                 }
 
                 if (anyEventDrawn)
-                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventHeight, EventTableModule.ModuleInstance.Debug);
+                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
             }
 
             if (this.Settings.SnapHeight.Value)
             {
-                this.Size = new Point(bounds.Width, y + this.EventHeight);
+                this.Size = new Point(bounds.Width, y + EventTableModule.ModuleInstance.EventHeight);
             }
 
             this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
@@ -258,15 +225,20 @@
 
         public void UpdatePosition(int x, int y)
         {
-            x = (int)Math.Ceiling(x * GameService.Graphics.UIScaleMultiplier);
-            y = (int)Math.Ceiling(y * GameService.Graphics.UIScaleMultiplier);
-            this.Location = new Point(x, y);
+            bool buildFromBottom = EventTableModule.ModuleInstance.ModuleSettings.BuildDirection.Value == BuildDirection.Bottom;
+
+            if (buildFromBottom)
+            {
+                this.Location = new Point(x, y - this.Height);
+            }
+            else
+            {
+                this.Location = new Point(x, y);
+            }
         }
 
         public void UpdateSize(int width, int height, bool overrideHeight = false)
         {
-            width = (int)Math.Ceiling(width * GameService.Graphics.UIScaleMultiplier);
-            height = (int)Math.Ceiling(height * GameService.Graphics.UIScaleMultiplier);
             this.Size = new Point(width, this.Settings.SnapHeight.Value && !overrideHeight ? this.Size.Y : height);
         }
 
