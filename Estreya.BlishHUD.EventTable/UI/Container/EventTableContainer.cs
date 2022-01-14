@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -91,6 +91,26 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             this.Settings.ModuleSettingsChanged += this.Settings_ModuleSettingsChanged;
             this.LeftMouseButtonPressed += this.EventTableContainer_Click;
             this.RightMouseButtonPressed += this.EventTableContainer_Click;
+            this.MouseMoved += this.EventTableContainer_MouseMoved;
+        }
+
+        private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
+        {
+            var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition,  e.IsDoubleClick, e.EventType);
+            foreach (EventCategory eventCategory in this.EventCategories)
+            {
+                foreach (Event ev in eventCategory.Events)
+                {
+                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    {
+                        ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
+                    }
+                    else
+                    {
+                        ev.HandleNonHover(sender, mouseEventArgs);
+                    }
+                }
+            }
         }
 
         private void Settings_ModuleSettingsChanged(object sender, ModuleSettings.ModuleSettingsChangedEventArgs e)

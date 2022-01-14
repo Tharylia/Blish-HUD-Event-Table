@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -21,6 +21,8 @@ namespace Estreya.BlishHUD.EventTable.Models
     [Serializable]
     public class Event
     {
+        private static readonly Logger Logger = Logger.GetLogger<Event>();
+
         [JsonProperty("name")]
         public string Name { get; set; }
 
@@ -198,38 +200,32 @@ namespace Estreya.BlishHUD.EventTable.Models
                 #endregion
 
             }
-
-            this.DrawTooltip(control, bounds, allCategories, currentCategory, pixelPerMinute, eventHeight, now, min, max);
         }
 
-        public void DrawTooltip(Control control, Rectangle bounds, List<EventCategory> allCategories, EventCategory currentCategory, double pixelPerMinute, int eventHeight, DateTime now, DateTime min, DateTime max)
+        private void UpdateTooltip(string description)
         {
-            #region Draw Tooltip
+            _tooltip = new Tooltip(new UI.Views.TooltipView(this.Name, description, this.Icon));
+        }
 
-            if (EventTableModule.ModuleInstance.ModuleSettings.ShowTooltips.Value && !this.Filler && control.MouseOver)
+        private string GetTimeRemaining(DateTime now, DateTime max, DateTime min)
+        {
+            var startOccurences = this.GetStartOccurences(now, max, min);
+            var filteredStartOccurences = startOccurences.Where(so => so <= now && so.AddMinutes(this.Duration) > now);
+
+            if (filteredStartOccurences.Any())
             {
-                IEnumerable<IGrouping<string, Event>> groups = currentCategory.Events.GroupBy(ev => ev.Name);
-                IEnumerable<Event> eventFilter = groups.SelectMany(g => g.Select(innerG => innerG)).Where(ev => ev.GetStartOccurences(now, max, min).Count > 0);
-                IEnumerable<Event> events = currentCategory.ShowCombined ? eventFilter : currentCategory.Events;
-
-                if (!currentCategory.ShowCombined || events.Contains(this))
-                {
-                    bool isMouseOver = this.IsHovered(allCategories, currentCategory, now, max, min, bounds, control.RelativeMousePosition, pixelPerMinute, eventHeight, EventTableModule.ModuleInstance.Debug);
-
-                    if (isMouseOver && !this.Tooltip.Visible)
-                    {
-                        Debug.WriteLine($"Show Tooltip for Event: {this.Name}");
-                        this.Tooltip.Show(0, 0);
-                    }
-                    else if (!isMouseOver && this.Tooltip.Visible)
-                    {
-                        Debug.WriteLine($"Hide Tooltip for Event: {this.Name}");
-                        this.Tooltip.Hide();
-                    }
-                }
+                DateTime end = filteredStartOccurences.First().AddMinutes(this.Duration);
+                TimeSpan timeRemaining = end.Subtract(now);
+                string timeRemainingString = this.FormatTimeSpan(timeRemaining);
+                return timeRemainingString;
             }
 
-            #endregion
+            return null;
+        }
+
+        private string FormatTimeSpan(TimeSpan ts)
+        {
+            return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
         }
 
         private string GetLongestEventName(int maxSize, BitmapFont font)
@@ -335,9 +331,9 @@ namespace Estreya.BlishHUD.EventTable.Models
             List<DateTime> startOccurences = new List<DateTime>();
 
             if (this.IsDisabled())
-                {
-                    return startOccurences;
-                }
+            {
+                return startOccurences;
+            }
 
             DateTime zero = new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
@@ -501,6 +497,61 @@ namespace Estreya.BlishHUD.EventTable.Models
                     Point menuPosition = e.MousePosition + new Point(leftPos, topPos);
                     this.ContextMenuStrip.Show(menuPosition);
                 }
+            }
+        }
+
+        public void HandleHover(object sender, Input.MouseEventArgs e, double pixelPerMinute)
+        {
+            var occurences = this.GetStartOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin);
+            var hoveredOccurences = occurences.Where(eo =>
+            {
+                double xStart = this.GetXPosition(eo, EventTableModule.ModuleInstance.EventTimeMin, pixelPerMinute);
+                double xEnd = xStart + this.Duration * pixelPerMinute;
+                return e.Position.X > xStart && e.Position.X < xEnd;
+            });
+
+
+            if (!this.Tooltip.Visible)
+            {
+                Debug.WriteLine($"Show Tooltip for Event: {this.Name}{e.Position}");
+
+                string description = $"{this.Location}";
+
+                if (hoveredOccurences.Any())
+                {
+                    var hoveredOccurence = hoveredOccurences.First();
+                    bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
+                    bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
+                    bool isCurrent = !isPrev && !isNext;
+
+                    if (isPrev)
+                    {
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nFinished since: {FormatTimeSpan(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
+                    }
+                    else if (isNext)
+                    {
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nStarts in: {FormatTimeSpan(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                    }
+                    else if (isCurrent)
+                    {
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nRemaining: {FormatTimeSpan(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
+                    }
+                } else
+                {
+                    Logger.Error($"Can't find hovered event: {this.Name} - {string.Join(", ",occurences.Select(o => o.ToString()))}");
+                }
+
+                this.UpdateTooltip(description);
+                this.Tooltip.Show(0, 0);
+            }
+        }
+
+        public void HandleNonHover(object sender, Input.MouseEventArgs e)
+        {
+            if (this.Tooltip.Visible)
+            {
+                Debug.WriteLine($"Hide Tooltip for Event: {this.Name}{e.Position}");
+                this.Tooltip.Hide();
             }
         }
 
