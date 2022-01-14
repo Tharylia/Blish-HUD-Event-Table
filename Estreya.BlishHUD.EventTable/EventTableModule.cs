@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -110,11 +110,8 @@ namespace Estreya.BlishHUD.EventTable
         {
             using (StreamReader eventsReader = new StreamReader(this.ContentsManager.GetFileStream("events.json")))
             {
-                //string eventsJson = await eventsReader.ReadToEndAsync();
-
                 string json = await eventsReader.ReadToEndAsync();
-                this.EventCategories = await Task.Run(() => JsonConvert.DeserializeObject<List<EventCategory>>(json));
-
+                this.EventCategories = JsonConvert.DeserializeObject<List<EventCategory>>(json);
             }
 
             this.ModuleSettings.InitializeEventSettings(this.EventCategories);

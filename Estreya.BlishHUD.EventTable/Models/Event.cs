@@ -86,7 +86,7 @@ namespace Estreya.BlishHUD.EventTable.Models
 
                     ContextMenuStripItem copyWaypoint = new ContextMenuStripItem();
                     copyWaypoint.Text = "Copy Waypoint";
-                    copyWaypoint.Click += (s,e) => this.CopyWaypoint();
+                    copyWaypoint.Click += (s, e) => this.CopyWaypoint();
                     _contextMenuStrip.AddMenuItem(copyWaypoint);
 
                     ContextMenuStripItem openWiki = new ContextMenuStripItem();
@@ -334,7 +334,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             List<DateTime> startOccurences = new List<DateTime>();
 
-                if (this.isDisabled())
+            if (this.IsDisabled())
                 {
                     return startOccurences;
                 }
@@ -412,7 +412,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                 bool anyFromCategoryRendered = false;
                 foreach (Event e in category.Events)
                 {
-                    if (e.isDisabled())
+                    if (e.IsDisabled())
                     {
                         continue;
                     }
@@ -520,7 +520,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        public bool isDisabled()
+        public bool IsDisabled()
         {
             var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
             if (eventSetting.Any())

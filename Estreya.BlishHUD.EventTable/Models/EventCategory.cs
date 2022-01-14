@@ -25,7 +25,7 @@
         public List<KeyValuePair<DateTime, Event>> GetEventOccurences(List<SettingEntry<bool>> eventSettings, DateTime now, DateTime max, DateTime min, bool fillGaps)
         {
             //var activeEvents = this.Events.Where(e => eventSettings.Find(eventSetting => eventSetting.EntryKey == e.Name).Value).ToList();
-            var activeEvents = this.Events.Where(e => !e.isDisabled()).ToList();
+            var activeEvents = this.Events.Where(e => !e.IsDisabled()).ToList();
 
             List<KeyValuePair<DateTime, Event>> activeEventStarts = new List<KeyValuePair<DateTime, Event>>();
 
