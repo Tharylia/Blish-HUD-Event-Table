@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -155,11 +155,8 @@
         {
             this.LocationSettings = settings.AddSubCollection(LOCATION_SETTINGS);
 
-            var ratio = Math.Max(Screen.PrimaryScreen.WorkingArea.Width / SystemParameters.PrimaryScreenWidth,
-                        Screen.PrimaryScreen.WorkingArea.Height / SystemParameters.PrimaryScreenHeight);
-
-            var height = Screen.PrimaryScreen.WorkingArea.Height / ratio;
-            var width = Screen.PrimaryScreen.WorkingArea.Width /ratio;
+            var height = 1080;
+            var width = 1920;
 
             this.LocationX = this.LocationSettings.DefineSetting(nameof(this.LocationX), (int)(width * 0.1), () => "Location X", () => "Where the event table should be displayed on the X axis.");
             this.LocationX.SetRange(0, (int)width);// (int)(GameService.Graphics.Resolution.X * 0.8));

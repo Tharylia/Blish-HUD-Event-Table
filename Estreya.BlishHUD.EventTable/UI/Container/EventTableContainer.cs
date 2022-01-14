@@ -258,9 +258,6 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
         public void UpdatePosition(int x, int y)
         {
-            x = (int)Math.Ceiling(x * GameService.Graphics.UIScaleMultiplier);
-            y = (int)Math.Ceiling(y * GameService.Graphics.UIScaleMultiplier);
-
             bool buildFromBottom = EventTableModule.ModuleInstance.ModuleSettings.BuildDirection.Value == BuildDirection.Bottom;
 
             if (buildFromBottom)
@@ -275,8 +272,6 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
         public void UpdateSize(int width, int height, bool overrideHeight = false)
         {
-            width = (int)Math.Ceiling(width * GameService.Graphics.UIScaleMultiplier);
-            height = (int)Math.Ceiling(height * GameService.Graphics.UIScaleMultiplier);
             this.Size = new Point(width, this.Settings.SnapHeight.Value && !overrideHeight ? this.Size.Y : height);
         }
 

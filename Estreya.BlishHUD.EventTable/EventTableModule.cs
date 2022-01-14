@@ -194,8 +194,12 @@ namespace Estreya.BlishHUD.EventTable
         protected override void Update(GameTime gameTime)
         {
             this.CheckMumble();
-            //this.Container.Update(gameTime);
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
+
+            this.ModuleSettings.LocationX.SetRange(0, (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier));
+            this.ModuleSettings.LocationY.SetRange(0, (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier));
+            this.ModuleSettings.Width.SetRange(0, (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier));
+            this.ModuleSettings.Height.SetRange(0, (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier));
 
             //UpdateCompletedWorldbosses(gameTime);
 
