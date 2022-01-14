@@ -49,11 +49,40 @@ namespace Estreya.BlishHUD.EventTable
 
         internal bool Debug => this.ModuleSettings.DebugEnabled.Value;
 
-        internal DateTime DateTimeNow
+        internal int EventHeight => this.ModuleSettings?.EventHeight?.Value ?? 30;
+        internal DateTime DateTimeNow => DateTime.Now;
+
+
+        private TimeSpan _eventTimeSpan = TimeSpan.Zero;
+
+        internal TimeSpan EventTimeSpan
         {
             get
             {
-                return DateTime.Now;
+                if (this._eventTimeSpan == TimeSpan.Zero)
+                {
+                    this._eventTimeSpan = TimeSpan.FromMinutes(this.ModuleSettings.EventTimeSpan.Value);
+                }
+
+                return this._eventTimeSpan;
+            }
+        }
+
+        internal DateTime EventTimeMin
+        {
+            get
+            {
+                DateTime min = EventTableModule.ModuleInstance.DateTimeNow.Subtract(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
+                return min;
+            }
+        }
+
+        internal DateTime EventTimeMax
+        {
+            get
+            {
+                DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
+                return max;
             }
         }
 
@@ -109,13 +138,15 @@ namespace Estreya.BlishHUD.EventTable
                     case nameof(this.ModuleSettings.GlobalEnabled):
                         this.ToggleContainer(this.ModuleSettings.GlobalEnabled.Value);
                         break;
+                    case nameof(ModuleSettings.EventTimeSpan):
+                        this._eventTimeSpan = TimeSpan.Zero;
+                        break;
                     default:
                         break;
                 }
             };
 
             await InitializeStates();
-
         }
 
         private async Task InitializeStates()
