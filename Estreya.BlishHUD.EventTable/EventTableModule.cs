@@ -238,17 +238,31 @@ namespace Estreya.BlishHUD.EventTable
             this.CheckMumble();
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
 
-            this.ModuleSettings.LocationX.SetRange(0, (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier));
-            this.ModuleSettings.LocationY.SetRange(0, (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier));
-            this.ModuleSettings.Width.SetRange(0, (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier));
-            this.ModuleSettings.Height.SetRange(0, (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier));
-
-            //UpdateCompletedWorldbosses(gameTime);
+            this.CheckContainerSizeAndPosition();
 
             foreach (ManagedState state in this.States)
             {
                 state.Update(gameTime);
             }
+        }
+
+        private void CheckContainerSizeAndPosition()
+        {
+            bool buildFromBottom = this.ModuleSettings.BuildDirection.Value == BuildDirection.Bottom;
+            int maxResX = (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier);
+            int maxResY = (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier);
+
+            int minLocationX = 0;
+            int maxLocationX = maxResX - this.Container.Width;
+            int minLocationY = buildFromBottom ? this.Container.Height : 0;
+            int maxLocationY = buildFromBottom ? maxResY : maxResY - this.Container.Height;
+            int minWidth = 0;
+            int maxWidth = maxResX - this.ModuleSettings.LocationX.Value;
+
+            this.ModuleSettings.LocationX.SetRange(minLocationX, maxLocationX);
+            this.ModuleSettings.LocationY.SetRange(minLocationY, maxLocationY);
+            this.ModuleSettings.Width.SetRange(minWidth, maxWidth);
+
         }
 
         private void CheckMumble()
