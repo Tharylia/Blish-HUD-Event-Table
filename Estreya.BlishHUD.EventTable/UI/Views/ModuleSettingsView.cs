@@ -125,8 +125,8 @@
             RenderSetting(parentPanel, ModuleSettings.LocationX);
             RenderSetting(parentPanel, ModuleSettings.LocationY);
             RenderSetting(parentPanel, ModuleSettings.Width);
-            RenderSetting(parentPanel, ModuleSettings.Height);
-            RenderSetting(parentPanel, ModuleSettings.SnapHeight);
+            //RenderSetting(parentPanel, ModuleSettings.Height);
+            //RenderSetting(parentPanel, ModuleSettings.SnapHeight);
         }
 
         private void RenderEmptyLine(Panel parent)
@@ -161,6 +161,13 @@
                     subSettingsView.LockBounds = false;
                 }
             }
+
+#if DEBUG
+            setting.PropertyChanged += (s, e) =>
+            {
+                (settingView as View).Presenter.DoUpdateView();
+            };
+#endif
         }
 
         private void RenderButton(Panel parent,string text, Action action)

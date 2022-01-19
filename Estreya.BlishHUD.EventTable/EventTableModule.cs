@@ -61,7 +61,21 @@
             {
                 if (this._eventTimeSpan == TimeSpan.Zero)
                 {
-                    this._eventTimeSpan = TimeSpan.FromMinutes(this.ModuleSettings.EventTimeSpan.Value);
+                    if (double.TryParse(this.ModuleSettings.EventTimeSpan.Value, out double timespan))
+                    {
+                        if (timespan > 1440)
+                        {
+                            timespan = 1440;
+                            Logger.Warn($"Event Timespan over 1440. Cap at 1440 for performance reasons.");
+                        }
+
+                        this._eventTimeSpan = TimeSpan.FromMinutes(timespan);
+                    }
+                    else
+                    {
+                        Logger.Error($"Event Timespan '{this.ModuleSettings.EventTimeSpan.Value}' no real number, default to 120");
+                        this._eventTimeSpan = TimeSpan.FromMinutes(120);
+                    }
                 }
 
                 return this._eventTimeSpan;
@@ -129,8 +143,8 @@
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                    case nameof(this.ModuleSettings.Height):
-                        this.Container.UpdateSize(this.ModuleSettings.Width.Value, this.ModuleSettings.Height.Value);
+                    //case nameof(this.ModuleSettings.Height):
+                        this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
                         this.ToggleContainer(this.ModuleSettings.GlobalEnabled.Value);
@@ -192,7 +206,7 @@
             base.OnModuleLoaded(e);
 
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
-            this.Container.UpdateSize(this.ModuleSettings.Width.Value, this.ModuleSettings.Height.Value);
+            this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
             this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents));
 
@@ -224,16 +238,69 @@
             this.CheckMumble();
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
 
-            this.ModuleSettings.LocationX.SetRange(0, (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier));
-            this.ModuleSettings.LocationY.SetRange(0, (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier));
-            this.ModuleSettings.Width.SetRange(0, (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier));
-            this.ModuleSettings.Height.SetRange(0, (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier));
-
-            //UpdateCompletedWorldbosses(gameTime);
+            this.CheckContainerSizeAndPosition();
 
             foreach (ManagedState state in this.States)
             {
                 state.Update(gameTime);
+            }
+        }
+
+        private void CheckContainerSizeAndPosition()
+        {
+            bool buildFromBottom = this.ModuleSettings.BuildDirection.Value == BuildDirection.Bottom;
+            int maxResX = (int)(GameService.Graphics.Resolution.X / GameService.Graphics.UIScaleMultiplier);
+            int maxResY = (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier);
+
+            int minLocationX = 0;
+            int maxLocationX = maxResX - this.Container.Width;
+            int minLocationY = buildFromBottom ? this.Container.Height : 0;
+            int maxLocationY = buildFromBottom ? maxResY : maxResY - this.Container.Height;
+            int minWidth = 0;
+            int maxWidth = maxResX - this.ModuleSettings.LocationX.Value;
+
+            this.ModuleSettings.LocationX.SetRange(minLocationX, maxLocationX);
+            this.ModuleSettings.LocationY.SetRange(minLocationY, maxLocationY);
+            this.ModuleSettings.Width.SetRange(minWidth, maxWidth);
+
+#if !DEBUG
+            return;
+#endif
+
+            if (this.ModuleSettings.LocationX.Value < minLocationX)
+            {
+                Logger.Debug($"LocationX unter min, set to: {minLocationX}");
+                this.ModuleSettings.LocationX.Value = minLocationX;
+            }
+
+            if (this.ModuleSettings.LocationX.Value > maxLocationX)
+            {
+                Logger.Debug($"LocationX over max, set to: {maxLocationX}");
+                this.ModuleSettings.LocationX.Value = maxLocationX;
+            }
+
+            if (this.ModuleSettings.LocationY.Value < minLocationY)
+            {
+                Logger.Debug($"LocationY unter min, set to: {minLocationY}");
+                this.ModuleSettings.LocationY.Value = minLocationY;
+            }
+
+            if (this.ModuleSettings.LocationY.Value > maxLocationY)
+            {
+                Logger.Debug($"LocationY over max, set to: {maxLocationY}");
+                this.ModuleSettings.LocationY.Value = maxLocationY;
+            }
+
+            if (this.ModuleSettings.Width.Value < minWidth)
+            {
+                Logger.Debug($"Width under min, set to: {minWidth}");
+                this.ModuleSettings.Width.Value = minWidth;
+            }
+
+            if (this.ModuleSettings.Width.Value > maxWidth)
+            {
+                Logger.Debug($"Width over max, set to: {maxWidth}");
+                this.ModuleSettings.Width.Value = maxWidth;
             }
         }
 

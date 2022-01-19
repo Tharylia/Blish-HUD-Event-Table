@@ -37,8 +37,8 @@
         public SettingCollection LocationSettings { get; private set; }
         public SettingEntry<int> LocationX { get; private set; }
         public SettingEntry<int> LocationY { get; private set; }
-        public SettingEntry<int> Height { get; private set; }
-        public SettingEntry<bool> SnapHeight { get; private set; }
+        //public SettingEntry<int> Height { get; private set; }
+        //public SettingEntry<bool> SnapHeight { get; private set; }
         public SettingEntry<int> Width { get; private set; }
         #endregion
 
@@ -46,7 +46,7 @@
         private const string EVENT_SETTINGS = "event-table-event-settings";
         private const string EVENT_LIST_SETTINGS = "event-table-event-list-settings";
         public SettingCollection EventSettings { get; private set; }
-        public SettingEntry<int> EventTimeSpan { get; private set; } // Is listed in global
+        public SettingEntry<string> EventTimeSpan { get; private set; } // Is listed in global
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
         public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
@@ -105,8 +105,8 @@
             this.BackgroundColorOpacity.SetRange(0.0f, 1f);
             this.BackgroundColorOpacity.SettingChanged += this.SettingChanged;
 
-            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), 120, () => "Event Timespan", () => "The timespan the event table should cover.");
-            this.EventTimeSpan.SetRange(30, 60 * 5);
+            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => "Event Timespan", () => "The timespan the event table should cover.");
+            //this.EventTimeSpan.SetRange(30, 60 * 5);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
 
             this.EventHeight = this.GlobalSettings.DefineSetting(nameof(this.EventHeight), 20, () => "Event Height", () => "Defines the height of a single event row.");
@@ -166,17 +166,19 @@
             this.LocationY.SetRange(0, (int)height);// (int)(GameService.Graphics.Resolution.Y * 0.8));
             this.LocationY.SettingChanged += this.SettingChanged;
 
-            this.Height = this.LocationSettings.DefineSetting(nameof(this.Height), (int)(height * 0.2), () => "Height", () => "The height of the event table.");
-            this.Height.SetRange(0, (int)height);// GameService.Graphics.Resolution.Y);
-            this.Height.SetDisabled(true);
-            this.Height.SettingChanged += this.SettingChanged;
+            //this.Height = this.LocationSettings.DefineSetting(nameof(this.Height), (int)(height * 0.2), () => "Height", () => "The height of the event table.");
+            //this.Height.SetRange(0, (int)height);// GameService.Graphics.Resolution.Y);
+            //this.Height.SetDisabled(true);
+            //this.Height.SettingChanged += this.SettingChanged;
 
+            /*
             this.SnapHeight = this.LocationSettings.DefineSetting(nameof(this.SnapHeight), true, () => "Snap Height", () => "Whether the event table should auto resize height to content.");
             this.SnapHeight.SettingChanged += (s, e) =>
             {
                 this.Height.SetDisabled(e.NewValue);
                 this.SettingChanged(s, e);
             };
+            */
 
             this.Width = this.LocationSettings.DefineSetting(nameof(this.Width), (int)(width * 0.5), () => "Width", () => "The width of the event table.");
             this.Width.SetRange(0, (int)width);// GameService.Graphics.Resolution.X);
