@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -129,8 +129,8 @@
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                    case nameof(this.ModuleSettings.Height):
-                        this.Container.UpdateSize(this.ModuleSettings.Width.Value, this.ModuleSettings.Height.Value);
+                    //case nameof(this.ModuleSettings.Height):
+                        this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
                         this.ToggleContainer(this.ModuleSettings.GlobalEnabled.Value);
@@ -192,7 +192,7 @@
             base.OnModuleLoaded(e);
 
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
-            this.Container.UpdateSize(this.ModuleSettings.Width.Value, this.ModuleSettings.Height.Value);
+            this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
             this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents));
 

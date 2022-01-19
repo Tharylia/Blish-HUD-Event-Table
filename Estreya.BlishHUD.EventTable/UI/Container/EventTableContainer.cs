@@ -177,10 +177,10 @@
                     y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
             }
 
-            if (this.Settings.SnapHeight.Value)
-            {
+            //if (this.Settings.SnapHeight.Value)
+            //{
                 this.Size = new Point(bounds.Width, y + EventTableModule.ModuleInstance.EventHeight);
-            }
+            //}
 
             this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
 
@@ -239,7 +239,12 @@
 
         public void UpdateSize(int width, int height, bool overrideHeight = false)
         {
-            this.Size = new Point(width, this.Settings.SnapHeight.Value && !overrideHeight ? this.Size.Y : height);
+            if (height == -1)
+            {
+                height = this.Size.Y;
+            }
+
+            this.Size = new Point(width, /*this.Settings.SnapHeight.Value && */!overrideHeight ? this.Size.Y : height);
         }
 
         public override void UpdateContainer(GameTime gameTime)
