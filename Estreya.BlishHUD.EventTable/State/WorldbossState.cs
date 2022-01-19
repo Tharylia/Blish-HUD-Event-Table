@@ -2,6 +2,7 @@
 {
     using Blish_HUD;
     using Blish_HUD.Modules.Managers;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using System;
     using System.Collections.Generic;
@@ -14,7 +15,7 @@
         private static readonly Logger Logger = Logger.GetLogger<WorldbossState>();
         private Gw2ApiManager ApiManager { get; set; }
         private TimeSpan updateInterval = TimeSpan.FromMinutes(5).Add(TimeSpan.FromMilliseconds(100));
-        private TimeSpan timeSinceUpdate = TimeSpan.Zero;
+        private double timeSinceUpdate = 0;
         private List<string> completedWorldbosses = new List<string>();
 
         public WorldbossState(Gw2ApiManager apiManager)
@@ -40,35 +41,25 @@
 
         private async Task UpdateCompletedWorldbosses(GameTime gameTime)
         {
-            if (gameTime != null)
+            try
             {
-                timeSinceUpdate += gameTime.ElapsedGameTime;
-            }
-
-            if (gameTime == null || timeSinceUpdate >= updateInterval)
-            {
-                try
+                lock (this.completedWorldbosses)
                 {
+                    this.completedWorldbosses.Clear();
+                }
+
+                if (this.ApiManager.HasPermissions(new[] { Gw2Sharp.WebApi.V2.Models.TokenPermission.Account, Gw2Sharp.WebApi.V2.Models.TokenPermission.Progression }))
+                {
+                    Gw2Sharp.WebApi.V2.IApiV2ObjectList<string> bosses = await this.ApiManager.Gw2ApiClient.V2.Account.WorldBosses.GetAsync();
                     lock (this.completedWorldbosses)
                     {
-                        this.completedWorldbosses.Clear();
-                    }
-
-                    if (this.ApiManager.HasPermissions(new[] { Gw2Sharp.WebApi.V2.Models.TokenPermission.Account, Gw2Sharp.WebApi.V2.Models.TokenPermission.Progression }))
-                    {
-                        Gw2Sharp.WebApi.V2.IApiV2ObjectList<string> bosses = await this.ApiManager.Gw2ApiClient.V2.Account.WorldBosses.GetAsync();
-                        lock (this.completedWorldbosses)
-                        {
-                            this.completedWorldbosses.AddRange(bosses);
-                        }
-
-                        timeSinceUpdate = TimeSpan.Zero;
+                        this.completedWorldbosses.AddRange(bosses);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Logger.Error($"Error updating completed worldbosses: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error updating completed worldbosses: {ex.Message}");
             }
         }
 
@@ -89,7 +80,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            this.UpdateCompletedWorldbosses(gameTime).Wait();
+            UpdateCadenceUtil.UpdateAsyncWithCadence(UpdateCompletedWorldbosses, gameTime, updateInterval.TotalMilliseconds, ref timeSinceUpdate);
         }
 
         protected override async Task Load()
