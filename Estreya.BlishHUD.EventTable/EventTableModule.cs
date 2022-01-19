@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -263,6 +263,45 @@ namespace Estreya.BlishHUD.EventTable
             this.ModuleSettings.LocationY.SetRange(minLocationY, maxLocationY);
             this.ModuleSettings.Width.SetRange(minWidth, maxWidth);
 
+#if !DEBUG
+            return;
+#endif
+
+            if (this.ModuleSettings.LocationX.Value < minLocationX)
+            {
+                Logger.Debug($"LocationX unter min, set to: {minLocationX}");
+                this.ModuleSettings.LocationX.Value = minLocationX;
+            }
+
+            if (this.ModuleSettings.LocationX.Value > maxLocationX)
+            {
+                Logger.Debug($"LocationX over max, set to: {maxLocationX}");
+                this.ModuleSettings.LocationX.Value = maxLocationX;
+            }
+
+            if (this.ModuleSettings.LocationY.Value < minLocationY)
+            {
+                Logger.Debug($"LocationY unter min, set to: {minLocationY}");
+                this.ModuleSettings.LocationY.Value = minLocationY;
+            }
+
+            if (this.ModuleSettings.LocationY.Value > maxLocationY)
+            {
+                Logger.Debug($"LocationY over max, set to: {maxLocationY}");
+                this.ModuleSettings.LocationY.Value = maxLocationY;
+            }
+
+            if (this.ModuleSettings.Width.Value < minWidth)
+            {
+                Logger.Debug($"Width under min, set to: {minWidth}");
+                this.ModuleSettings.Width.Value = minWidth;
+            }
+
+            if (this.ModuleSettings.Width.Value > maxWidth)
+            {
+                Logger.Debug($"Width over max, set to: {maxWidth}");
+                this.ModuleSettings.Width.Value = maxWidth;
+            }
         }
 
         private void CheckMumble()

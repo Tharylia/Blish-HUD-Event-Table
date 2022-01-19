@@ -162,11 +162,12 @@
                 }
             }
 
-
+#if DEBUG
             setting.PropertyChanged += (s, e) =>
             {
                 (settingView as View).Presenter.DoUpdateView();
             };
+#endif
         }
 
         private void RenderButton(Panel parent,string text, Action action)
