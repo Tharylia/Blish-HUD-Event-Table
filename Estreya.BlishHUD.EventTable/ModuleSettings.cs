@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -46,7 +46,7 @@ namespace Estreya.BlishHUD.EventTable
         private const string EVENT_SETTINGS = "event-table-event-settings";
         private const string EVENT_LIST_SETTINGS = "event-table-event-list-settings";
         public SettingCollection EventSettings { get; private set; }
-        public SettingEntry<int> EventTimeSpan { get; private set; } // Is listed in global
+        public SettingEntry<string> EventTimeSpan { get; private set; } // Is listed in global
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
         public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
@@ -105,8 +105,8 @@ namespace Estreya.BlishHUD.EventTable
             this.BackgroundColorOpacity.SetRange(0.0f, 1f);
             this.BackgroundColorOpacity.SettingChanged += this.SettingChanged;
 
-            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), 120, () => "Event Timespan", () => "The timespan the event table should cover.");
-            this.EventTimeSpan.SetRange(30, 60 * 5);
+            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => "Event Timespan", () => "The timespan the event table should cover.");
+            //this.EventTimeSpan.SetRange(30, 60 * 5);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
 
             this.EventHeight = this.GlobalSettings.DefineSetting(nameof(this.EventHeight), 20, () => "Event Height", () => "Defines the height of a single event row.");

@@ -61,7 +61,21 @@ namespace Estreya.BlishHUD.EventTable
             {
                 if (this._eventTimeSpan == TimeSpan.Zero)
                 {
-                    this._eventTimeSpan = TimeSpan.FromMinutes(this.ModuleSettings.EventTimeSpan.Value);
+                    if (double.TryParse(this.ModuleSettings.EventTimeSpan.Value, out double timespan))
+                    {
+                        if (timespan > 1440)
+                        {
+                            timespan = 1440;
+                            Logger.Warn($"Event Timespan over 1440. Cap at 1440 for performance reasons.");
+                        }
+
+                        this._eventTimeSpan = TimeSpan.FromMinutes(timespan);
+                    }
+                    else
+                    {
+                        Logger.Error($"Event Timespan '{this.ModuleSettings.EventTimeSpan.Value}' no real number, default to 120");
+                        this._eventTimeSpan = TimeSpan.FromMinutes(120);
+                    }
                 }
 
                 return this._eventTimeSpan;
