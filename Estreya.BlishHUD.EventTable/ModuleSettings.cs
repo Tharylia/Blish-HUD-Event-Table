@@ -5,6 +5,7 @@
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.UI.Container;
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -13,6 +14,7 @@
 
     public class ModuleSettings
     {
+        private static readonly Logger Logger = Logger.GetLogger<ModuleSettings>();
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
 
         public SettingCollection Settings { get; private set; }
@@ -47,6 +49,7 @@
         private const string EVENT_LIST_SETTINGS = "event-table-event-list-settings";
         public SettingCollection EventSettings { get; private set; }
         public SettingEntry<string> EventTimeSpan { get; private set; } // Is listed in global
+        public SettingEntry<int> EventHistorySplit { get; private set; } // Is listed in global
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
         public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
@@ -108,6 +111,10 @@
             this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => "Event Timespan", () => "The timespan the event table should cover.");
             //this.EventTimeSpan.SetRange(30, 60 * 5);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
+
+            this.EventHistorySplit = this.GlobalSettings.DefineSetting(nameof(this.EventHistorySplit), 50, () => "Event History Split", () => "Defines how much history the timespan should contain.");
+            this.EventHistorySplit.SetRange(0,75);
+            this.EventHistorySplit.SettingChanged += this.SettingChanged;
 
             this.EventHeight = this.GlobalSettings.DefineSetting(nameof(this.EventHeight), 20, () => "Event Height", () => "Defines the height of a single event row.");
             this.EventHeight.SetRange(5, 50);
@@ -188,6 +195,10 @@
         private void SettingChanged<T>(object sender, ValueChangedEventArgs<T> e)
         {
             SettingEntry<T> settingEntry = (SettingEntry<T>)sender;
+            var prevValue = JsonConvert.SerializeObject(e.PreviousValue);
+            var newValue = JsonConvert.SerializeObject(e.NewValue);
+            Logger.Debug($"Changed setting \"{settingEntry.EntryKey}\" from \"{prevValue}\" to \"{newValue}\"");
+
             ModuleSettingsChanged?.Invoke(this, new ModuleSettingsChangedEventArgs() { Name = settingEntry.EntryKey, Value = e.NewValue });
         }
 

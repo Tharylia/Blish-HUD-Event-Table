@@ -1,6 +1,7 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
+    using Blish_HUD.Content;
     using Blish_HUD.Controls;
     using Blish_HUD.Graphics.UI;
     using Blish_HUD.Modules;
@@ -12,6 +13,7 @@
     using Estreya.BlishHUD.EventTable.UI.Container;
     using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -82,11 +84,22 @@
             }
         }
 
+        internal float EventTimeSpanRatio
+        {
+            get
+            {
+                float ratio = 0.5f + ((this.ModuleSettings.EventHistorySplit.Value / 100f) - 0.5f);
+                return ratio;
+            }
+        }
+
         internal DateTime EventTimeMin
         {
             get
             {
-                DateTime min = EventTableModule.ModuleInstance.DateTimeNow.Subtract(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
+                var millis = this.EventTimeSpan.TotalMilliseconds * (this.EventTimeSpanRatio);
+                var timespan = TimeSpan.FromMilliseconds(millis);
+                DateTime min = EventTableModule.ModuleInstance.DateTimeNow.Subtract(timespan);
                 return min;
             }
         }
@@ -95,7 +108,9 @@
         {
             get
             {
-                DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
+                var millis = this.EventTimeSpan.TotalMilliseconds * (1f- this.EventTimeSpanRatio );
+                var timespan = TimeSpan.FromMilliseconds(millis);
+                DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(timespan);
                 return max;
             }
         }

@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -177,12 +177,10 @@
                     y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
             }
 
-            //if (this.Settings.SnapHeight.Value)
-            //{
                 this.Size = new Point(bounds.Width, y + EventTableModule.ModuleInstance.EventHeight);
-            //}
 
-            this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
+            float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
+            this.DrawLine(spriteBatch, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
 
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
@@ -263,7 +261,7 @@
             }
         }
 
-        private void DrawLine(SpriteBatch spriteBatch, Rectangle coords, Color color)
+        private void DrawLine(SpriteBatch spriteBatch, RectangleF coords, Color color)
         {
             this.InitializeBaseTexture(spriteBatch.GraphicsDevice);
 

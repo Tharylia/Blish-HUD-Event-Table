@@ -111,6 +111,7 @@
             RenderSetting(parentPanel, ModuleSettings.EventHeight);
             RenderSetting(parentPanel, ModuleSettings.EventFontSize);
             RenderSetting(parentPanel, ModuleSettings.EventTimeSpan);
+            RenderSetting(parentPanel, ModuleSettings.EventHistorySplit);
             RenderSetting(parentPanel, ModuleSettings.DrawEventBorder);
             RenderSetting(parentPanel, ModuleSettings.Opacity);
             RenderColorSetting(parentPanel, ModuleSettings.TextColor);
