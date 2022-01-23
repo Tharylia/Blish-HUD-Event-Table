@@ -98,7 +98,7 @@
             this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
             this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
 
-            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on missing Mumble Tick", () => "Whether the event table should hide when mumble ticks are missing.");
+            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on cutscenes", () => "Whether the event table should hide when cutscenes are played.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;
 
             this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Background Color", () => "Defines the background color.");
