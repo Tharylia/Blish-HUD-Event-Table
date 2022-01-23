@@ -17,6 +17,9 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Estreya.BlishHUD.EventTable.Utils;
+    using MonoGame.Extended;
+    using Estreya.BlishHUD.EventTable.Extensions;
 
     [Serializable]
     public class Event
@@ -115,9 +118,15 @@
         {
             foreach (var eventStart in startOccurences)
             {
-                double width = this.GetWidth(eventStart, min, bounds, pixelPerMinute);
+                float width = (float)this.GetWidth(eventStart, min, bounds, pixelPerMinute);
+                if (width <= 0)
+                {
+                    // Why would it be negativ anyway?
+                    continue;
+                }
+
                 int y = this.GetYPosition(allCategories, currentCategory, eventHeight, EventTableModule.ModuleInstance.Debug);
-                double x = this.GetXPosition(eventStart, min, pixelPerMinute);
+                float x = (float)this.GetXPosition(eventStart, min, pixelPerMinute);
                 x = Math.Max(x, 0);
 
                 #region Draw Event Rectangle
@@ -131,7 +140,7 @@
                 }
 
 
-                Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(width), eventHeight);
+                RectangleF eventTexturePosition = new RectangleF(x, y, width, eventHeight);
                 bool drawBorder = !this.Filler && EventTableModule.ModuleInstance.ModuleSettings.DrawEventBorder.Value;
 
                 this.DrawRectangle(spriteBatch, control, baseTexture, eventTexturePosition, color * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Microsoft.Xna.Framework.Color.Black);
@@ -150,12 +159,12 @@
 
                 #region Draw Event Name
 
-                Rectangle eventTextPosition = Rectangle.Empty;
+                RectangleF eventTextPosition = Rectangle.Empty;
                 if (!string.IsNullOrWhiteSpace(this.Name) && (!this.Filler || (this.Filler && EventTableModule.ModuleInstance.ModuleSettings.UseFillerEventNames.Value)))
                 {
                     string eventName = this.GetLongestEventName(eventTexturePosition.Width, font);
-                    eventTextPosition = new Rectangle(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, (int)Math.Floor(this.MeasureStringWidth(eventName, font)), eventTexturePosition.Height - 10);
-
+                    float eventTextWidth = this.MeasureStringWidth(eventName, font);
+                    eventTextPosition = new RectangleF(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, eventTextWidth, eventTexturePosition.Height - 10);
 
                     spriteBatch.DrawStringOnCtrl(control, eventName, font, eventTextPosition, textColor);
                 }
@@ -169,15 +178,15 @@
                 {
                     DateTime end = eventStart.AddMinutes(this.Duration);
                     TimeSpan timeRemaining = end.Subtract(now);
-                    string timeRemainingString = timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
-                    int timeRemainingWidth = (int)Math.Ceiling(this.MeasureStringWidth(timeRemainingString, font));
-                    int timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
+                    string timeRemainingString = FormatTimeSpan(timeRemaining);// timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
+                    float timeRemainingWidth = this.MeasureStringWidth(timeRemainingString, font);
+                    float timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
                     if (timeRemainingX < eventTextPosition.X + eventTextPosition.Width)
                     {
                         timeRemainingX = eventTextPosition.X + eventTextPosition.Width + 10;
                     }
 
-                    Rectangle eventTimeRemainingPosition = new Rectangle(timeRemainingX, eventTexturePosition.Y + 5, timeRemainingWidth, eventTexturePosition.Height - 10);
+                    RectangleF eventTimeRemainingPosition = new RectangleF(timeRemainingX, eventTexturePosition.Y + 5, timeRemainingWidth, eventTexturePosition.Height - 10);
 
                     if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
                     {
@@ -228,7 +237,7 @@
             return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
         }
 
-        private string GetLongestEventName(int maxSize, BitmapFont font)
+        private string GetLongestEventName(float maxSize, BitmapFont font)
         {
             float size = this.MeasureStringWidth(this.Name, font);
 
@@ -261,9 +270,11 @@
             return font.MeasureString(text).Width + 10; // TODO: Why is +10 needed?
         }
 
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
+        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
         {
             spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+
+            //spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
         }
 
         private void DrawLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
@@ -271,35 +282,39 @@
             spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
         }
 
-        private void DrawCrossOut(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
+        private void DrawCrossOut(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
         {
-            Point topLeft = new Point(coords.Left, coords.Top);
-            Point topRight = new Point(coords.Right, coords.Top);
-            Point bottomLeft = new Point(coords.Left, coords.Bottom);
-            Point bottomRight = new Point(coords.Right, coords.Bottom);
+            Point2 topLeft = new Point2(coords.Left, coords.Top);
+            Point2 topRight = new Point2(coords.Right, coords.Top);
+            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom);
+            Point2 bottomRight = new Point2(coords.Right, coords.Bottom);
 
             this.DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
             this.DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);
         }
 
-        private void DrawAngledLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point start, Point end, Color color)
+        private void DrawAngledLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point2 start, Point2 end, Color color)
         {
-            int length = (int)Math.Floor(Helpers.MathHelper.CalculeDistance(start, end));
-            Rectangle lineRectangle = new Rectangle(start.X, start.Y, length, 1);
-            float angle = (float)Helpers.MathHelper.CalculeAngle(start, end);
-            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, null, color, angle, new Vector2(0f, 0f));
+            float length = Helpers.MathHelper.CalculeDistance(start, end);
+            RectangleF lineRectangle = new RectangleF(start.X, start.Y, length, 1);
+            float angle = Helpers.MathHelper.CalculeAngle(start, end);
+            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, color, angle);
         }
 
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color, int borderSize, Color borderColor)
+        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color, int borderSize, Color borderColor)
         {
             this.DrawRectangle(spriteBatch, control, baseTexture, coords, color);
 
             if (borderSize > 0 && borderColor != Microsoft.Xna.Framework.Color.Transparent)
             {
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
             }
         }
 
