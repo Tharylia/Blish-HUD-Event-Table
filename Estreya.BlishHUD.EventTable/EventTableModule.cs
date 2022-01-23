@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -234,10 +234,14 @@ namespace Estreya.BlishHUD.EventTable
                 Emblem = this.ContentsManager.GetRenderIcon(@"images\event_boss.png"),
                 Subtitle = "Example Subtitle",
                 SavesPosition = true,
+                ClipsBounds = true,
+                Padding = new Thickness(0, 0, 0, 0),
+                
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents), "Events"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetRenderIcon(@"155052"), () => new UI.Views.ModuleSettingsView(this.ModuleSettings), "Settings"));
 
             if (this.ModuleSettings.GlobalEnabled.Value)
             {
