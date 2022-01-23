@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "key": "dayNightCycle",
     "name": "Day-Night Cycle",
@@ -1293,7 +1293,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Champion_of_the_Ice_Dragon",
         "duration": 35,
         "icon": "4B6BDF0614656A310E5041F454AA0AE40B26B709/2248191",
-        "color": "#8079afff"
+        "color": "#8079afff",
+        "api": "drakkar"
       }
     ]
   }
