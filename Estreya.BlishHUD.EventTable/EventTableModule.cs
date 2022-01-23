@@ -225,8 +225,9 @@ namespace Estreya.BlishHUD.EventTable
 
             this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents));
 
-            Rectangle settingsWindowSize = new Rectangle(24, 30, 1000, 630);
-            this.SettingsWindow = new TabbedWindow2(this.ContentsManager.GetRenderIcon(@"images\windowBackground.png"), settingsWindowSize, new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height))
+            Rectangle settingsWindowSize = new Rectangle(24, 30, 1500, 630);
+            Texture2D windowBackground = this.ContentsManager.GetRenderIcon(@"images\windowBackground.png");
+            this.SettingsWindow = new TabbedWindow2(windowBackground, settingsWindowSize, new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height))
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Title = "TabbedWindow",
@@ -236,7 +237,7 @@ namespace Estreya.BlishHUD.EventTable
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.SettingsWindow.Emblem, () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents), "Events"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents), "Events"));
 
             if (this.ModuleSettings.GlobalEnabled.Value)
             {

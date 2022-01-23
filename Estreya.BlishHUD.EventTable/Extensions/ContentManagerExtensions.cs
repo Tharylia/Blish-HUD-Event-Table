@@ -19,11 +19,16 @@
 
         public static AsyncTexture2D GetRenderIcon(this ContentsManager manager, string identifier)
         {
+            if (string.IsNullOrWhiteSpace(identifier))
+            {
+                return null;
+            }
+
             lock (IconCache)
             {
                 if (IconCache.ContainsKey(identifier)) return IconCache[identifier];
 
-                AsyncTexture2D icon = new AsyncTexture2D(Textures.TransparentPixel.Duplicate());
+                AsyncTexture2D icon = null;// new AsyncTexture2D(Textures.TransparentPixel.Duplicate());
                 if (!string.IsNullOrWhiteSpace(identifier))
                 {
                     if (identifier.Contains("/"))
@@ -38,7 +43,8 @@
                             texture = GameService.Content.GetTexture(identifier);
                         }
 
-                        icon.SwapTexture(texture);
+                        icon = new AsyncTexture2D(texture);
+                        //icon.SwapTexture(texture);
                     }
                 }
 
