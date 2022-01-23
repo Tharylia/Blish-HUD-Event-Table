@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -6,9 +6,11 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Glide;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using MonoGame.Extended;
     using MonoGame.Extended.BitmapFonts;
     using System;
     using System.Collections.Generic;
@@ -96,7 +98,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
         private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition,  e.IsDoubleClick, e.EventType);
+            var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
             foreach (EventCategory eventCategory in this.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events)
@@ -160,7 +162,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
             foreach (EventCategory eventCategory in eventCategories)
             {
-                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.Settings.UseFiller.Value);
+                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.Settings.UseFiller.Value);
 
                 var groups = eventStarts.GroupBy(ev => ev.Value);
 
@@ -177,7 +179,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                     y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
             }
 
-                this.Size = new Point(bounds.Width, y + EventTableModule.ModuleInstance.EventHeight);
+            this.Size = new Point(bounds.Width, y + EventTableModule.ModuleInstance.EventHeight);
 
             float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
             this.DrawLine(spriteBatch, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
