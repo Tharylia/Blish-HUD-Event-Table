@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views
+namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD.Controls;
     using Microsoft.Xna.Framework;
@@ -103,6 +103,7 @@
             });
 #endif
             RenderSetting(parentPanel, ModuleSettings.HideOnMissingMumbleTicks);
+            RenderSetting(parentPanel, ModuleSettings.HideInCombat);
             RenderSetting(parentPanel, ModuleSettings.ShowTooltips);
             RenderSetting(parentPanel, ModuleSettings.CopyWaypointOnClick);
             RenderSetting(parentPanel, ModuleSettings.ShowContextMenuOnClick);

@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -247,10 +247,6 @@
             {
                 this.ToggleContainer(true);
             }
-
-            GameService.Gw2Mumble.UI.IsMapOpenChanged += (s, eventArgs) => this.ToggleContainer(!eventArgs.Value);
-            GameService.Gw2Mumble.CurrentMap.MapChanged += (s, eventArgs) => this.ToggleContainer(GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate);
-
         }
 
         protected override void Update(GameTime gameTime)
@@ -326,16 +322,27 @@
 
         private void CheckMumble()
         {
+            if (GameService.Gw2Mumble.IsAvailable)
+            {
             if (this.Container != null)
             {
-                if (GameService.Gw2Mumble.IsAvailable && this.ModuleSettings.HideOnMissingMumbleTicks.Value)
+                    bool show = true;
+
+                    show &= !GameService.Gw2Mumble.UI.IsMapOpen;
+
+                    if (this.ModuleSettings.HideOnMissingMumbleTicks.Value)
                 {
-                    bool tickState = GameService.Gw2Mumble.TimeSinceTick.TotalSeconds < 0.5;
-                    if (tickState != this.visibleStateFromTick)
-                    {
-                        this.visibleStateFromTick = tickState;
-                        this.ToggleContainer(this.visibleStateFromTick);
+                        show &= GameService.Gw2Mumble.TimeSinceTick.TotalSeconds < 0.5;
                     }
+
+                    if (this.ModuleSettings.HideInCombat.Value)
+                    {
+                        show &= !GameService.Gw2Mumble.PlayerCharacter.IsInCombat;
+                    }
+
+                    show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
+
+                    this.ToggleContainer(show);
                 }
             }
         }
