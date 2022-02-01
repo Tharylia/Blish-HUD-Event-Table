@@ -29,6 +29,7 @@ namespace Estreya.BlishHUD.EventTable
         public SettingEntry<bool> HideInCombat { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
+        public SettingEntry<TooltipTimeMode> TooltipTimeMode { get; private set; }
         public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
         public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
         public SettingEntry<BuildDirection> BuildDirection { get; private set; }
@@ -134,7 +135,9 @@ namespace Estreya.BlishHUD.EventTable
             this.DebugEnabled.SettingChanged += this.SettingChanged;
 
             this.ShowTooltips = this.GlobalSettings.DefineSetting(nameof(this.ShowTooltips), true, () => "Show Tooltips", () => "Whether the event table should display event information on hover.");
-            this.DebugEnabled.SettingChanged += this.SettingChanged;
+
+            this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => "Tooltip Time Mode", () => "Defines the mode in which the tooltip times are displayed.");
+            this.TooltipTimeMode.SettingChanged += this.SettingChanged;
 
             this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => "Copy Waypoints", () => "Whether the event table should copy waypoints to clipboard if event has been left clicked.");
             this.CopyWaypointOnClick.SettingChanged += this.SettingChanged;

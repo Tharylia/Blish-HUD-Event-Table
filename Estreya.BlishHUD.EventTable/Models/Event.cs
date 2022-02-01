@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -178,7 +178,7 @@
                 {
                     DateTime end = eventStart.AddMinutes(this.Duration);
                     TimeSpan timeRemaining = end.Subtract(now);
-                    string timeRemainingString = FormatTimeSpan(timeRemaining);// timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
+                    string timeRemainingString = FormatTime(timeRemaining);// timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
                     float timeRemainingWidth = this.MeasureStringWidth(timeRemainingString, font);
                     float timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
                     if (timeRemainingX < eventTextPosition.X + eventTextPosition.Width)
@@ -225,16 +225,21 @@
             {
                 DateTime end = filteredStartOccurences.First().AddMinutes(this.Duration);
                 TimeSpan timeRemaining = end.Subtract(now);
-                string timeRemainingString = this.FormatTimeSpan(timeRemaining);
+                string timeRemainingString = this.FormatTime(timeRemaining);
                 return timeRemainingString;
             }
 
             return null;
         }
 
-        private string FormatTimeSpan(TimeSpan ts)
+        private string FormatTime(TimeSpan ts)
         {
             return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
+        }
+
+        private string FormatTime(DateTime dateTime)
+        {
+            return dateTime.Hour > 0 ? dateTime.ToString("HH:mm:ss") : dateTime.ToString("mm:ss");
         }
 
         private string GetLongestEventName(float maxSize, BitmapFont font)
@@ -540,25 +545,37 @@
                 if (hoveredOccurences.Any())
                 {
                     var hoveredOccurence = hoveredOccurences.First();
+
+                    if (EventTableModule.ModuleInstance.ModuleSettings.TooltipTimeMode.Value == TooltipTimeMode.Relative)
+                    {
                     bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
                     bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
                     bool isCurrent = !isPrev && !isNext;
 
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n";
+
                     if (isPrev)
                     {
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nFinished since: {FormatTimeSpan(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
+                            description += $"Finished since: {FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
                     }
                     else if (isNext)
                     {
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nStarts in: {FormatTimeSpan(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                            description += $"Starts in: {FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
                     }
                     else if (isCurrent)
                     {
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nRemaining: {FormatTimeSpan(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
+                            description += $"Remaining: {FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
                     }
-                } else
+                    }
+                    else
                 {
-                    Logger.Error($"Can't find hovered event: {this.Name} - {string.Join(", ",occurences.Select(o => o.ToString()))}");
+                        // Absolute
+                        description += $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nStarts at: {FormatTime(hoveredOccurence)}";
+                    }
+                }
+                else
+                {
+                    Logger.Error($"Can't find hovered event: {this.Name} - {string.Join(", ", occurences.Select(o => o.ToString()))}");
                 }
 
                 this.UpdateTooltip(description);
