@@ -226,7 +226,7 @@ namespace Estreya.BlishHUD.EventTable
 
         public override IView GetSettingsView()
         {
-            return new UI.Views.ModuleSettingsView(this.ModuleSettings);
+            return new UI.Views.ModuleSettingsView();
         }
 
         protected override void OnModuleLoaded(EventArgs e)
@@ -240,23 +240,23 @@ namespace Estreya.BlishHUD.EventTable
 
             this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents));
 
-            Rectangle settingsWindowSize = new Rectangle(24, 30, 1500, 630);
-            Texture2D windowBackground = this.ContentsManager.GetRenderIcon(@"images\windowBackground.png");
-            this.SettingsWindow = new TabbedWindow2(windowBackground, settingsWindowSize, new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height))
+            Rectangle settingsWindowSize = new Rectangle(0, 30, 1100, 720);
+            Rectangle contentRegion = new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height);
+            Texture2D windowBackground = this.ContentsManager.GetIcon(@"controls/window/502049", false);
+            this.SettingsWindow = new TabbedWindow2(windowBackground, settingsWindowSize, contentRegion)
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                Title = "TabbedWindow",
-                Emblem = this.ContentsManager.GetRenderIcon(@"images\event_boss.png"),
-                Subtitle = "Example Subtitle",
+                Title = "Event Table",
+                Emblem = this.ContentsManager.GetIcon(@"images\event_boss.png"),
+                Subtitle = "Settings",
                 SavesPosition = true,
-                ClipsBounds = true,
-                Padding = new Thickness(0, 0, 0, 0),
-                
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents), "Events"));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetRenderIcon(@"155052"), () => new UI.Views.ModuleSettingsView(this.ModuleSettings), "Settings"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents), "Manage Events"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), "General Settings"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), "Graphic Settings"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), "Event Settings"));
 
             if (this.ModuleSettings.GlobalEnabled.Value)
             {
