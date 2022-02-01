@@ -167,6 +167,7 @@ namespace Estreya.BlishHUD.EventTable
 
             this.ModuleSettings.InitializeEventSettings(this._eventCategories);
 
+            await InitializeStates();
 
             this.Container = new EventTableContainer()
             {
@@ -197,8 +198,6 @@ namespace Estreya.BlishHUD.EventTable
                         break;
                 }
             };
-
-            await InitializeStates();
         }
 
         private async Task InitializeStates()
@@ -207,6 +206,15 @@ namespace Estreya.BlishHUD.EventTable
 
             this.HiddenState = new HiddenState(eventsDirectory);
             this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
+            this.WorldbossState.WorldbossCompleted += (s, e) =>
+            {
+                if (this.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Hide)
+                {
+                    var events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
+                    events.ForEach(ev => ev.Finish());
+
+                }
+            };
 
             lock (this.States)
             {

@@ -59,6 +59,7 @@ namespace Estreya.BlishHUD.EventTable
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
+        public SettingEntry<WorldbossCompletedAction> WorldbossCompletedAcion {  get; private set; }
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -163,6 +164,9 @@ namespace Estreya.BlishHUD.EventTable
 
             this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Text Color", () => "Defines the text color of filler events.");
             this.FillerTextColor.SettingChanged += this.SettingChanged;
+
+            this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => "Worldboss Completed Action", () => "Defines the action when a worldboss has been completed.");
+            this.WorldbossCompletedAcion.SettingChanged += this.SettingChanged;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)

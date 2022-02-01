@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.State
+﻿namespace Estreya.BlishHUD.EventTable.State
 {
     using Blish_HUD;
     using Blish_HUD.Modules.Managers;
@@ -18,10 +18,11 @@ namespace Estreya.BlishHUD.EventTable.State
         private double timeSinceUpdate = 0;
         private List<string> completedWorldbosses = new List<string>();
 
+        public event EventHandler<string> WorldbossCompleted;
+
         public WorldbossState(Gw2ApiManager apiManager)
         {
             this.ApiManager = apiManager;
-            this.ApiManager.SubtokenUpdated += this.ApiManager_SubtokenUpdated;
         }
 
         private void ApiManager_SubtokenUpdated(object sender, ValueEventArgs<IEnumerable<Gw2Sharp.WebApi.V2.Models.TokenPermission>> e)
@@ -41,10 +42,13 @@ namespace Estreya.BlishHUD.EventTable.State
 
         private async Task UpdateCompletedWorldbosses(GameTime gameTime)
         {
+            Logger.Info($"Check for completed worldbosses.");
             try
             {
+                List<string> oldCompletedWorldbosses;
                 lock (this.completedWorldbosses)
                 {
+                    oldCompletedWorldbosses = this.completedWorldbosses.ToArray().ToList();
                     this.completedWorldbosses.Clear();
                 }
 
@@ -54,6 +58,21 @@ namespace Estreya.BlishHUD.EventTable.State
                     lock (this.completedWorldbosses)
                     {
                         this.completedWorldbosses.AddRange(bosses);
+                    }
+
+                    foreach (string boss in bosses)
+                    {
+                        if (!oldCompletedWorldbosses.Contains(boss))
+                        {
+                            Logger.Info($"Completed worldboss: {boss}");
+                            try
+                            {
+                                this.WorldbossCompleted?.Invoke(this, boss);
+                            }catch (Exception ex)
+                            {
+                                Logger.Error($"Error handling complete worldboss event: {ex.Message}");
+                            }
+                        }
                     }
                 }
             }
@@ -65,11 +84,14 @@ namespace Estreya.BlishHUD.EventTable.State
 
         protected override Task Initialize()
         {
+            this.ApiManager.SubtokenUpdated += this.ApiManager_SubtokenUpdated;
             return Task.CompletedTask;
         }
 
         protected override Task InternalUnload()
         {
+            this.ApiManager.SubtokenUpdated -= this.ApiManager_SubtokenUpdated;
+
             lock (this.completedWorldbosses)
             {
                 completedWorldbosses.Clear();

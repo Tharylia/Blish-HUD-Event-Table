@@ -199,7 +199,7 @@ namespace Estreya.BlishHUD.EventTable.Models
 
                 #region Draw Cross out
 
-                if (!this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
+                if (EventTableModule.ModuleInstance.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
                 {
                     if (EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode))
                     {
