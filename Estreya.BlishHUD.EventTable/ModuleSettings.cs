@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -136,6 +136,7 @@ namespace Estreya.BlishHUD.EventTable
             this.DebugEnabled.SettingChanged += this.SettingChanged;
 
             this.ShowTooltips = this.GlobalSettings.DefineSetting(nameof(this.ShowTooltips), true, () => "Show Tooltips", () => "Whether the event table should display event information on hover.");
+            this.ShowTooltips.SettingChanged += this.SettingChanged;
 
             this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => "Tooltip Time Mode", () => "Defines the mode in which the tooltip times are displayed.");
             this.TooltipTimeMode.SettingChanged += this.SettingChanged;
