@@ -238,7 +238,7 @@ namespace Estreya.BlishHUD.EventTable
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
             this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
-            this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents));
+            this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
 
             Rectangle settingsWindowSize = new Rectangle(0, 30, 1100, 720);
             Rectangle contentRegion = new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height);

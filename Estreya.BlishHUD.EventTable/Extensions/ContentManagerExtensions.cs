@@ -17,7 +17,7 @@
     {
         private static Dictionary<string, AsyncTexture2D> IconCache { get; set; } = new Dictionary<string, AsyncTexture2D>();
 
-        public static AsyncTexture2D GetRenderIcon(this ContentsManager manager, string identifier)
+        public static AsyncTexture2D GetIcon(this ContentsManager manager, string identifier, bool checkRenderAPI = true)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -31,7 +31,7 @@
                 AsyncTexture2D icon = null;// new AsyncTexture2D(Textures.TransparentPixel.Duplicate());
                 if (!string.IsNullOrWhiteSpace(identifier))
                 {
-                    if (identifier.Contains("/"))
+                    if (checkRenderAPI && identifier.Contains("/"))
                     {
                         icon = GameService.Content.GetRenderServiceTexture(identifier);
                     }
