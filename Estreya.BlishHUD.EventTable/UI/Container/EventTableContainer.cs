@@ -165,6 +165,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 this.CurrentVisibilityAnimation.Cancel();
             }
 
+            this._currentVisibilityDirection = true;
             this.Visible = true;
             this.CurrentVisibilityAnimation = Animation.Tweener.Tween(this, new { Opacity = 1f }, 0.2f);
             this.CurrentVisibilityAnimation.OnComplete(() =>
@@ -182,6 +183,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 this.CurrentVisibilityAnimation.Cancel();
             }
 
+            this._currentVisibilityDirection = false;
             this.CurrentVisibilityAnimation = Animation.Tweener.Tween(this, new { Opacity = 0f }, 0.2f);
             this.CurrentVisibilityAnimation.OnComplete(() =>
             {
