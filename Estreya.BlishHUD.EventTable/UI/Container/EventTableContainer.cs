@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -33,12 +33,12 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 }
 
                 if (!_currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
-                    {
+                {
                     return false;
-                    }
+                }
 
                 return base.Visible;
-                }
+            }
             set
             {
                 base.Visible = value;
