@@ -101,7 +101,7 @@ namespace Estreya.BlishHUD.EventTable
             this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
             this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
 
-            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on cutscenes", () => "Whether the event table should hide when cutscenes are played.");
+            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on Cutscenes", () => "Whether the event table should hide when cutscenes are played.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;
 
             this.HideInCombat = this.GlobalSettings.DefineSetting(nameof(this.HideInCombat), false, () => "Hide in Combat", () => "Whether the event table should hide when the player is in combat.");
