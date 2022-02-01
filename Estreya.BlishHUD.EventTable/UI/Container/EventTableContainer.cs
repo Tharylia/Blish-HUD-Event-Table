@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -21,27 +21,27 @@
     {
 
         private TimeSpan TimeSinceDraw { get; set; }
+        private bool _currentVisibilityDirection = false;
 
-        private BitmapFont _font;
-
-        private BitmapFont Font
+        public new bool Visible
         {
             get
             {
-                if (this._font == null)
+                if (_currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
                 {
-                    //TODO: When fixed in core
-                    string name = Enum.GetName(typeof(EventTableContainer.FontSize), this.Settings.EventFontSize.Value);
-
-                    if (!Enum.TryParse(name, out ContentService.FontSize size))
-                    {
-                        size = ContentService.FontSize.Size16;
-                    }
-
-                    this._font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, size /* this.Settings.EventFontSize.Value*/, ContentService.FontStyle.Regular);
+                    return true;
                 }
 
-                return this._font;
+                if (!_currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
+                    {
+                    return false;
+                    }
+
+                return base.Visible;
+                }
+            set
+            {
+                base.Visible = value;
             }
         }
 

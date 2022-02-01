@@ -196,13 +196,28 @@ namespace Estreya.BlishHUD.EventTable
 
         private void ToggleContainer(bool show)
         {
-            if (this.ModuleSettings.GlobalEnabled.Value && show)
+            if (this.Container == null) return;
+
+            if (!this.ModuleSettings.GlobalEnabled.Value)
+            {
+                if (this.Container.Visible)
+                {
+                    this.Container.Hide();
+                }
+
+                return;
+            }
+
+            if (show)
+            {
+                if (!this.Container.Visible)
             {
                 this.Container.Show();
+                }
             }
             else
             {
-                if (this.Container != null)
+                if (this.Container.Visible)
                 {
                     this.Container.Hide();
                 }
