@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -54,11 +54,10 @@ namespace Estreya.BlishHUD.EventTable.Models
         public string Icon { get; set; }
         [JsonProperty("color")]
         public string Color { get; set; }
-
-        [JsonProperty("filler")]
-        internal bool Filler { get; set; }
         [JsonProperty("api")]
-        internal string APICode { get; set; }
+        public string APICode { get; set; }
+        internal bool Filler { get; set; }
+        internal EventCategory EventCategory { get; set; }
 
         [JsonIgnore]
         private Tooltip _tooltip;
@@ -99,10 +98,15 @@ namespace Estreya.BlishHUD.EventTable.Models
                     openWiki.Click += (s, e) => this.OpenWiki();
                     _contextMenuStrip.AddMenuItem(openWiki);
 
-                    ContextMenuStripItem finishedEvent = new ContextMenuStripItem();
-                    finishedEvent.Text = "Hide until Reset";
-                    finishedEvent.Click += (s, e) => this.Finish();
-                    _contextMenuStrip.AddMenuItem(finishedEvent);
+                    ContextMenuStripItem hideCategory = new ContextMenuStripItem();
+                    hideCategory.Text = "Hide category until Reset";
+                    hideCategory.Click += (s, e) => this.FinishCategory();
+                    _contextMenuStrip.AddMenuItem(hideCategory);
+
+                    ContextMenuStripItem hideEvent = new ContextMenuStripItem();
+                    hideEvent.Text = "Hide event until Reset";
+                    hideEvent.Click += (s, e) => this.Finish();
+                    _contextMenuStrip.AddMenuItem(hideEvent);
 
                     ContextMenuStripItem disable = new ContextMenuStripItem();
                     disable.Text = "Disable";
@@ -471,7 +475,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             {
                 eventWidth = bounds.Width - x;
             }
-            
+
             //eventWidth = Math.Min(eventWidth, bounds.Width/* - x*/);
 
             return eventWidth;
@@ -548,27 +552,27 @@ namespace Estreya.BlishHUD.EventTable.Models
 
                     if (EventTableModule.ModuleInstance.ModuleSettings.TooltipTimeMode.Value == TooltipTimeMode.Relative)
                     {
-                    bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
-                    bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
-                    bool isCurrent = !isPrev && !isNext;
+                        bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
+                        bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
+                        bool isCurrent = !isPrev && !isNext;
 
                         description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n";
 
-                    if (isPrev)
-                    {
+                        if (isPrev)
+                        {
                             description += $"Finished since: {FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
-                    }
-                    else if (isNext)
-                    {
+                        }
+                        else if (isNext)
+                        {
                             description += $"Starts in: {FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
-                    }
-                    else if (isCurrent)
-                    {
+                        }
+                        else if (isCurrent)
+                        {
                             description += $"Remaining: {FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
-                    }
+                        }
                     }
                     else
-                {
+                    {
                         // Absolute
                         description += $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nStarts at: {FormatTime(hoveredOccurence)}";
                     }
@@ -592,14 +596,21 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        private void Finish()
+        public void Finish()
         {
             var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
             EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until, true);
         }
 
-        private void Disable()
+        public void FinishCategory()
+        {
+            var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            EventTableModule.ModuleInstance.HiddenState.Add(this.EventCategory.Name, until, true);
+        }
+
+        public void Disable()
         {
             var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
             if (eventSetting.Any())

@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -164,6 +164,7 @@ namespace Estreya.BlishHUD.EventTable
                 this.EventCategories = JsonConvert.DeserializeObject<List<EventCategory>>(json);
             }
 
+            this._eventCategories.ForEach(ec => ec.Events.ForEach(e => e.EventCategory = ec));
 
             this.ModuleSettings.InitializeEventSettings(this._eventCategories);
 
@@ -182,7 +183,7 @@ namespace Estreya.BlishHUD.EventTable
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                    //case nameof(this.ModuleSettings.Height):
+                        //case nameof(this.ModuleSettings.Height):
                         this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
@@ -245,8 +246,8 @@ namespace Estreya.BlishHUD.EventTable
             if (show)
             {
                 if (!this.Container.Visible)
-            {
-                this.Container.Show();
+                {
+                    this.Container.Show();
                 }
             }
             else
@@ -273,7 +274,7 @@ namespace Estreya.BlishHUD.EventTable
             this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
             this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
-
+            
             Rectangle settingsWindowSize = new Rectangle(0, 30, 1100, 720);
             Rectangle contentRegion = new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height);
             Texture2D windowBackground = this.ContentsManager.GetIcon(@"controls/window/502049", false);
@@ -373,14 +374,14 @@ namespace Estreya.BlishHUD.EventTable
         {
             if (GameService.Gw2Mumble.IsAvailable)
             {
-            if (this.Container != null)
-            {
+                if (this.Container != null)
+                {
                     bool show = true;
 
                     show &= !GameService.Gw2Mumble.UI.IsMapOpen;
 
                     if (this.ModuleSettings.HideOnMissingMumbleTicks.Value)
-                {
+                    {
                         show &= GameService.Gw2Mumble.TimeSinceTick.TotalSeconds < 0.5;
                     }
 
