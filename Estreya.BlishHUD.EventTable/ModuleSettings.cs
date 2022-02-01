@@ -54,7 +54,7 @@ namespace Estreya.BlishHUD.EventTable
         public SettingEntry<int> EventHistorySplit { get; private set; } // Is listed in global
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
-        public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
+        public SettingEntry<ContentService.FontSize> EventFontSize { get; private set; } // Is listed in global
         public SettingEntry<bool> UseFiller { get; private set; } // Is listed in global
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
@@ -125,7 +125,7 @@ namespace Estreya.BlishHUD.EventTable
             this.EventHeight.SetRange(5, 50);
             this.EventHeight.SettingChanged += this.SettingChanged;
 
-            this.EventFontSize = this.GlobalSettings.DefineSetting(nameof(this.EventFontSize), EventTableContainer.FontSize.Size16 /*ContentService.FontSize.Size16*/, () => "Event Font Size", () => "Defines the size of the font used for events.");
+            this.EventFontSize = this.GlobalSettings.DefineSetting(nameof(this.EventFontSize), ContentService.FontSize.Size16, () => "Event Font Size", () => "Defines the size of the font used for events.");
             this.EventFontSize.SettingChanged += this.SettingChanged;
 
             this.DrawEventBorder = this.GlobalSettings.DefineSetting(nameof(this.DrawEventBorder), true, () => "Draw Event Border", () => "Whether the events should have a small border.");

@@ -14,6 +14,7 @@ namespace Estreya.BlishHUD.EventTable
     using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using MonoGame.Extended.BitmapFonts;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -45,11 +46,22 @@ namespace Estreya.BlishHUD.EventTable
 
         internal TabbedWindow2 SettingsWindow { get; private set; }
 
-        private IEnumerable<EventCategory> EventCategories { get; set; }
-
-        private bool visibleStateFromTick = true;
-
         internal bool Debug => this.ModuleSettings.DebugEnabled.Value;
+
+        private BitmapFont _font;
+
+        internal BitmapFont Font
+        {
+            get
+            {
+                if (this._font == null)
+                {
+                    this._font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, this.ModuleSettings.EventFontSize.Value, ContentService.FontStyle.Regular);
+                }
+
+                return this._font;
+            }
+        }
 
         internal int EventHeight => this.ModuleSettings?.EventHeight?.Value ?? 30;
         internal DateTime DateTimeNow => DateTime.Now;
@@ -108,11 +120,19 @@ namespace Estreya.BlishHUD.EventTable
         {
             get
             {
-                var millis = this.EventTimeSpan.TotalMilliseconds * (1f- this.EventTimeSpanRatio );
+                var millis = this.EventTimeSpan.TotalMilliseconds * (1f - this.EventTimeSpanRatio);
                 var timespan = TimeSpan.FromMilliseconds(millis);
                 DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(timespan);
                 return max;
             }
+        }
+
+        private List<EventCategory> _eventCategories;
+
+        internal List<EventCategory> EventCategories
+        {
+            get => _eventCategories.Where(ec => !ec.IsDisabled()).ToList();
+            set => this._eventCategories = value;
         }
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
@@ -137,15 +157,18 @@ namespace Estreya.BlishHUD.EventTable
 
         protected override async Task LoadAsync()
         {
+
             using (StreamReader eventsReader = new StreamReader(this.ContentsManager.GetFileStream("events.json")))
             {
                 string json = await eventsReader.ReadToEndAsync();
                 this.EventCategories = JsonConvert.DeserializeObject<List<EventCategory>>(json);
             }
 
-            this.ModuleSettings.InitializeEventSettings(this.EventCategories);
 
-            this.Container = new EventTableContainer(this.EventCategories, this.ModuleSettings)
+            this.ModuleSettings.InitializeEventSettings(this._eventCategories);
+
+
+            this.Container = new EventTableContainer()
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 BackgroundColor = Microsoft.Xna.Framework.Color.Transparent,
@@ -166,6 +189,9 @@ namespace Estreya.BlishHUD.EventTable
                         break;
                     case nameof(ModuleSettings.EventTimeSpan):
                         this._eventTimeSpan = TimeSpan.Zero;
+                        break;
+                    case nameof(ModuleSettings.EventFontSize):
+                        this._font = null;
                         break;
                     default:
                         break;

@@ -45,22 +45,6 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             }
         }
 
-        public enum FontSize
-        {
-            Size8,
-            Size11,
-            Size12,
-            Size14,
-            Size16,
-            Size18,
-            Size20,
-            Size22,
-            Size24,
-            Size32,
-            Size34,
-            Size36
-        }
-
         private double PixelPerMinute
         {
             get
@@ -73,24 +57,12 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             }
         }
 
-        private IEnumerable<EventCategory> _eventCategories;
-        private IEnumerable<EventCategory> EventCategories
-        {
-            get => _eventCategories;
-            set => this._eventCategories = value;
-        }
-
         private Tween CurrentVisibilityAnimation { get; set; }
-
-        private ModuleSettings Settings { get; set; }
 
         private Texture2D Texture { get; set; }
 
-        public EventTableContainer(IEnumerable<EventCategory> eventCategories, ModuleSettings settings)
+        public EventTableContainer()
         {
-            this.EventCategories = eventCategories;
-            this.Settings = settings;
-            this.Settings.ModuleSettingsChanged += this.Settings_ModuleSettingsChanged;
             this.LeftMouseButtonPressed += this.EventTableContainer_Click;
             this.RightMouseButtonPressed += this.EventTableContainer_Click;
             this.MouseMoved += this.EventTableContainer_MouseMoved;
@@ -99,11 +71,11 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
         private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
             var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
-            foreach (EventCategory eventCategory in this.EventCategories)
+            foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
                         ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
                     }
@@ -115,23 +87,13 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             }
         }
 
-        private void Settings_ModuleSettingsChanged(object sender, ModuleSettings.ModuleSettingsChangedEventArgs e)
-        {
-            switch (e.Name)
-            {
-                case nameof(ModuleSettings.EventFontSize):
-                    this._font = null;
-                    break;
-            }
-        }
-
         private void EventTableContainer_Click(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            foreach (EventCategory eventCategory in this.EventCategories)
+            foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
                         ev.HandleClick(sender, e);
                         return;
@@ -152,17 +114,17 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
             InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
-            IEnumerable<EventCategory> eventCategories = this.EventCategories;
+            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories;
 
-            Color backgroundColor = this.Settings.BackgroundColor.Value.Id == 1 ? Color.Transparent : this.Settings.BackgroundColor.Value.Cloth.ToXnaColor();
+            Color backgroundColor = EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Id == 1 ? Color.Transparent : EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Cloth.ToXnaColor();
 
-            this.BackgroundColor = backgroundColor * this.Settings.BackgroundColorOpacity.Value;
+            this.BackgroundColor = backgroundColor * EventTableModule.ModuleInstance.ModuleSettings.BackgroundColorOpacity.Value;
 
             int y = 0;
 
             foreach (EventCategory eventCategory in eventCategories)
             {
-                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.Settings.UseFiller.Value);
+                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value);
 
                 var groups = eventStarts.GroupBy(ev => ev.Value);
 
@@ -172,7 +134,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 {
                     var starts = group.Select(g => g.Key).ToList();
                     anyEventDrawn = starts.Count > 0;
-                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, this.Font, starts);
+                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.Font, starts);
                 }
 
                 if (anyEventDrawn)
