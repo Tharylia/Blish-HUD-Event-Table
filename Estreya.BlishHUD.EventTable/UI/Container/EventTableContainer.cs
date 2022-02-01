@@ -122,6 +122,8 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
             int y = 0;
 
+            bool anyCategoryDrawn = false;
+
             foreach (EventCategory eventCategory in eventCategories)
             {
                 List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value);
@@ -138,10 +140,13 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 }
 
                 if (anyEventDrawn)
+                {
+                    anyCategoryDrawn = true;
                     y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
+                }
             }
 
-            this.Size = new Point(bounds.Width, y + EventTableModule.ModuleInstance.EventHeight);
+            this.Size = new Point(bounds.Width, y + (anyCategoryDrawn ? EventTableModule.ModuleInstance.EventHeight : 0));
 
             float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
             this.DrawLine(spriteBatch, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
