@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.State
+namespace Estreya.BlishHUD.EventTable.State
 {
     using Blish_HUD;
     using Estreya.BlishHUD.EventTable.Helpers;
@@ -11,7 +11,7 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class HiddenState : ManagedState
+    public class HiddenState : ManagedState
     {
         private const string FILE_NAME = "hidden.txt";
         private const string LINE_SPLIT = "<-->";

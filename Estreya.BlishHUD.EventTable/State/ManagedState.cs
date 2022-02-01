@@ -4,7 +4,7 @@
     using System;
     using System.Threading.Tasks;
 
-    internal abstract class ManagedState : IDisposable
+    public abstract class ManagedState : IDisposable
     {
         private int SaveInternal { get; set; }
 

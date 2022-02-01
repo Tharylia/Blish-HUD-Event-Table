@@ -137,8 +137,8 @@ namespace Estreya.BlishHUD.EventTable
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
 
-        internal HiddenState HiddenState { get; private set; }
-        internal WorldbossState WorldbossState { get; private set; }
+        public HiddenState HiddenState { get; private set; }
+        public WorldbossState WorldbossState { get; private set; }
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)

@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.State
+namespace Estreya.BlishHUD.EventTable.State
 {
     using Blish_HUD;
     using Blish_HUD.Modules.Managers;
@@ -10,7 +10,7 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class WorldbossState : ManagedState
+    public class WorldbossState : ManagedState
     {
         private static readonly Logger Logger = Logger.GetLogger<WorldbossState>();
         private Gw2ApiManager ApiManager { get; set; }
