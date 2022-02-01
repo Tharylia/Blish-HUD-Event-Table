@@ -61,7 +61,7 @@
     "events": [
       {
         "name": "Server Reset",
-        "offset": "02:00",
+        "offset": "00:00",
         "repeat": "01.00:00",
         "location": "",
         "waypoint": "",
