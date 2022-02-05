@@ -11,8 +11,9 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class HiddenState : ManagedState
+    public class HiddenState : ManagedState
     {
+        private static readonly Logger Logger = Logger.GetLogger<HiddenState>();
         private const string FILE_NAME = "hidden.txt";
         private const string LINE_SPLIT = "<-->";
         private bool dirty;
@@ -86,6 +87,8 @@
                     hideUntil = hideUntil.ToUniversalTime();
                 }
 
+                Logger.Info($"Add hidden state for \"{name}\" until {hideUntil} UTC.");
+
                 Instances.Add(name, hideUntil);
                 dirty = true;
             }
@@ -97,7 +100,20 @@
             {
                 if (!Instances.ContainsKey(name)) return;
 
+                Logger.Info($"Remove hidden state for \"{name}\".");
+
                 Instances.Remove(name);
+                dirty = true;
+            }
+        }
+
+        public void Clear()
+        {
+            lock (Instances)
+            {
+                Logger.Info($"Remove all hidden states.");
+
+                Instances.Clear();
                 dirty = true;
             }
         }

@@ -6,9 +6,11 @@
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Glide;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using MonoGame.Extended;
     using MonoGame.Extended.BitmapFonts;
     using System;
     using System.Collections.Generic;
@@ -19,44 +21,28 @@
     {
 
         private TimeSpan TimeSinceDraw { get; set; }
+        private bool _currentVisibilityDirection = false;
 
-        private BitmapFont _font;
-
-        private BitmapFont Font
+        public new bool Visible
         {
             get
             {
-                if (this._font == null)
+                if (_currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
                 {
-                    //TODO: When fixed in core
-                    string name = Enum.GetName(typeof(EventTableContainer.FontSize), this.Settings.EventFontSize.Value);
-
-                    if (!Enum.TryParse(name, out ContentService.FontSize size))
-                    {
-                        size = ContentService.FontSize.Size16;
-                    }
-
-                    this._font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, size /* this.Settings.EventFontSize.Value*/, ContentService.FontStyle.Regular);
+                    return true;
                 }
 
-                return this._font;
-            }
-        }
+                if (!_currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
+                {
+                    return false;
+                }
 
-        public enum FontSize
-        {
-            Size8,
-            Size11,
-            Size12,
-            Size14,
-            Size16,
-            Size18,
-            Size20,
-            Size22,
-            Size24,
-            Size32,
-            Size34,
-            Size36
+                return base.Visible;
+            }
+            set
+            {
+                base.Visible = value;
+            }
         }
 
         private double PixelPerMinute
@@ -71,24 +57,12 @@
             }
         }
 
-        private IEnumerable<EventCategory> _eventCategories;
-        private IEnumerable<EventCategory> EventCategories
-        {
-            get => _eventCategories;
-            set => this._eventCategories = value;
-        }
-
         private Tween CurrentVisibilityAnimation { get; set; }
-
-        private ModuleSettings Settings { get; set; }
 
         private Texture2D Texture { get; set; }
 
-        public EventTableContainer(IEnumerable<EventCategory> eventCategories, ModuleSettings settings)
+        public EventTableContainer()
         {
-            this.EventCategories = eventCategories;
-            this.Settings = settings;
-            this.Settings.ModuleSettingsChanged += this.Settings_ModuleSettingsChanged;
             this.LeftMouseButtonPressed += this.EventTableContainer_Click;
             this.RightMouseButtonPressed += this.EventTableContainer_Click;
             this.MouseMoved += this.EventTableContainer_MouseMoved;
@@ -96,12 +70,12 @@
 
         private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition,  e.IsDoubleClick, e.EventType);
-            foreach (EventCategory eventCategory in this.EventCategories)
+            var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
+            foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
                         ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
                     }
@@ -113,23 +87,13 @@
             }
         }
 
-        private void Settings_ModuleSettingsChanged(object sender, ModuleSettings.ModuleSettingsChangedEventArgs e)
-        {
-            switch (e.Name)
-            {
-                case nameof(ModuleSettings.EventFontSize):
-                    this._font = null;
-                    break;
-            }
-        }
-
         private void EventTableContainer_Click(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            foreach (EventCategory eventCategory in this.EventCategories)
+            foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events)
                 {
-                    if (ev.IsHovered(EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
                         ev.HandleClick(sender, e);
                         return;
@@ -150,17 +114,19 @@
 
             InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
-            IEnumerable<EventCategory> eventCategories = this.EventCategories;
+            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories;
 
-            Color backgroundColor = this.Settings.BackgroundColor.Value.Id == 1 ? Color.Transparent : this.Settings.BackgroundColor.Value.Cloth.ToXnaColor();
+            Color backgroundColor = EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Id == 1 ? Color.Transparent : EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Cloth.ToXnaColor();
 
-            this.BackgroundColor = backgroundColor * this.Settings.BackgroundColorOpacity.Value;
+            this.BackgroundColor = backgroundColor * EventTableModule.ModuleInstance.ModuleSettings.BackgroundColorOpacity.Value;
 
             int y = 0;
 
+            bool anyCategoryDrawn = false;
+
             foreach (EventCategory eventCategory in eventCategories)
             {
-                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(this.Settings.AllEvents, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.Settings.UseFiller.Value);
+                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value);
 
                 var groups = eventStarts.GroupBy(ev => ev.Value);
 
@@ -170,19 +136,20 @@
                 {
                     var starts = group.Select(g => g.Key).ToList();
                     anyEventDrawn = starts.Count > 0;
-                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, this.Font, starts);
+                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.Font, starts);
                 }
 
                 if (anyEventDrawn)
+                {
+                    anyCategoryDrawn = true;
                     y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
+                }
             }
 
-            //if (this.Settings.SnapHeight.Value)
-            //{
-                this.Size = new Point(bounds.Width, y + EventTableModule.ModuleInstance.EventHeight);
-            //}
+            this.Size = new Point(bounds.Width, y + (anyCategoryDrawn ? EventTableModule.ModuleInstance.EventHeight : 0));
 
-            this.DrawLine(spriteBatch, new Rectangle(this.Size.X / 2, 0, 2, this.Size.Y), Color.LightGray);
+            float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
+            this.DrawLine(spriteBatch, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
 
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
@@ -198,6 +165,7 @@
                 this.CurrentVisibilityAnimation.Cancel();
             }
 
+            this._currentVisibilityDirection = true;
             this.Visible = true;
             this.CurrentVisibilityAnimation = Animation.Tweener.Tween(this, new { Opacity = 1f }, 0.2f);
             this.CurrentVisibilityAnimation.OnComplete(() =>
@@ -215,6 +183,7 @@
                 this.CurrentVisibilityAnimation.Cancel();
             }
 
+            this._currentVisibilityDirection = false;
             this.CurrentVisibilityAnimation = Animation.Tweener.Tween(this, new { Opacity = 0f }, 0.2f);
             this.CurrentVisibilityAnimation.OnComplete(() =>
             {
@@ -263,7 +232,7 @@
             }
         }
 
-        private void DrawLine(SpriteBatch spriteBatch, Rectangle coords, Color color)
+        private void DrawLine(SpriteBatch spriteBatch, RectangleF coords, Color color)
         {
             this.InitializeBaseTexture(spriteBatch.GraphicsDevice);
 

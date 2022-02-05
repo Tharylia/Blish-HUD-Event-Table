@@ -61,7 +61,8 @@
     "events": [
       {
         "name": "Server Reset",
-        "offset": "02:00",
+        "offset": "00:00",
+        "convertOffset": false,
         "repeat": "01.00:00",
         "location": "",
         "waypoint": "",
@@ -82,7 +83,7 @@
         "repeat": "06:00",
         "difficulty": "none",
         "location": "Timberline Falls",
-        "waypoint": "[&BEYEAAA=]",
+        "waypoint": "[&BEwCAAA=]",
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Ley-Line_Anomaly_to_disperse_its_destructive_energy_before_it_overloads#Walkthrough",
         "duration": 20,
         "icon": "2F030A07047DF63DE8F5DD3E5B7F0106FF4EB1ED/1769803",
@@ -94,7 +95,7 @@
         "repeat": "06:00",
         "difficulty": "none",
         "location": "Iron Marches",
-        "waypoint": "[&BOkBAAA=]",
+        "waypoint": "[&BOcBAAA=]",
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Ley-Line_Anomaly_to_disperse_its_destructive_energy_before_it_overloads#Walkthrough",
         "duration": 20,
         "icon": "2F030A07047DF63DE8F5DD3E5B7F0106FF4EB1ED/1769803",
@@ -106,7 +107,7 @@
         "repeat": "06:00",
         "difficulty": "none",
         "location": "Gendarran Fields",
-        "waypoint": "[&BI8BAAA=]",
+        "waypoint": "[&BOQAAAA=]",
         "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Ley-Line_Anomaly_to_disperse_its_destructive_energy_before_it_overloads#Walkthrough",
         "duration": 20,
         "icon": "2F030A07047DF63DE8F5DD3E5B7F0106FF4EB1ED/1769803",
@@ -836,7 +837,7 @@
         "repeat": "02:00",
         "difficulty": "none",
         "location": "Verdant Brink",
-        "waypoint": "[&BN4HAAA=]",
+        "waypoint": "[&BAgIAAA=]",
         "wiki": "https://wiki.guildwars2.com/wiki/Securing_Verdant_Brink",
         "duration": 75,
         "icon": "FB0BA9033D37C93346949B5EF001720D27CD07C2/1228233",
@@ -848,7 +849,7 @@
         "repeat": "02:00",
         "difficulty": "none",
         "location": "Verdant Brink",
-        "waypoint": "[&BN4HAAA=]",
+        "waypoint": "[&BAgIAAA=]",
         "wiki": "https://wiki.guildwars2.com/wiki/Night_and_the_Enemy",
         "duration": 25,
         "icon": "FB0BA9033D37C93346949B5EF001720D27CD07C2/1228233",
@@ -860,7 +861,7 @@
         "repeat": "02:00",
         "difficulty": "none",
         "location": "Verdant Brink",
-        "waypoint": "[&BN4HAAA=]",
+        "waypoint": "[&BAgIAAA=]",
         "wiki": "https://wiki.guildwars2.com/wiki/Night_and_the_Enemy",
         "duration": 20,
         "icon": "FB0BA9033D37C93346949B5EF001720D27CD07C2/1228233",
@@ -1293,7 +1294,8 @@
         "wiki": "https://wiki.guildwars2.com/wiki/Champion_of_the_Ice_Dragon",
         "duration": 35,
         "icon": "4B6BDF0614656A310E5041F454AA0AE40B26B709/2248191",
-        "color": "#8079afff"
+        "color": "#8079afff",
+        "api": "drakkar"
       }
     ]
   }

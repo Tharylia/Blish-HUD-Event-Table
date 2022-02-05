@@ -5,6 +5,7 @@
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.UI.Container;
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -13,6 +14,7 @@
 
     public class ModuleSettings
     {
+        private static readonly Logger Logger = Logger.GetLogger<ModuleSettings>();
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
 
         public SettingCollection Settings { get; private set; }
@@ -21,11 +23,14 @@
         public SettingCollection GlobalSettings { get; private set; }
         public SettingEntry<bool> GlobalEnabled { get; private set; }
         public SettingEntry<KeyBinding> GlobalEnabledHotkey { get; private set; }
+        public SettingEntry<bool> RegisterCornerIcon { get; private set; }
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> BackgroundColor { get; private set; }
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
+        public SettingEntry<bool> HideInCombat { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
+        public SettingEntry<TooltipTimeMode> TooltipTimeMode { get; private set; }
         public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
         public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
         public SettingEntry<BuildDirection> BuildDirection { get; private set; }
@@ -47,13 +52,15 @@
         private const string EVENT_LIST_SETTINGS = "event-table-event-list-settings";
         public SettingCollection EventSettings { get; private set; }
         public SettingEntry<string> EventTimeSpan { get; private set; } // Is listed in global
+        public SettingEntry<int> EventHistorySplit { get; private set; } // Is listed in global
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
-        public SettingEntry<EventTableContainer.FontSize/*ContentService.FontSize*/> EventFontSize { get; private set; } // Is listed in global
+        public SettingEntry<ContentService.FontSize> EventFontSize { get; private set; } // Is listed in global
         public SettingEntry<bool> UseFiller { get; private set; } // Is listed in global
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
+        public SettingEntry<WorldbossCompletedAction> WorldbossCompletedAcion {  get; private set; }
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -95,8 +102,14 @@
             this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
             this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
 
-            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on missing Mumble Tick", () => "Whether the event table should hide when mumble ticks are missing.");
+            this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => "Register Corner Icon", () => "Whether the event table should add it's own corner icon to access settings.");
+            this.RegisterCornerIcon.SettingChanged += this.SettingChanged;
+
+            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on Cutscenes", () => "Whether the event table should hide when cutscenes are played.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;
+
+            this.HideInCombat = this.GlobalSettings.DefineSetting(nameof(this.HideInCombat), false, () => "Hide in Combat", () => "Whether the event table should hide when the player is in combat.");
+            this.HideInCombat.SettingChanged += this.SettingChanged;
 
             this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Background Color", () => "Defines the background color.");
             this.BackgroundColor.SettingChanged += this.SettingChanged;
@@ -109,11 +122,15 @@
             //this.EventTimeSpan.SetRange(30, 60 * 5);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
 
+            this.EventHistorySplit = this.GlobalSettings.DefineSetting(nameof(this.EventHistorySplit), 50, () => "Event History Split", () => "Defines how much history the timespan should contain.");
+            this.EventHistorySplit.SetRange(0,75);
+            this.EventHistorySplit.SettingChanged += this.SettingChanged;
+
             this.EventHeight = this.GlobalSettings.DefineSetting(nameof(this.EventHeight), 20, () => "Event Height", () => "Defines the height of a single event row.");
             this.EventHeight.SetRange(5, 50);
             this.EventHeight.SettingChanged += this.SettingChanged;
 
-            this.EventFontSize = this.GlobalSettings.DefineSetting(nameof(this.EventFontSize), EventTableContainer.FontSize.Size16 /*ContentService.FontSize.Size16*/, () => "Event Font Size", () => "Defines the size of the font used for events.");
+            this.EventFontSize = this.GlobalSettings.DefineSetting(nameof(this.EventFontSize), ContentService.FontSize.Size16, () => "Event Font Size", () => "Defines the size of the font used for events.");
             this.EventFontSize.SettingChanged += this.SettingChanged;
 
             this.DrawEventBorder = this.GlobalSettings.DefineSetting(nameof(this.DrawEventBorder), true, () => "Draw Event Border", () => "Whether the events should have a small border.");
@@ -123,7 +140,10 @@
             this.DebugEnabled.SettingChanged += this.SettingChanged;
 
             this.ShowTooltips = this.GlobalSettings.DefineSetting(nameof(this.ShowTooltips), true, () => "Show Tooltips", () => "Whether the event table should display event information on hover.");
-            this.DebugEnabled.SettingChanged += this.SettingChanged;
+            this.ShowTooltips.SettingChanged += this.SettingChanged;
+
+            this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => "Tooltip Time Mode", () => "Defines the mode in which the tooltip times are displayed.");
+            this.TooltipTimeMode.SettingChanged += this.SettingChanged;
 
             this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => "Copy Waypoints", () => "Whether the event table should copy waypoints to clipboard if event has been left clicked.");
             this.CopyWaypointOnClick.SettingChanged += this.SettingChanged;
@@ -149,6 +169,9 @@
 
             this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Text Color", () => "Defines the text color of filler events.");
             this.FillerTextColor.SettingChanged += this.SettingChanged;
+
+            this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => "Worldboss Completed Action", () => "Defines the action when a worldboss has been completed.");
+            this.WorldbossCompletedAcion.SettingChanged += this.SettingChanged;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)
@@ -188,6 +211,10 @@
         private void SettingChanged<T>(object sender, ValueChangedEventArgs<T> e)
         {
             SettingEntry<T> settingEntry = (SettingEntry<T>)sender;
+            var prevValue = JsonConvert.SerializeObject(e.PreviousValue);
+            var newValue = JsonConvert.SerializeObject(e.NewValue);
+            Logger.Debug($"Changed setting \"{settingEntry.EntryKey}\" from \"{prevValue}\" to \"{newValue}\"");
+
             ModuleSettingsChanged?.Invoke(this, new ModuleSettingsChangedEventArgs() { Name = settingEntry.EntryKey, Value = e.NewValue });
         }
 

@@ -38,7 +38,7 @@
                 Size = new Point(48, 48),
                 Location = new Point(8, 8),
                 Parent = buildPanel,
-                Texture = EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon(this.Icon)
+                Texture = EventTableModule.ModuleInstance.ContentsManager.GetIcon(this.Icon)
             };
 
             var nameLabel = new Label()

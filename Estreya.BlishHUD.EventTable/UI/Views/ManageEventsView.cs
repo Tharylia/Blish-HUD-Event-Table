@@ -33,15 +33,15 @@
 
         private void UpdateToggleButton(GlowButton button)
         {
-            button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\plus.png"); // TODO: Own icon
+            button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\plus.png"); // TODO: Own icon
         }
 
         protected override void Build(Container buildPanel)
         {
             this.FlowPanel = new FlowPanel
             {
-                Width = buildPanel.Width,
-                Height = buildPanel.Height,
+                Width = buildPanel.ContentRegion.Width,
+                Height = buildPanel.ContentRegion.Height,
                 HeightSizingMode = SizingMode.Fill,
                 WidthSizingMode = SizingMode.Fill,
                 FlowDirection = ControlFlowDirection.TopToBottom,
@@ -169,7 +169,7 @@
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
 
-                    AsyncTexture2D icon = EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon(e.Icon);
+                    AsyncTexture2D icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
 
                     var button = new DetailsButton()
                     {
@@ -188,7 +188,7 @@
                             Parent = button,
                             ToggleGlow = false,
                             Tooltip = new Tooltip(new TooltipView("Waypoint", "Click to Copy", icon: "images\\waypoint.png")),
-                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\waypoint.png") // TODO: Own icon
+                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\waypoint.png") // TODO: Own icon
                         };
 
                         waypointButton.Click += (s, eventArgs) =>
@@ -204,7 +204,7 @@
                             Parent = button,
                             ToggleGlow = false,
                             Tooltip = new Tooltip(new TooltipView("Wiki", "Click to Open", icon: "images\\wiki.png")),
-                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetRenderIcon("images\\wiki.png") // TODO: Own icon
+                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\wiki.png") // TODO: Own icon
                         };
 
                         wikiButton.Click += (s, eventArgs) =>

@@ -22,8 +22,10 @@
         [JsonProperty("events")]
         public List<Event> Events { get; set; }
 
-        public List<KeyValuePair<DateTime, Event>> GetEventOccurences(List<SettingEntry<bool>> eventSettings, DateTime now, DateTime max, DateTime min, bool fillGaps)
+        public List<KeyValuePair<DateTime, Event>> GetEventOccurences(DateTime now, DateTime max, DateTime min, bool fillGaps)
         {
+            if (this.IsDisabled()) return new List<KeyValuePair<DateTime, Event>>();
+
             //var activeEvents = this.Events.Where(e => eventSettings.Find(eventSetting => eventSetting.EntryKey == e.Name).Value).ToList();
             var activeEvents = this.Events.Where(e => !e.IsDisabled()).ToList();
 
@@ -199,6 +201,19 @@
             //this.Events.AddRange(modifiedEventStarts.Where(e => e.Value.Filler).Select(e => e.Value));
 
             return modifiedEventStarts.OrderBy(mes => mes.Key).ToList();
+        }
+        public void Finish()
+        {
+            var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until, true);
+        }
+
+        public bool IsDisabled()
+        {
+            bool disabled = EventTableModule.ModuleInstance.HiddenState.IsHidden(this.Name);
+
+            return disabled;
         }
     }
 }

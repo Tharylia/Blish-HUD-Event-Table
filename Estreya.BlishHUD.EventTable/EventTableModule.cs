@@ -1,6 +1,7 @@
 ﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
+    using Blish_HUD.Content;
     using Blish_HUD.Controls;
     using Blish_HUD.Graphics.UI;
     using Blish_HUD.Modules;
@@ -12,6 +13,8 @@
     using Estreya.BlishHUD.EventTable.UI.Container;
     using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using MonoGame.Extended.BitmapFonts;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -39,15 +42,28 @@
 
         internal ModuleSettings ModuleSettings;
 
-        private WindowTab ManageEventTab { get; set; }
+        private CornerIcon CornerIcon { get; set; }
+
+        //private WindowTab ManageEventTab { get; set; }
 
         internal TabbedWindow2 SettingsWindow { get; private set; }
 
-        private IEnumerable<EventCategory> EventCategories { get; set; }
-
-        private bool visibleStateFromTick = true;
-
         internal bool Debug => this.ModuleSettings.DebugEnabled.Value;
+
+        private BitmapFont _font;
+
+        internal BitmapFont Font
+        {
+            get
+            {
+                if (this._font == null)
+                {
+                    this._font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, this.ModuleSettings.EventFontSize.Value, ContentService.FontStyle.Regular);
+                }
+
+                return this._font;
+            }
+        }
 
         internal int EventHeight => this.ModuleSettings?.EventHeight?.Value ?? 30;
         internal DateTime DateTimeNow => DateTime.Now;
@@ -82,11 +98,22 @@
             }
         }
 
+        internal float EventTimeSpanRatio
+        {
+            get
+            {
+                float ratio = 0.5f + ((this.ModuleSettings.EventHistorySplit.Value / 100f) - 0.5f);
+                return ratio;
+            }
+        }
+
         internal DateTime EventTimeMin
         {
             get
             {
-                DateTime min = EventTableModule.ModuleInstance.DateTimeNow.Subtract(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
+                var millis = this.EventTimeSpan.TotalMilliseconds * (this.EventTimeSpanRatio);
+                var timespan = TimeSpan.FromMilliseconds(millis);
+                DateTime min = EventTableModule.ModuleInstance.DateTimeNow.Subtract(timespan);
                 return min;
             }
         }
@@ -95,15 +122,25 @@
         {
             get
             {
-                DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(this.EventTimeSpan.Subtract(TimeSpan.FromMilliseconds(this.EventTimeSpan.TotalMilliseconds / 2)));
+                var millis = this.EventTimeSpan.TotalMilliseconds * (1f - this.EventTimeSpanRatio);
+                var timespan = TimeSpan.FromMilliseconds(millis);
+                DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(timespan);
                 return max;
             }
         }
 
+        private List<EventCategory> _eventCategories;
+
+        internal List<EventCategory> EventCategories
+        {
+            get => _eventCategories.Where(ec => !ec.IsDisabled()).ToList();
+            set => this._eventCategories = value;
+        }
+
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
 
-        internal HiddenState HiddenState { get; private set; }
-        internal WorldbossState WorldbossState { get; private set; }
+        public HiddenState HiddenState { get; private set; }
+        public WorldbossState WorldbossState { get; private set; }
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -122,15 +159,20 @@
 
         protected override async Task LoadAsync()
         {
+
             using (StreamReader eventsReader = new StreamReader(this.ContentsManager.GetFileStream("events.json")))
             {
                 string json = await eventsReader.ReadToEndAsync();
                 this.EventCategories = JsonConvert.DeserializeObject<List<EventCategory>>(json);
             }
 
-            this.ModuleSettings.InitializeEventSettings(this.EventCategories);
+            this._eventCategories.ForEach(ec => ec.Events.ForEach(e => e.EventCategory = ec));
 
-            this.Container = new EventTableContainer(this.EventCategories, this.ModuleSettings)
+            this.ModuleSettings.InitializeEventSettings(this._eventCategories);
+
+            await InitializeStates();
+
+            this.Container = new EventTableContainer()
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 BackgroundColor = Microsoft.Xna.Framework.Color.Transparent,
@@ -143,7 +185,7 @@
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                    //case nameof(this.ModuleSettings.Height):
+                        //case nameof(this.ModuleSettings.Height):
                         this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
@@ -152,12 +194,16 @@
                     case nameof(ModuleSettings.EventTimeSpan):
                         this._eventTimeSpan = TimeSpan.Zero;
                         break;
+                    case nameof(ModuleSettings.EventFontSize):
+                        this._font = null;
+                        break;
+                    case nameof(ModuleSettings.RegisterCornerIcon):
+                        this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
+                        break;
                     default:
                         break;
                 }
             };
-
-            await InitializeStates();
         }
 
         private async Task InitializeStates()
@@ -166,6 +212,15 @@
 
             this.HiddenState = new HiddenState(eventsDirectory);
             this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
+            this.WorldbossState.WorldbossCompleted += (s, e) =>
+            {
+                if (this.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Hide)
+                {
+                    var events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
+                    events.ForEach(ev => ev.Finish());
+
+                }
+            };
 
             lock (this.States)
             {
@@ -179,15 +234,55 @@
             }
         }
 
-        private void ToggleContainer(bool show)
+        private void HandleCornerIcon(bool show)
         {
-            if (this.ModuleSettings.GlobalEnabled.Value && show)
+            if (show)
             {
-                this.Container.Show();
+                this.CornerIcon = new CornerIcon()
+                {
+                    IconName = "Event Table",
+                    Icon = ContentsManager.GetTexture(@"images\event_boss_grey.png"),
+                };
+
+                this.CornerIcon.Click += (s, ea) =>
+                {
+                    this.SettingsWindow.ToggleWindow();
+                };
             }
             else
             {
-                if (this.Container != null)
+                if (this.CornerIcon != null)
+                {
+                    this.CornerIcon.Dispose();
+                    this.CornerIcon = null;
+                }
+            }
+        }
+
+        private void ToggleContainer(bool show)
+        {
+            if (this.Container == null) return;
+
+            if (!this.ModuleSettings.GlobalEnabled.Value)
+            {
+                if (this.Container.Visible)
+                {
+                    this.Container.Hide();
+                }
+
+                return;
+            }
+
+            if (show)
+            {
+                if (!this.Container.Visible)
+                {
+                    this.Container.Show();
+                }
+            }
+            else
+            {
+                if (this.Container.Visible)
                 {
                     this.Container.Hide();
                 }
@@ -196,7 +291,7 @@
 
         public override IView GetSettingsView()
         {
-            return new UI.Views.ModuleSettingsView(this.ModuleSettings);
+            return new UI.Views.ModuleSettingsView();
         }
 
         protected override void OnModuleLoaded(EventArgs e)
@@ -208,29 +303,36 @@
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
             this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
-            this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetRenderIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents));
+            //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
 
-            Rectangle settingsWindowSize = new Rectangle(24, 30, 1000, 630);
-            this.SettingsWindow = new TabbedWindow2(this.ContentsManager.GetRenderIcon(@"images\windowBackground.png"), settingsWindowSize, new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height))
+            Texture2D windowBackground = this.ContentsManager.GetIcon(@"images\502049.png", false);
+
+            Rectangle settingsWindowSize = new Rectangle(35, 26, 1100, 714);
+            int contentRegionPaddingY = settingsWindowSize.Y - 15;
+            int contentRegionPaddingX = settingsWindowSize.X + 46;
+            Rectangle contentRegion = new Rectangle(contentRegionPaddingX, contentRegionPaddingY, settingsWindowSize.Width - 46, settingsWindowSize.Height - contentRegionPaddingY);
+
+            this.SettingsWindow = new TabbedWindow2(windowBackground, settingsWindowSize, contentRegion)
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                Title = "TabbedWindow",
-                Emblem = this.ContentsManager.GetRenderIcon(@"images\event_boss.png"),
-                Subtitle = "Example Subtitle",
+                Title = "Event Table",
+                Emblem = this.ContentsManager.GetIcon(@"images\event_boss.png"),
+                Subtitle = "Settings",
                 SavesPosition = true,
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.SettingsWindow.Emblem, () => new UI.Views.ManageEventsView(this.EventCategories, this.ModuleSettings.AllEvents), "Events"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents), "Manage Events"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), "General Settings"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), "Graphic Settings"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), "Event Settings"));
+
+            this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
 
             if (this.ModuleSettings.GlobalEnabled.Value)
             {
                 this.ToggleContainer(true);
             }
-
-            GameService.Gw2Mumble.UI.IsMapOpenChanged += (s, eventArgs) => this.ToggleContainer(!eventArgs.Value);
-            GameService.Gw2Mumble.CurrentMap.MapChanged += (s, eventArgs) => this.ToggleContainer(GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate);
-
         }
 
         protected override void Update(GameTime gameTime)
@@ -306,16 +408,27 @@
 
         private void CheckMumble()
         {
-            if (this.Container != null)
+            if (GameService.Gw2Mumble.IsAvailable)
             {
-                if (GameService.Gw2Mumble.IsAvailable && this.ModuleSettings.HideOnMissingMumbleTicks.Value)
+                if (this.Container != null)
                 {
-                    bool tickState = GameService.Gw2Mumble.TimeSinceTick.TotalSeconds < 0.5;
-                    if (tickState != this.visibleStateFromTick)
+                    bool show = true;
+
+                    show &= !GameService.Gw2Mumble.UI.IsMapOpen;
+
+                    if (this.ModuleSettings.HideOnMissingMumbleTicks.Value)
                     {
-                        this.visibleStateFromTick = tickState;
-                        this.ToggleContainer(this.visibleStateFromTick);
+                        show &= GameService.Gw2Mumble.TimeSinceTick.TotalSeconds < 0.5;
                     }
+
+                    if (this.ModuleSettings.HideInCombat.Value)
+                    {
+                        show &= !GameService.Gw2Mumble.PlayerCharacter.IsInCombat;
+                    }
+
+                    show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
+
+                    this.ToggleContainer(show);
                 }
             }
         }
@@ -323,10 +436,12 @@
         /// <inheritdoc />
         protected override void Unload()
         {
+            /*
             if (this.ManageEventTab != null)
             {
                 GameService.Overlay.BlishHudWindow.RemoveTab(this.ManageEventTab);
             }
+            */
 
             if (this.Container != null)
             {
@@ -337,6 +452,8 @@
             {
                 this.SettingsWindow.Hide();
             }
+
+            this.HandleCornerIcon(false);
 
             Logger.Debug("Unloading states...");
             Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());

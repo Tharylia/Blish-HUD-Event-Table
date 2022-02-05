@@ -17,6 +17,9 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Estreya.BlishHUD.EventTable.Utils;
+    using MonoGame.Extended;
+    using Estreya.BlishHUD.EventTable.Extensions;
 
     [Serializable]
     public class Event
@@ -28,6 +31,8 @@
 
         [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
+        [JsonProperty("convertOffset")]
+        public bool ConvertOffset { get; set; } = true;
 
         [JsonProperty("repeat"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Repeat { get; set; }
@@ -51,11 +56,11 @@
         public string Icon { get; set; }
         [JsonProperty("color")]
         public string Color { get; set; }
-
-        [JsonProperty("filler")]
-        internal bool Filler { get; set; }
         [JsonProperty("api")]
-        internal string APICode { get; set; }
+        public string APICode { get; set; }
+
+        internal bool Filler { get; set; }
+        internal EventCategory EventCategory { get; set; }
 
         [JsonIgnore]
         private Tooltip _tooltip;
@@ -96,10 +101,15 @@
                     openWiki.Click += (s, e) => this.OpenWiki();
                     _contextMenuStrip.AddMenuItem(openWiki);
 
-                    ContextMenuStripItem finishedEvent = new ContextMenuStripItem();
-                    finishedEvent.Text = "Hide until Reset";
-                    finishedEvent.Click += (s, e) => this.Finish();
-                    _contextMenuStrip.AddMenuItem(finishedEvent);
+                    ContextMenuStripItem hideCategory = new ContextMenuStripItem();
+                    hideCategory.Text = "Hide category until Reset";
+                    hideCategory.Click += (s, e) => this.FinishCategory();
+                    _contextMenuStrip.AddMenuItem(hideCategory);
+
+                    ContextMenuStripItem hideEvent = new ContextMenuStripItem();
+                    hideEvent.Text = "Hide event until Reset";
+                    hideEvent.Click += (s, e) => this.Finish();
+                    _contextMenuStrip.AddMenuItem(hideEvent);
 
                     ContextMenuStripItem disable = new ContextMenuStripItem();
                     disable.Text = "Disable";
@@ -115,9 +125,15 @@
         {
             foreach (var eventStart in startOccurences)
             {
-                double width = this.GetWidth(eventStart, min, bounds, pixelPerMinute);
+                float width = (float)this.GetWidth(eventStart, min, bounds, pixelPerMinute);
+                if (width <= 0)
+                {
+                    // Why would it be negativ anyway?
+                    continue;
+                }
+
                 int y = this.GetYPosition(allCategories, currentCategory, eventHeight, EventTableModule.ModuleInstance.Debug);
-                double x = this.GetXPosition(eventStart, min, pixelPerMinute);
+                float x = (float)this.GetXPosition(eventStart, min, pixelPerMinute);
                 x = Math.Max(x, 0);
 
                 #region Draw Event Rectangle
@@ -131,7 +147,7 @@
                 }
 
 
-                Rectangle eventTexturePosition = new Rectangle((int)Math.Floor(x), y, (int)Math.Ceiling(width), eventHeight);
+                RectangleF eventTexturePosition = new RectangleF(x, y, width, eventHeight);
                 bool drawBorder = !this.Filler && EventTableModule.ModuleInstance.ModuleSettings.DrawEventBorder.Value;
 
                 this.DrawRectangle(spriteBatch, control, baseTexture, eventTexturePosition, color * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Microsoft.Xna.Framework.Color.Black);
@@ -150,12 +166,12 @@
 
                 #region Draw Event Name
 
-                Rectangle eventTextPosition = Rectangle.Empty;
+                RectangleF eventTextPosition = Rectangle.Empty;
                 if (!string.IsNullOrWhiteSpace(this.Name) && (!this.Filler || (this.Filler && EventTableModule.ModuleInstance.ModuleSettings.UseFillerEventNames.Value)))
                 {
                     string eventName = this.GetLongestEventName(eventTexturePosition.Width, font);
-                    eventTextPosition = new Rectangle(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, (int)Math.Floor(this.MeasureStringWidth(eventName, font)), eventTexturePosition.Height - 10);
-
+                    float eventTextWidth = this.MeasureStringWidth(eventName, font);
+                    eventTextPosition = new RectangleF(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, eventTextWidth, eventTexturePosition.Height - 10);
 
                     spriteBatch.DrawStringOnCtrl(control, eventName, font, eventTextPosition, textColor);
                 }
@@ -169,15 +185,15 @@
                 {
                     DateTime end = eventStart.AddMinutes(this.Duration);
                     TimeSpan timeRemaining = end.Subtract(now);
-                    string timeRemainingString = timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
-                    int timeRemainingWidth = (int)Math.Ceiling(this.MeasureStringWidth(timeRemainingString, font));
-                    int timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
+                    string timeRemainingString = FormatTime(timeRemaining);// timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
+                    float timeRemainingWidth = this.MeasureStringWidth(timeRemainingString, font);
+                    float timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
                     if (timeRemainingX < eventTextPosition.X + eventTextPosition.Width)
                     {
                         timeRemainingX = eventTextPosition.X + eventTextPosition.Width + 10;
                     }
 
-                    Rectangle eventTimeRemainingPosition = new Rectangle(timeRemainingX, eventTexturePosition.Y + 5, timeRemainingWidth, eventTexturePosition.Height - 10);
+                    RectangleF eventTimeRemainingPosition = new RectangleF(timeRemainingX, eventTexturePosition.Y + 5, timeRemainingWidth, eventTexturePosition.Height - 10);
 
                     if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
                     {
@@ -190,7 +206,7 @@
 
                 #region Draw Cross out
 
-                if (!this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
+                if (EventTableModule.ModuleInstance.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
                 {
                     if (EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode))
                     {
@@ -216,19 +232,24 @@
             {
                 DateTime end = filteredStartOccurences.First().AddMinutes(this.Duration);
                 TimeSpan timeRemaining = end.Subtract(now);
-                string timeRemainingString = this.FormatTimeSpan(timeRemaining);
+                string timeRemainingString = this.FormatTime(timeRemaining);
                 return timeRemainingString;
             }
 
             return null;
         }
 
-        private string FormatTimeSpan(TimeSpan ts)
+        private string FormatTime(TimeSpan ts)
         {
             return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
         }
 
-        private string GetLongestEventName(int maxSize, BitmapFont font)
+        private string FormatTime(DateTime dateTime)
+        {
+            return dateTime.Hour > 0 ? dateTime.ToString("HH:mm:ss") : dateTime.ToString("mm:ss");
+        }
+
+        private string GetLongestEventName(float maxSize, BitmapFont font)
         {
             float size = this.MeasureStringWidth(this.Name, font);
 
@@ -261,9 +282,11 @@
             return font.MeasureString(text).Width + 10; // TODO: Why is +10 needed?
         }
 
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
+        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
         {
             spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+
+            //spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
         }
 
         private void DrawLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
@@ -271,35 +294,39 @@
             spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
         }
 
-        private void DrawCrossOut(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
+        private void DrawCrossOut(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
         {
-            Point topLeft = new Point(coords.Left, coords.Top);
-            Point topRight = new Point(coords.Right, coords.Top);
-            Point bottomLeft = new Point(coords.Left, coords.Bottom);
-            Point bottomRight = new Point(coords.Right, coords.Bottom);
+            Point2 topLeft = new Point2(coords.Left, coords.Top);
+            Point2 topRight = new Point2(coords.Right, coords.Top);
+            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom);
+            Point2 bottomRight = new Point2(coords.Right, coords.Bottom);
 
             this.DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
             this.DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);
         }
 
-        private void DrawAngledLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point start, Point end, Color color)
+        private void DrawAngledLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point2 start, Point2 end, Color color)
         {
-            int length = (int)Math.Floor(Helpers.MathHelper.CalculeDistance(start, end));
-            Rectangle lineRectangle = new Rectangle(start.X, start.Y, length, 1);
-            float angle = (float)Helpers.MathHelper.CalculeAngle(start, end);
-            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, null, color, angle, new Vector2(0f, 0f));
+            float length = Helpers.MathHelper.CalculeDistance(start, end);
+            RectangleF lineRectangle = new RectangleF(start.X, start.Y, length, 1);
+            float angle = Helpers.MathHelper.CalculeAngle(start, end);
+            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, color, angle);
         }
 
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color, int borderSize, Color borderColor)
+        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color, int borderSize, Color borderColor)
         {
             this.DrawRectangle(spriteBatch, control, baseTexture, coords, color);
 
             if (borderSize > 0 && borderColor != Microsoft.Xna.Framework.Color.Transparent)
             {
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
             }
         }
 
@@ -338,7 +365,7 @@
             DateTime zero = new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
             TimeSpan offset = this.Offset;
-            if (addTimezoneOffset)
+            if (this.ConvertOffset && addTimezoneOffset)
             {
                 offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now));
             }
@@ -447,7 +474,12 @@
             }
 
             // Only draw event until end of form
-            eventWidth = Math.Min(eventWidth, bounds.Width/* - x*/);
+            if ((x > 0 ? x : 0) + eventWidth > bounds.Width)
+            {
+                eventWidth = bounds.Width - (x > 0 ? x : 0);
+            }
+
+            //eventWidth = Math.Min(eventWidth, bounds.Width/* - x*/);
 
             return eventWidth;
         }
@@ -520,25 +552,37 @@
                 if (hoveredOccurences.Any())
                 {
                     var hoveredOccurence = hoveredOccurences.First();
-                    bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
-                    bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
-                    bool isCurrent = !isPrev && !isNext;
 
-                    if (isPrev)
+                    if (EventTableModule.ModuleInstance.ModuleSettings.TooltipTimeMode.Value == TooltipTimeMode.Relative)
                     {
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nFinished since: {FormatTimeSpan(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
+                        bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
+                        bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
+                        bool isCurrent = !isPrev && !isNext;
+
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n";
+
+                        if (isPrev)
+                        {
+                            description += $"Finished since: {FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
+                        }
+                        else if (isNext)
+                        {
+                            description += $"Starts in: {FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                        }
+                        else if (isCurrent)
+                        {
+                            description += $"Remaining: {FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
+                        }
                     }
-                    else if (isNext)
+                    else
                     {
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nStarts in: {FormatTimeSpan(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                        // Absolute
+                        description += $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nStarts at: {FormatTime(hoveredOccurence)}";
                     }
-                    else if (isCurrent)
-                    {
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nRemaining: {FormatTimeSpan(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
-                    }
-                } else
+                }
+                else
                 {
-                    Logger.Error($"Can't find hovered event: {this.Name} - {string.Join(", ",occurences.Select(o => o.ToString()))}");
+                    Logger.Error($"Can't find hovered event: {this.Name} - {string.Join(", ", occurences.Select(o => o.ToString()))}");
                 }
 
                 this.UpdateTooltip(description);
@@ -555,14 +599,21 @@
             }
         }
 
-        private void Finish()
+        public void Finish()
         {
             var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
             EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until, true);
         }
 
-        private void Disable()
+        public void FinishCategory()
+        {
+            var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            EventTableModule.ModuleInstance.HiddenState.Add(this.EventCategory.Name, until, true);
+        }
+
+        public void Disable()
         {
             var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
             if (eventSetting.Any())
