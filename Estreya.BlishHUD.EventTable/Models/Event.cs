@@ -474,9 +474,9 @@
             }
 
             // Only draw event until end of form
-            if (x + eventWidth > bounds.Width)
+            if ((x > 0 ? x : 0) + eventWidth > bounds.Width)
             {
-                eventWidth = bounds.Width - x;
+                eventWidth = bounds.Width - (x > 0 ? x : 0);
             }
 
             //eventWidth = Math.Min(eventWidth, bounds.Width/* - x*/);
