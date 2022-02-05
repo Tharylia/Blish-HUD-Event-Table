@@ -62,6 +62,7 @@
       {
         "name": "Server Reset",
         "offset": "00:00",
+        "convertOffset": false,
         "repeat": "01.00:00",
         "location": "",
         "waypoint": "",

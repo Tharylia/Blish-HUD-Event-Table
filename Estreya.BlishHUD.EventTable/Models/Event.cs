@@ -31,6 +31,8 @@
 
         [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
+        [JsonProperty("convertOffset")]
+        public bool ConvertOffset { get; set; } = true;
 
         [JsonProperty("repeat"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Repeat { get; set; }
@@ -56,6 +58,7 @@
         public string Color { get; set; }
         [JsonProperty("api")]
         public string APICode { get; set; }
+
         internal bool Filler { get; set; }
         internal EventCategory EventCategory { get; set; }
 
@@ -362,7 +365,7 @@
             DateTime zero = new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
             TimeSpan offset = this.Offset;
-            if (addTimezoneOffset)
+            if (this.ConvertOffset && addTimezoneOffset)
             {
                 offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now));
             }
