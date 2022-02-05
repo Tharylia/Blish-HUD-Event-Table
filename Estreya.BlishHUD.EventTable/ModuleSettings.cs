@@ -23,6 +23,7 @@
         public SettingCollection GlobalSettings { get; private set; }
         public SettingEntry<bool> GlobalEnabled { get; private set; }
         public SettingEntry<KeyBinding> GlobalEnabledHotkey { get; private set; }
+        public SettingEntry<bool> RegisterCornerIcon { get; private set; }
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> BackgroundColor { get; private set; }
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
@@ -100,6 +101,9 @@
             this.GlobalEnabledHotkey.Value.Enabled = true;
             this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
             this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
+
+            this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => "Register Corner Icon", () => "Whether the event table should add it's own corner icon to access settings.");
+            this.RegisterCornerIcon.SettingChanged += this.SettingChanged;
 
             this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on Cutscenes", () => "Whether the event table should hide when cutscenes are played.");
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;

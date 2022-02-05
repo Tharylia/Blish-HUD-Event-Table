@@ -21,6 +21,8 @@
             RenderSetting(parent, ModuleSettings.DebugEnabled);
 
 #endif
+            RenderSetting(parent, ModuleSettings.RegisterCornerIcon);
+            RenderEmptyLine(parent);
             RenderSetting(parent, ModuleSettings.HideOnMissingMumbleTicks);
             RenderSetting(parent, ModuleSettings.HideInCombat);
             RenderSetting(parent, ModuleSettings.ShowTooltips);

@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -41,6 +41,8 @@ namespace Estreya.BlishHUD.EventTable
         #endregion
 
         internal ModuleSettings ModuleSettings;
+
+        private CornerIcon CornerIcon { get; set; }
 
         //private WindowTab ManageEventTab { get; set; }
 
@@ -195,6 +197,9 @@ namespace Estreya.BlishHUD.EventTable
                     case nameof(ModuleSettings.EventFontSize):
                         this._font = null;
                         break;
+                    case nameof(ModuleSettings.RegisterCornerIcon):
+                        this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
+                        break;
                     default:
                         break;
                 }
@@ -226,6 +231,31 @@ namespace Estreya.BlishHUD.EventTable
             foreach (ManagedState state in this.States)
             {
                 await state.Start();
+            }
+        }
+
+        private void HandleCornerIcon(bool show)
+        {
+            if (show)
+            {
+                this.CornerIcon = new CornerIcon()
+                {
+                    IconName = "Event Table",
+                    Icon = ContentsManager.GetTexture(@"images\event_boss_grey.png"),
+                };
+
+                this.CornerIcon.Click += (s, ea) =>
+                {
+                    this.SettingsWindow.ToggleWindow();
+                };
+            }
+            else
+            {
+                if (this.CornerIcon != null)
+                {
+                    this.CornerIcon.Dispose();
+                    this.CornerIcon = null;
+                }
             }
         }
 
@@ -274,7 +304,7 @@ namespace Estreya.BlishHUD.EventTable
             this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
             //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
-            
+
             Texture2D windowBackground = this.ContentsManager.GetIcon(@"images\502049.png", false);
 
             Rectangle settingsWindowSize = new Rectangle(35, 26, 1100, 714);
@@ -296,6 +326,8 @@ namespace Estreya.BlishHUD.EventTable
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), "General Settings"));
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), "Graphic Settings"));
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), "Event Settings"));
+
+            this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
 
             if (this.ModuleSettings.GlobalEnabled.Value)
             {
@@ -420,6 +452,8 @@ namespace Estreya.BlishHUD.EventTable
             {
                 this.SettingsWindow.Hide();
             }
+
+            this.HandleCornerIcon(false);
 
             Logger.Debug("Unloading states...");
             Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
