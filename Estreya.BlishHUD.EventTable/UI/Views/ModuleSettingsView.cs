@@ -47,8 +47,10 @@
             {
                 Parent = settingContainer,
                 Text = buttonText,
-                Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(buttonText).Width
+                Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(buttonText).Width,
             };
+
+            button.Location = new Point(Math.Max(buildPanel.Width / 2 - button.Width / 2, 20), Math.Max(buildPanel.Height / 2 - button.Height, 20));
 
             button.Click += (s, e) => EventTableModule.ModuleInstance.SettingsWindow.ToggleWindow();
         }

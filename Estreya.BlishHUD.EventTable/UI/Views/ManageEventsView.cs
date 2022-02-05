@@ -40,8 +40,8 @@
         {
             this.FlowPanel = new FlowPanel
             {
-                Width = buildPanel.Width,
-                Height = buildPanel.Height,
+                Width = buildPanel.ContentRegion.Width,
+                Height = buildPanel.ContentRegion.Height,
                 HeightSizingMode = SizingMode.Fill,
                 WidthSizingMode = SizingMode.Fill,
                 FlowDirection = ControlFlowDirection.TopToBottom,

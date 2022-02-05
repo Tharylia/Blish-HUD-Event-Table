@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -42,7 +42,7 @@
 
         internal ModuleSettings ModuleSettings;
 
-        private WindowTab ManageEventTab { get; set; }
+        //private WindowTab ManageEventTab { get; set; }
 
         internal TabbedWindow2 SettingsWindow { get; private set; }
 
@@ -273,11 +273,15 @@
             this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
             this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
-            this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
+            //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
             
-            Rectangle settingsWindowSize = new Rectangle(0, 30, 1100, 720);
-            Rectangle contentRegion = new Rectangle(settingsWindowSize.X + 46, settingsWindowSize.Y, settingsWindowSize.Width - 46, settingsWindowSize.Height);
-            Texture2D windowBackground = this.ContentsManager.GetIcon(@"controls/window/502049", false);
+            Texture2D windowBackground = this.ContentsManager.GetIcon(@"images\502049.png", false);
+
+            Rectangle settingsWindowSize = new Rectangle(35, 26, 1100, 714);
+            int contentRegionPaddingY = settingsWindowSize.Y - 15;
+            int contentRegionPaddingX = settingsWindowSize.X + 46;
+            Rectangle contentRegion = new Rectangle(contentRegionPaddingX, contentRegionPaddingY, settingsWindowSize.Width - 46, settingsWindowSize.Height - contentRegionPaddingY);
+
             this.SettingsWindow = new TabbedWindow2(windowBackground, settingsWindowSize, contentRegion)
             {
                 Parent = GameService.Graphics.SpriteScreen,
@@ -288,9 +292,9 @@
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents), "Manage Events"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents), "Manage Events"));
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), "General Settings"));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), "Graphic Settings"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), "Graphic Settings"));
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), "Event Settings"));
 
             if (this.ModuleSettings.GlobalEnabled.Value)
@@ -400,10 +404,12 @@
         /// <inheritdoc />
         protected override void Unload()
         {
+            /*
             if (this.ManageEventTab != null)
             {
                 GameService.Overlay.BlishHudWindow.RemoveTab(this.ManageEventTab);
             }
+            */
 
             if (this.Container != null)
             {
