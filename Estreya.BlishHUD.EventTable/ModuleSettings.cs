@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -9,12 +9,15 @@ namespace Estreya.BlishHUD.EventTable
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Forms;
 
     public class ModuleSettings
     {
         private static readonly Logger Logger = Logger.GetLogger<ModuleSettings>();
+        private Gw2Sharp.WebApi.V2.Models.Color DefaultGW2Color { get; set; }
+
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
 
         public SettingCollection Settings { get; private set; }
@@ -73,21 +76,15 @@ namespace Estreya.BlishHUD.EventTable
             this.InitializeLocationSettings(settings);
         }
 
-        public void InitializeEventSettings(IEnumerable<EventCategory> eventCategories)
+        public async Task Load()
         {
-            this.EventSettings = this.Settings.AddSubCollection(EVENT_SETTINGS);
-
-            SettingCollection eventList = this.EventSettings.AddSubCollection(EVENT_LIST_SETTINGS);
-            foreach (EventCategory category in eventCategories)
+            try
             {
-                IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
-                foreach (Event e in events)
-                {
-                    SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.Name, true);
-                    setting.SettingChanged += this.SettingChanged;
-
-                    this.AllEvents.Add(setting);
-                }
+                this.DefaultGW2Color = await EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"Could not load default gw2 color: {ex.Message}");
             }
         }
 
@@ -119,7 +116,7 @@ namespace Estreya.BlishHUD.EventTable
             this.HideInCombat = this.GlobalSettings.DefineSetting(nameof(this.HideInCombat), false, () => "Hide in Combat", () => "Whether the event table should hide when the player is in combat.");
             this.HideInCombat.SettingChanged += this.SettingChanged;
 
-            this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Background Color", () => "Defines the background color.");
+            this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), this.DefaultGW2Color, () => "Background Color", () => "Defines the background color.");
             this.BackgroundColor.SettingChanged += this.SettingChanged;
 
             this.BackgroundColorOpacity = this.GlobalSettings.DefineSetting(nameof(BackgroundColorOpacity), 0.0f, () => "Background Color Opacity", () => "Defines the opacity of the background.");
@@ -172,10 +169,10 @@ namespace Estreya.BlishHUD.EventTable
             this.UseFillerEventNames = this.GlobalSettings.DefineSetting(nameof(this.UseFillerEventNames), false, () => "Use Filler Event Names", () => "Whether the event fillers should have names.");
             this.UseFillerEventNames.SettingChanged += this.SettingChanged;
 
-            this.TextColor = this.GlobalSettings.DefineSetting(nameof(TextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Text Color", () => "Defines the text color of events.");
+            this.TextColor = this.GlobalSettings.DefineSetting(nameof(TextColor), this.DefaultGW2Color, () => "Text Color", () => "Defines the text color of events.");
             this.TextColor.SettingChanged += this.SettingChanged;
 
-            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.GetAsync(1).Result, () => "Filler Text Color", () => "Defines the text color of filler events.");
+            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), this.DefaultGW2Color, () => "Filler Text Color", () => "Defines the text color of filler events.");
             this.FillerTextColor.SettingChanged += this.SettingChanged;
 
             this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => "Worldboss Completed Action", () => "Defines the action when a worldboss has been completed.");
@@ -214,6 +211,24 @@ namespace Estreya.BlishHUD.EventTable
             this.Width = this.LocationSettings.DefineSetting(nameof(this.Width), (int)(width * 0.5), () => "Width", () => "The width of the event table.");
             this.Width.SetRange(0, (int)width);// GameService.Graphics.Resolution.X);
             this.Width.SettingChanged += this.SettingChanged;
+        }
+
+        public void InitializeEventSettings(IEnumerable<EventCategory> eventCategories)
+        {
+            this.EventSettings = this.Settings.AddSubCollection(EVENT_SETTINGS);
+
+            SettingCollection eventList = this.EventSettings.AddSubCollection(EVENT_LIST_SETTINGS);
+            foreach (EventCategory category in eventCategories)
+            {
+                IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
+                foreach (Event e in events)
+                {
+                    SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.Name, true);
+                    setting.SettingChanged += this.SettingChanged;
+
+                    this.AllEvents.Add(setting);
+                }
+            }
         }
 
         private void SettingChanged<T>(object sender, ValueChangedEventArgs<T> e)

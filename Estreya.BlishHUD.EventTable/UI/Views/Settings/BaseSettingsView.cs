@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD.Controls;
     using Microsoft.Xna.Framework;
@@ -10,9 +10,11 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Blish_HUD;
 
     public abstract class BaseSettingsView : View
     {
+        private static readonly Logger Logger = Logger.GetLogger<BaseSettingsView>();
         protected ModuleSettings ModuleSettings { get; set; }
 
         private static IEnumerable<Gw2Sharp.WebApi.V2.Models.Color> Colors { get; set; }
@@ -33,7 +35,15 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
             if (Colors == null)
             {
                 progress.Report("Loading Colors...");
-                Colors = await EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.AllAsync();
+
+                try
+                {
+                    Colors = await EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.AllAsync();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"Could not load gw2 colors: {ex.Message}");
+                }
             }
 
             if (ColorPicker == null)
@@ -60,9 +70,12 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
                 };
 
                 progress.Report($"Adding Colors to ColorPicker...");
-                foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+                if (Colors != null)
                 {
-                    ColorPicker.Colors.Add(color);
+                    foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+                    {
+                        ColorPicker.Colors.Add(color);
+                    }
                 }
             }
 

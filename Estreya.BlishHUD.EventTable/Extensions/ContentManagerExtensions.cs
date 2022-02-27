@@ -15,6 +15,7 @@
 
     public static class ContentManagerExtensions
     {
+        private static readonly Logger Logger = Logger.GetLogger(typeof(ContentManagerExtensions));
         private static Dictionary<string, AsyncTexture2D> IconCache { get; set; } = new Dictionary<string, AsyncTexture2D>();
 
         public static AsyncTexture2D GetIcon(this ContentsManager manager, string identifier, bool checkRenderAPI = true)
@@ -33,7 +34,14 @@
                 {
                     if (checkRenderAPI && identifier.Contains("/"))
                     {
-                        icon = GameService.Content.GetRenderServiceTexture(identifier);
+                        try
+                        {
+                            icon = GameService.Content.GetRenderServiceTexture(identifier);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Warn($"Could not load icon from render api: {ex.Message}");
+                        }
                     }
                     else
                     {

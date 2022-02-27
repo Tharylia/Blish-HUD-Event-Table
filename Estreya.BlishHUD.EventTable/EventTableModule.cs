@@ -163,6 +163,7 @@ namespace Estreya.BlishHUD.EventTable
 
         protected override async Task LoadAsync()
         {
+            await this.ModuleSettings.Load();
 
             await InitializeStates(true);
 
