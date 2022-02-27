@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -414,7 +414,10 @@
                 {
                     bool show = true;
 
+                    if (this.ModuleSettings.HideOnOpenMap.Value)
+                    {
                     show &= !GameService.Gw2Mumble.UI.IsMapOpen;
+                    }
 
                     if (this.ModuleSettings.HideOnMissingMumbleTicks.Value)
                     {
