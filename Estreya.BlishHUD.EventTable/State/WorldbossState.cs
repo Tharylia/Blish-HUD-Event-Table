@@ -3,6 +3,7 @@
     using Blish_HUD;
     using Blish_HUD.Modules.Managers;
     using Estreya.BlishHUD.EventTable.Utils;
+    using Gw2Sharp.WebApi.Exceptions;
     using Microsoft.Xna.Framework;
     using System;
     using System.Collections.Generic;
@@ -68,13 +69,22 @@
                             try
                             {
                                 this.WorldbossCompleted?.Invoke(this, boss);
-                            }catch (Exception ex)
+                            }
+                            catch (Exception ex)
                             {
                                 Logger.Error($"Error handling complete worldboss event: {ex.Message}");
                             }
                         }
                     }
                 }
+            }
+            catch (MissingScopesException msex)
+            {
+                Logger.Warn($"Could not update completed worldbosses due to missing scopes: {msex.Message}");
+            }
+            catch (InvalidAccessTokenException iatex)
+            {
+                Logger.Warn($"Could not update completed worldbosses due to invalid access token: {iatex.Message}");
             }
             catch (Exception ex)
             {

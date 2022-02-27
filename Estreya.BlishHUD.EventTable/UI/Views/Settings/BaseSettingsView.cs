@@ -10,9 +10,11 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Blish_HUD;
 
     public abstract class BaseSettingsView : View
     {
+        private static readonly Logger Logger = Logger.GetLogger<BaseSettingsView>();
         protected ModuleSettings ModuleSettings { get; set; }
 
         private static IEnumerable<Gw2Sharp.WebApi.V2.Models.Color> Colors { get; set; }
@@ -33,7 +35,15 @@
             if (Colors == null)
             {
                 progress.Report("Loading Colors...");
-                Colors = await EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.AllAsync();
+
+                try
+                {
+                    Colors = await EventTableModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Colors.AllAsync();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"Could not load gw2 colors: {ex.Message}");
+                }
             }
 
             if (ColorPicker == null)
@@ -60,9 +70,12 @@
                 };
 
                 progress.Report($"Adding Colors to ColorPicker...");
-                foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+                if (Colors != null)
                 {
-                    ColorPicker.Colors.Add(color);
+                    foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+                    {
+                        ColorPicker.Colors.Add(color);
+                    }
                 }
             }
 
@@ -134,7 +147,7 @@
 
         }
 
-        protected void RenderButton(Panel parent,string text, Action action)
+        protected void RenderButton(Panel parent,string text, Action action, Func<bool> disabledCallback = null)
         {
                 var settingContainer = new ViewContainer()
                 {
@@ -147,7 +160,8 @@
             {
                 Parent = settingContainer,
                 Text = text,
-                Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width
+                Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width,
+                Enabled = !disabledCallback?.Invoke() ?? true,
             };
 
             button.Click += (s, e) => action.Invoke();
