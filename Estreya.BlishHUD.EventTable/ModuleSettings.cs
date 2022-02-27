@@ -24,6 +24,7 @@ namespace Estreya.BlishHUD.EventTable
         public SettingEntry<bool> GlobalEnabled { get; private set; }
         public SettingEntry<KeyBinding> GlobalEnabledHotkey { get; private set; }
         public SettingEntry<bool> RegisterCornerIcon { get; private set; }
+        public SettingEntry<bool> AutomaticallyUpdateEventFile { get; private set; }
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> BackgroundColor { get; private set; }
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
@@ -105,6 +106,9 @@ namespace Estreya.BlishHUD.EventTable
 
             this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => "Register Corner Icon", () => "Whether the event table should add it's own corner icon to access settings.");
             this.RegisterCornerIcon.SettingChanged += this.SettingChanged;
+
+            this.AutomaticallyUpdateEventFile = this.GlobalSettings.DefineSetting(nameof(this.AutomaticallyUpdateEventFile), true, () => "Automatically Update Event File", () => "Whether the event table should automatically update the exported event file to the newest version.");
+            this.AutomaticallyUpdateEventFile.SettingChanged += this.SettingChanged;
 
             this.HideOnOpenMap = this.GlobalSettings.DefineSetting(nameof(this.HideOnOpenMap), true, () => "Hide on open Map", () => "Whether the event table should hide when the map is open.");
             this.HideOnOpenMap.SettingChanged += this.SettingChanged;

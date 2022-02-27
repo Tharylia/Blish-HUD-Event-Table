@@ -1,6 +1,7 @@
 ﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -14,7 +15,7 @@
         }
 
         protected override void InternalBuild(FlowPanel parent)
-        {           
+        {
             RenderSetting(parent, ModuleSettings.EventHeight);
             RenderSetting(parent, ModuleSettings.EventFontSize);
             RenderSetting(parent, ModuleSettings.EventTimeSpan);
@@ -22,6 +23,13 @@
             RenderSetting(parent, ModuleSettings.DrawEventBorder);
             RenderEmptyLine(parent);
             RenderSetting(parent, ModuleSettings.WorldbossCompletedAcion);
+            RenderEmptyLine(parent);
+            RenderSetting(parent, ModuleSettings.AutomaticallyUpdateEventFile);
+            RenderButton(parent, "Update Event File", () =>
+            {
+                AsyncHelper.RunSync(EventTableModule.ModuleInstance.EventFileState.ExportFile);
+                ScreenNotification.ShowNotification("Successfully updated!");
+            }/*, () => !AsyncHelper.RunSync( EventTableModule.ModuleInstance.EventSettingsFileManager.IsNewEventFileVersionAvaiable)*/);
             RenderEmptyLine(parent);
             RenderButton(parent, "Reset hidden states", () =>
             {

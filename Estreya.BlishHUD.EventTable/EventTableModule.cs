@@ -8,7 +8,9 @@ namespace Estreya.BlishHUD.EventTable
     using Blish_HUD.Modules.Managers;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Extensions;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Models;
+    using Estreya.BlishHUD.EventTable.Models.Settings;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Container;
     using Gw2Sharp.Models;
@@ -142,6 +144,8 @@ namespace Estreya.BlishHUD.EventTable
         public HiddenState HiddenState { get; private set; }
         public WorldbossState WorldbossState { get; private set; }
 
+        public EventFileState EventFileState { get; private set; }
+
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
         {
@@ -160,17 +164,17 @@ namespace Estreya.BlishHUD.EventTable
         protected override async Task LoadAsync()
         {
 
-            using (StreamReader eventsReader = new StreamReader(this.ContentsManager.GetFileStream("events.json")))
-            {
-                string json = await eventsReader.ReadToEndAsync();
-                this.EventCategories = JsonConvert.DeserializeObject<List<EventCategory>>(json);
-            }
+            await InitializeStates(true);
+
+            string eventFileContent = await this.EventFileState.GetExternalFileContent();
+
+            this._eventCategories = JsonConvert.DeserializeObject<EventSettingsFile>(eventFileContent).EventCategories ?? new List<EventCategory>();
 
             this._eventCategories.ForEach(ec => ec.Events.ForEach(e => e.EventCategory = ec));
 
             this.ModuleSettings.InitializeEventSettings(this._eventCategories);
 
-            await InitializeStates();
+            await InitializeStates(false);
 
             this.Container = new EventTableContainer()
             {
@@ -206,10 +210,12 @@ namespace Estreya.BlishHUD.EventTable
             };
         }
 
-        private async Task InitializeStates()
+        private async Task InitializeStates(bool beforeFileLoaded = false)
         {
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
+            if (!beforeFileLoaded)
+            {
             this.HiddenState = new HiddenState(eventsDirectory);
             this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
             this.WorldbossState.WorldbossCompleted += (s, e) =>
@@ -221,11 +227,24 @@ namespace Estreya.BlishHUD.EventTable
 
                 }
             };
+            }
+            else
+            {
+                this.EventFileState = new EventFileState(this.ContentsManager, eventsDirectory, "events.json");
+            }
+
 
             lock (this.States)
             {
+                if (!beforeFileLoaded)
+                {
                 this.States.Add(this.HiddenState);
                 this.States.Add(this.WorldbossState);
+                }
+                else
+                {
+                    this.States.Add(this.EventFileState);
+                }
             }
 
             foreach (ManagedState state in this.States)
@@ -296,7 +315,6 @@ namespace Estreya.BlishHUD.EventTable
 
         protected override void OnModuleLoaded(EventArgs e)
         {
-
             // Base handler must be called
             base.OnModuleLoaded(e);
 

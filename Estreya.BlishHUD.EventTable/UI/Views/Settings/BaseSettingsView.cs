@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views
+namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD.Controls;
     using Microsoft.Xna.Framework;
@@ -134,7 +134,7 @@
 
         }
 
-        protected void RenderButton(Panel parent,string text, Action action)
+        protected void RenderButton(Panel parent,string text, Action action, Func<bool> disabledCallback = null)
         {
                 var settingContainer = new ViewContainer()
                 {
@@ -147,7 +147,8 @@
             {
                 Parent = settingContainer,
                 Text = text,
-                Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width
+                Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width,
+                Enabled = !disabledCallback?.Invoke() ?? true,
             };
 
             button.Click += (s, e) => action.Invoke();
