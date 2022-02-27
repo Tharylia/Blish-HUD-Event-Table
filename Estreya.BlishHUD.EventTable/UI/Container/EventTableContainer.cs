@@ -19,9 +19,10 @@
 
     public class EventTableContainer : Blish_HUD.Controls.Container
     {
-
         private TimeSpan TimeSinceDraw { get; set; }
         private bool _currentVisibilityDirection = false;
+
+        private static bool CursorVisible => GameService.Input.Mouse.CursorIsVisible;
 
         public new bool Visible
         {
@@ -70,6 +71,8 @@
 
         private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
+            if (!CursorVisible) return;
+
             var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
@@ -89,6 +92,8 @@
 
         private void EventTableContainer_Click(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
+            if (!CursorVisible) return;
+
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events)
