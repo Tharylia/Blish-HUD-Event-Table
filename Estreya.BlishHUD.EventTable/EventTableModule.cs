@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -136,7 +136,6 @@ namespace Estreya.BlishHUD.EventTable
         internal List<EventCategory> EventCategories
         {
             get => _eventCategories.Where(ec => !ec.IsDisabled()).ToList();
-            set => this._eventCategories = value;
         }
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
@@ -217,17 +216,17 @@ namespace Estreya.BlishHUD.EventTable
 
             if (!beforeFileLoaded)
             {
-            this.HiddenState = new HiddenState(eventsDirectory);
-            this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
-            this.WorldbossState.WorldbossCompleted += (s, e) =>
-            {
-                if (this.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Hide)
+                this.HiddenState = new HiddenState(eventsDirectory);
+                this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
+                this.WorldbossState.WorldbossCompleted += (s, e) =>
                 {
-                    var events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
-                    events.ForEach(ev => ev.Finish());
+                    if (this.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Hide)
+                    {
+                        var events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
+                        events.ForEach(ev => ev.Finish());
 
-                }
-            };
+                    }
+                };
             }
             else
             {
@@ -239,8 +238,8 @@ namespace Estreya.BlishHUD.EventTable
             {
                 if (!beforeFileLoaded)
                 {
-                this.States.Add(this.HiddenState);
-                this.States.Add(this.WorldbossState);
+                    this.States.Add(this.HiddenState);
+                    this.States.Add(this.WorldbossState);
                 }
                 else
                 {
@@ -435,7 +434,7 @@ namespace Estreya.BlishHUD.EventTable
 
                     if (this.ModuleSettings.HideOnOpenMap.Value)
                     {
-                    show &= !GameService.Gw2Mumble.UI.IsMapOpen;
+                        show &= !GameService.Gw2Mumble.UI.IsMapOpen;
                     }
 
                     if (this.ModuleSettings.HideOnMissingMumbleTicks.Value)
