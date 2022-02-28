@@ -19,11 +19,11 @@
   "api_permissions": {
     "account": {
       "optional": true,
-      "details": "Needed to strike out the completed worldbosses."
+      "details": "Needed to check for completed worldbosses."
     },
     "progression": {
       "optional": true,
-      "details": "Needed to strike out the completed worldbosses."
+      "details": "Needed to check for completed worldbosses."
     }
   }
 }
