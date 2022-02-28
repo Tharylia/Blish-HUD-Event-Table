@@ -16,7 +16,8 @@
     public class ModuleSettings
     {
         private static readonly Logger Logger = Logger.GetLogger<ModuleSettings>();
-        private Gw2Sharp.WebApi.V2.Models.Color DefaultGW2Color { get; set; }
+        private Gw2Sharp.WebApi.V2.Models.Color _defaultColor;
+        public Gw2Sharp.WebApi.V2.Models.Color DefaultGW2Color { get => this._defaultColor; private set => this._defaultColor = value; }
 
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
 
@@ -32,7 +33,7 @@
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
         public SettingEntry<bool> HideInCombat { get; private set; }
-        public SettingEntry<bool> HideOnOpenMap { get;private set; }
+        public SettingEntry<bool> HideOnOpenMap { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<TooltipTimeMode> TooltipTimeMode { get; private set; }
@@ -65,15 +66,65 @@
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
-        public SettingEntry<WorldbossCompletedAction> WorldbossCompletedAcion {  get; private set; }
+        public SettingEntry<WorldbossCompletedAction> WorldbossCompletedAcion { get; private set; }
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
         public ModuleSettings(SettingCollection settings)
         {
             this.Settings = settings;
+
+            this.BuildDefaultColor();
+
             this.InitializeGlobalSettings(settings);
             this.InitializeLocationSettings(settings);
+
+        }
+
+        private void BuildDefaultColor()
+        {
+            this._defaultColor = new Gw2Sharp.WebApi.V2.Models.Color()
+            {
+                Name = "Dye Remover",
+                Id = 1,
+                BaseRgb = new List<int>() { 128, 26, 26 },
+                Cloth = new Gw2Sharp.WebApi.V2.Models.ColorMaterial()
+                {
+                    Brightness = 15,
+                    Contrast = 1.25,
+                    Hue = 38,
+                    Saturation = 0.28125,
+                    Lightness = 1.44531,
+                    Rgb = new List<int>() { 124, 108, 83 }
+                },
+                Leather = new Gw2Sharp.WebApi.V2.Models.ColorMaterial()
+                {
+                    Brightness = -8,
+                    Contrast = 1.0,
+                    Hue = 34,
+                    Saturation = 0.3125,
+                    Lightness = 1.09375,
+                    Rgb = new List<int>() { 65, 49, 29 }
+                },
+                Metal = new Gw2Sharp.WebApi.V2.Models.ColorMaterial()
+                {
+                    Brightness = 5,
+                    Contrast = 1.05469,
+                    Hue = 38,
+                    Saturation = 0.101563,
+                    Lightness = 1.36719,
+                    Rgb = new List<int>() { 96, 91, 83 }
+                },
+                Fur = new Gw2Sharp.WebApi.V2.Models.ColorMaterial()
+                {
+                    Brightness = 15,
+                    Contrast = 1.25,
+                    Hue = 38,
+                    Saturation = 0.28125,
+                    Lightness = 1.44531,
+                    Rgb = new List<int>() { 124, 108, 83 }
+                },
+            };
         }
 
         public async Task Load()
@@ -98,7 +149,7 @@
             this.GlobalEnabledHotkey = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabledHotkey), new KeyBinding(Microsoft.Xna.Framework.Input.ModifierKeys.Alt, Microsoft.Xna.Framework.Input.Keys.E), () => "Event Table Hotkey", () => "The keybinding which will toggle the event table.");
             this.GlobalEnabledHotkey.SettingChanged += this.SettingChanged;
             this.GlobalEnabledHotkey.Value.Enabled = true;
-            this.GlobalEnabledHotkey.Value.Activated += (s,e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
+            this.GlobalEnabledHotkey.Value.Activated += (s, e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
             this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
 
             this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => "Register Corner Icon", () => "Whether the event table should add it's own corner icon to access settings.");
@@ -128,7 +179,7 @@
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
 
             this.EventHistorySplit = this.GlobalSettings.DefineSetting(nameof(this.EventHistorySplit), 50, () => "Event History Split", () => "Defines how much history the timespan should contain.");
-            this.EventHistorySplit.SetRange(0,75);
+            this.EventHistorySplit.SetRange(0, 75);
             this.EventHistorySplit.SettingChanged += this.SettingChanged;
 
             this.EventHeight = this.GlobalSettings.DefineSetting(nameof(this.EventHeight), 20, () => "Event Height", () => "Defines the height of a single event row.");
