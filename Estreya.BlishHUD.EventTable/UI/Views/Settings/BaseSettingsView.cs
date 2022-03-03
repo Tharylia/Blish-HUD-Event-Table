@@ -43,6 +43,11 @@
                 catch (Exception ex)
                 {
                     Logger.Warn($"Could not load gw2 colors: {ex.Message}");
+                    if (this.ModuleSettings.DefaultGW2Color != null)
+                    {
+                        Logger.Debug($"Adding default color: {this.ModuleSettings.DefaultGW2Color.Name}");
+                        Colors = new List<Gw2Sharp.WebApi.V2.Models.Color>() { this.ModuleSettings.DefaultGW2Color };
+                    }
                 }
             }
 

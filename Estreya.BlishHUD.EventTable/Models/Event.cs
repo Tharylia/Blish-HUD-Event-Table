@@ -157,11 +157,17 @@
                 Color textColor = Microsoft.Xna.Framework.Color.Black;
                 if (this.Filler)
                 {
-                    textColor = EventTableModule.ModuleInstance.ModuleSettings.FillerTextColor.Value.Id == 1 ? textColor : EventTableModule.ModuleInstance.ModuleSettings.FillerTextColor.Value.Cloth.ToXnaColor();
+                    if (EventTableModule.ModuleInstance.ModuleSettings.FillerTextColor.Value != null && EventTableModule.ModuleInstance.ModuleSettings.FillerTextColor.Value?.Id != 1)
+                    {
+                        textColor = EventTableModule.ModuleInstance.ModuleSettings.FillerTextColor.Value.Cloth.ToXnaColor();
+                    }
                 }
                 else
                 {
-                    textColor = EventTableModule.ModuleInstance.ModuleSettings.TextColor.Value.Id == 1 ? textColor : EventTableModule.ModuleInstance.ModuleSettings.TextColor.Value.Cloth.ToXnaColor();
+                    if (EventTableModule.ModuleInstance.ModuleSettings.TextColor.Value != null && EventTableModule.ModuleInstance.ModuleSettings.TextColor.Value?.Id != 1)
+                    {
+                        textColor = EventTableModule.ModuleInstance.ModuleSettings.TextColor.Value.Cloth.ToXnaColor();
+                    }
                 }
 
                 #region Draw Event Name

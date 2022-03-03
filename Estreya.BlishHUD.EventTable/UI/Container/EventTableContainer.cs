@@ -121,7 +121,11 @@
 
             List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories;
 
-            Color backgroundColor = EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Id == 1 ? Color.Transparent : EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Cloth.ToXnaColor();
+            Color backgroundColor = Color.Transparent;
+            if (EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value != null && EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Id != 1)
+            {
+                EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Cloth.ToXnaColor();
+            }
 
             this.BackgroundColor = backgroundColor * EventTableModule.ModuleInstance.ModuleSettings.BackgroundColorOpacity.Value;
 
