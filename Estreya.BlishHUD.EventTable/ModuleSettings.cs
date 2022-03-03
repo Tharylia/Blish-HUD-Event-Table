@@ -21,7 +21,8 @@
 
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
 
-        public SettingCollection Settings { get; private set; }
+        private SettingCollection Settings { get; set; }
+
         #region Global Settings
         private const string GLOBAL_SETTINGS = "event-table-global-settings";
         public SettingCollection GlobalSettings { get; private set; }
