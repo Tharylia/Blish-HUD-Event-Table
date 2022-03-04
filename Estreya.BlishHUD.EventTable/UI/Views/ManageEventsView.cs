@@ -40,14 +40,13 @@
 
         protected override void Build(Container buildPanel)
         {
-            this.Panel = new Panel
-            {
-                Location = new Point(MAIN_PADDING.X, MAIN_PADDING.Y),
-                Width = buildPanel.ContentRegion.Width - MAIN_PADDING.X * 2, // Why * 2?
-                Height = buildPanel.ContentRegion.Height - MAIN_PADDING.Y,
-                CanScroll = true,
-                Parent = buildPanel
-            };
+            this.Panel = new Panel();
+            Panel.Parent = buildPanel;
+            Panel.Location = new Point(MAIN_PADDING.X, MAIN_PADDING.Y);
+            Panel.Width = buildPanel.ContentRegion.Width - MAIN_PADDING.Y * 2;
+            Panel.Height = buildPanel.ContentRegion.Height - MAIN_PADDING.X;
+            Panel.CanScroll = true;
+
             Rectangle contentRegion = Panel.ContentRegion;
 
             TextBox searchBox = new TextBox()
@@ -58,24 +57,33 @@
                 PlaceholderText = "Search"
             };
 
-            Panel eventCategoriesPanel = new Panel();
-            eventCategoriesPanel.Title = "Event Categories";
-            eventCategoriesPanel.Parent = Panel;
-            eventCategoriesPanel.CanScroll = true;
-            eventCategoriesPanel.ShowBorder = true;
-            eventCategoriesPanel.Location = new Point(0, searchBox.Bottom + Panel.MenuStandard.ControlOffset.Y);
-            eventCategoriesPanel.Size = new Point(Panel.MenuStandard.Size.X, contentRegion.Height - eventCategoriesPanel.Location.Y);
-            Menu eventCategories = new Menu();
-            eventCategories.Parent = eventCategoriesPanel;
-            eventCategories.Size = eventCategoriesPanel.ContentRegion.Size;
-            eventCategories.MenuItemHeight = 40;
+            Panel eventCategoriesPanel = new Panel
+            {
+                Title = "Event Categories",
+                Parent = Panel,
+                CanScroll = true,
+                ShowBorder = true,
+                Location = new Point(0, searchBox.Bottom + Panel.MenuStandard.ControlOffset.Y)
+            };
 
-            FlowPanel eventPanel = new FlowPanel();
-            eventPanel.FlowDirection = ControlFlowDirection.LeftToRight;
-            eventPanel.CanScroll = true;
-            eventPanel.ShowBorder = true;
-            eventPanel.Parent = Panel;
-            eventPanel.Location = new Point(eventCategoriesPanel.Right + Panel.ControlStandard.ControlOffset.X, contentRegion.Y);
+            eventCategoriesPanel.Size = new Point(Panel.MenuStandard.Size.X, contentRegion.Height - eventCategoriesPanel.Location.Y);
+
+            Menu eventCategories = new Menu
+            {
+                Parent = eventCategoriesPanel,
+                Size = eventCategoriesPanel.ContentRegion.Size,
+                MenuItemHeight = 40
+            };
+
+            FlowPanel eventPanel = new FlowPanel
+            {
+                FlowDirection = ControlFlowDirection.LeftToRight,
+                CanScroll = true,
+                ShowBorder = true,
+                Parent = Panel,
+                Location = new Point(eventCategoriesPanel.Right + Panel.ControlStandard.ControlOffset.X, contentRegion.Y)
+            };
+
             eventPanel.Size = new Point(contentRegion.Width - eventPanel.Left, contentRegion.Height  - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
 
             searchBox.TextChanged += (s, e) =>

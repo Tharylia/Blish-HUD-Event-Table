@@ -328,7 +328,7 @@
             Rectangle settingsWindowSize = new Rectangle(35, 26, 1100, 714);
             int contentRegionPaddingY = settingsWindowSize.Y - 15;
             int contentRegionPaddingX = settingsWindowSize.X + 46;
-            Rectangle contentRegion = new Rectangle(contentRegionPaddingX, contentRegionPaddingY, settingsWindowSize.Width - 46, settingsWindowSize.Height - contentRegionPaddingY);
+            Rectangle contentRegion = new Rectangle(contentRegionPaddingX, contentRegionPaddingY, settingsWindowSize.Width - 52, settingsWindowSize.Height - contentRegionPaddingY);
 
             this.SettingsWindow = new TabbedWindow2(windowBackground, settingsWindowSize, contentRegion)
             {
