@@ -17,6 +17,11 @@
 
     public abstract class BaseSettingsView : View
     {
+        private const int LEFT_PADDING = 20;
+        private const int CONTROL_X_SPACING = 20;
+        private const int LABEL_WIDTH = 250;
+        private const int BINDING_WIDTH = 170;
+
         private static readonly Logger Logger = Logger.GetLogger<BaseSettingsView>();
         protected ModuleSettings ModuleSettings { get; set; }
 
@@ -27,10 +32,6 @@
         private static string SelectedColorSetting { get; set; }
 
         private static ColorPicker ColorPicker { get; set; }
-        private const int LEFT_PADDING = 20;
-        private const int CONTROL_X_SPACING = 20;
-        private const int LABEL_WIDTH = 250;
-        private const int BINDING_WIDTH = 170;
 
 
         private static readonly Dictionary<Type, Func<SettingEntry, int, int, Control>> _typeLookup = new Dictionary<Type, Func<SettingEntry, int, int, Control>>
@@ -145,15 +146,14 @@
                 typeof(Enum),
                 (SettingEntry settingEntry, int definedWidth,int xPos) =>
                 {
-
                     var setting = (dynamic)settingEntry;
 
                     var dropdown = new Dropdown
                     {
-                            Width = definedWidth,
-                            Location = new Point(xPos, 0),
-                            SelectedItem =   setting?.Value.ToString(),
-                            Enabled = !settingEntry.IsDisabled()
+                        Width = definedWidth,
+                        Location = new Point(xPos, 0),
+                        SelectedItem =   setting?.Value.ToString(),
+                        Enabled = !settingEntry.IsDisabled()
                     };
 
                     foreach(var enumValue in Enum.GetNames(settingEntry.SettingType))
@@ -271,31 +271,6 @@
 
         protected Panel RenderSetting(Panel parent, SettingEntry setting)
         {
-            /*var settingView = SettingView.FromType(setting, parent.Width);
-            if (settingView != null)
-            {
-                var settingContainer = new ViewContainer()
-                {
-                    WidthSizingMode = SizingMode.Fill,
-                    HeightSizingMode = SizingMode.AutoSize,
-                    Parent = parent
-                };
-
-                settingContainer.Show(settingView);
-
-                if (settingView is SettingsView subSettingsView)
-                {
-                    subSettingsView.LockBounds = false;
-                }
-#if DEBUG
-                setting.PropertyChanged += (s, e) =>
-                {
-                    (settingView as View).Presenter.DoUpdateView();
-                };
-#endif
-            }
-            */
-
             Panel panel = GetPanel(parent);
 
             Label label = GetLabel(panel, setting.DisplayName);
