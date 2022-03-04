@@ -18,9 +18,11 @@
 
     public class ManageEventsView : View
     {
+        private static Point MAIN_PADDING = new Point(20, 20);
+
         private static readonly Logger Logger = Logger.GetLogger<ManageEventsView>();
 
-        public FlowPanel FlowPanel { get; private set; }
+        public Panel Panel { get; private set; }
 
         private IEnumerable<EventCategory> EventCategories { get; set; }
         private List<SettingEntry<bool>> EventSettings { get; set; }
@@ -38,41 +40,59 @@
 
         protected override void Build(Container buildPanel)
         {
-            this.FlowPanel = new FlowPanel
+            this.Panel = new Panel();
+            Panel.Parent = buildPanel;
+            Panel.Location = new Point(MAIN_PADDING.X, MAIN_PADDING.Y);
+            Panel.Width = buildPanel.ContentRegion.Width - MAIN_PADDING.Y * 2;
+            Panel.Height = buildPanel.ContentRegion.Height - MAIN_PADDING.X;
+            Panel.CanScroll = true;
+
+            Rectangle contentRegion = Panel.ContentRegion;
+
+            TextBox searchBox = new TextBox()
             {
-                Width = buildPanel.ContentRegion.Width,
-                Height = buildPanel.ContentRegion.Height,
-                HeightSizingMode = SizingMode.Fill,
-                WidthSizingMode = SizingMode.Fill,
-                FlowDirection = ControlFlowDirection.TopToBottom,
-                Top = 0,
-                CanScroll = true,
-                //ControlPadding = new Vector2(5, 2),
-                OuterControlPadding = new Vector2(Panel.MenuStandard.ControlOffset.X, Panel.MenuStandard.ControlOffset.Y),
-                Parent = buildPanel
+                Parent = Panel,
+                Width = Panel.MenuStandard.Size.X,
+                Location = new Point(0, contentRegion.Y),
+                PlaceholderText = "Search"
             };
-            Rectangle contentRegion = FlowPanel.ContentRegion;
 
-            Panel eventCategoriesPanel = new Panel();
-            eventCategoriesPanel.Title = "Event Categories";
-            eventCategoriesPanel.Parent = FlowPanel;
-            eventCategoriesPanel.CanScroll = true;
-            eventCategoriesPanel.ShowBorder = true;
-            eventCategoriesPanel.Size = Panel.MenuStandard.Size - new Point(0, Panel.MenuStandard.ControlOffset.Y);
-            eventCategoriesPanel.Location = new Point(0, contentRegion.Y);
-            Menu eventCategories = new Menu();
-            eventCategories.Parent = eventCategoriesPanel;
-            eventCategories.Size = eventCategoriesPanel.ContentRegion.Size;
-            eventCategories.MenuItemHeight = 40;
+            Panel eventCategoriesPanel = new Panel
+            {
+                Title = "Event Categories",
+                Parent = Panel,
+                CanScroll = true,
+                ShowBorder = true,
+                Location = new Point(0, searchBox.Bottom + Panel.MenuStandard.ControlOffset.Y)
+            };
 
-            FlowPanel eventPanel = new FlowPanel();
-            eventPanel.FlowDirection = ControlFlowDirection.LeftToRight;
-            eventPanel.CanScroll = true;
-            eventPanel.ShowBorder = true;
-            eventPanel.Parent = FlowPanel;
-            eventPanel.Location = new Point(0, contentRegion.Y);
-            eventPanel.Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - (int)FlowPanel.OuterControlPadding.X, contentRegion.Height - (int)FlowPanel.OuterControlPadding.Y - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
+            eventCategoriesPanel.Size = new Point(Panel.MenuStandard.Size.X, contentRegion.Height - eventCategoriesPanel.Location.Y);
 
+            Menu eventCategories = new Menu
+            {
+                Parent = eventCategoriesPanel,
+                Size = eventCategoriesPanel.ContentRegion.Size,
+                MenuItemHeight = 40
+            };
+
+            FlowPanel eventPanel = new FlowPanel
+            {
+                FlowDirection = ControlFlowDirection.LeftToRight,
+                CanScroll = true,
+                ShowBorder = true,
+                Parent = Panel,
+                Location = new Point(eventCategoriesPanel.Right + Panel.ControlStandard.ControlOffset.X, contentRegion.Y)
+            };
+
+            eventPanel.Size = new Point(contentRegion.Width - eventPanel.Left, contentRegion.Height  - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
+
+            searchBox.TextChanged += (s, e) =>
+            {
+                eventPanel.FilterChildren<DetailsButton>(detailsButton =>
+                {
+                    return detailsButton.Text.ToLowerInvariant().Contains(searchBox.Text.ToLowerInvariant());
+                });
+            };
 
             #region Register Categories
 
@@ -101,8 +121,9 @@
 
             Panel buttons = new Panel()
             {
-                Parent = FlowPanel,
-                Size = new Point(contentRegion.Width - (eventCategoriesPanel.Location.X + eventCategoriesPanel.Width) - (int)FlowPanel.OuterControlPadding.X, (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1)),
+                Parent = Panel,
+                Location = new Point(eventPanel.Left, eventPanel.Bottom),
+                Size = new Point(eventPanel.Width, StandardButton.STANDARD_CONTROL_HEIGHT),
             };
 
             StandardButton checkAllButton = new StandardButton()
@@ -162,8 +183,8 @@
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
-                    if (e.Filler) continue; 
-                    
+                    if (e.Filler) continue;
+
                     IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.Name);
 
                     SettingEntry<bool> setting = settings.First();

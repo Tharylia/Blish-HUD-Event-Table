@@ -21,7 +21,8 @@
 
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
 
-        public SettingCollection Settings { get; private set; }
+        private SettingCollection Settings { get; set; }
+
         #region Global Settings
         private const string GLOBAL_SETTINGS = "event-table-global-settings";
         public SettingCollection GlobalSettings { get; private set; }
@@ -285,8 +286,8 @@
         private void SettingChanged<T>(object sender, ValueChangedEventArgs<T> e)
         {
             SettingEntry<T> settingEntry = (SettingEntry<T>)sender;
-            var prevValue = JsonConvert.SerializeObject(e.PreviousValue);
-            var newValue = JsonConvert.SerializeObject(e.NewValue);
+            var prevValue = e.PreviousValue.GetType() == typeof(string) ? e.PreviousValue.ToString() : JsonConvert.SerializeObject(e.PreviousValue);
+            var newValue = e.NewValue.GetType() == typeof(string) ? e.NewValue.ToString() :  JsonConvert.SerializeObject(e.NewValue);
             Logger.Debug($"Changed setting \"{settingEntry.EntryKey}\" from \"{prevValue}\" to \"{newValue}\"");
 
             ModuleSettingsChanged?.Invoke(this, new ModuleSettingsChangedEventArgs() { Name = settingEntry.EntryKey, Value = e.NewValue });

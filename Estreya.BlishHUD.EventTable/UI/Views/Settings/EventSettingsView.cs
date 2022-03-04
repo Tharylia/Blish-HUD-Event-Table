@@ -14,7 +14,7 @@
         {
         }
 
-        protected override void InternalBuild(FlowPanel parent)
+        protected override void InternalBuild(Panel parent)
         {
             RenderSetting(parent, ModuleSettings.EventHeight);
             RenderSetting(parent, ModuleSettings.EventFontSize);
