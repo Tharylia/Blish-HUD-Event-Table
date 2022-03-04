@@ -87,10 +87,10 @@
                         Width= definedWidth,
                         Location = new Point(xPos, 0),
                         Enabled = !settingEntry.IsDisabled(),
-                        Value = setting?.GetValue() ?? 50,
                         MinValue = range.HasValue ? range.Value.Min: 0,
                         MaxValue = range.HasValue ? range.Value.Max:100,
-                        SmallStep = true
+                        SmallStep = true,
+                        Value = setting?.GetValue() ?? 50
                     };
 
                     if (setting != null){
@@ -110,10 +110,10 @@
                     {
                         Width= definedWidth,
                         Location = new Point(xPos, 0),
-                        Value = setting?.GetValue() ?? 0,
                         Enabled = !settingEntry.IsDisabled(),
                         MinValue = range.HasValue ? range.Value.Min: 0,
-                        MaxValue = range.HasValue ? range.Value.Max:100
+                        MaxValue = range.HasValue ? range.Value.Max:100,
+                        Value = setting?.GetValue() ?? 50
                     };
 
                     if (setting != null){
