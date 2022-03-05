@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0",
+  "version": "1.1.0",
   "eventCategories": [
     {
       "key": "dayNightCycle",
@@ -7,6 +7,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "dawn",
           "name": "Dawn",
           "offset": "00:25",
           "repeat": "02:00",
@@ -19,6 +20,7 @@
           "icon": "images\\time.png"
         },
         {
+          "key": "day",
           "name": "Day",
           "offset": "00:30",
           "repeat": "02:00",
@@ -31,6 +33,7 @@
           "icon": "images\\time.png"
         },
         {
+          "key": "dusk",
           "name": "Dusk",
           "offset": "01:40",
           "repeat": "02:00",
@@ -43,6 +46,7 @@
           "icon": "images\\time.png"
         },
         {
+          "key": "night",
           "name": "Night",
           "offset": "01:45",
           "repeat": "02:00",
@@ -62,6 +66,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "serverReset",
           "name": "Server Reset",
           "offset": "00:00",
           "convertOffset": false,
@@ -80,6 +85,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "llaTF",
           "name": "Ley-Line Anomaly (Timberline Falls)",
           "offset": "00:20",
           "repeat": "06:00",
@@ -92,6 +98,7 @@
           "color": "#80e74c3c"
         },
         {
+          "key": "llaIM",
           "name": "Ley-Line Anomaly (Iron Marches)",
           "offset": "02:20",
           "repeat": "06:00",
@@ -104,6 +111,7 @@
           "color": "#80e74c3c"
         },
         {
+          "key": "llaGF",
           "name": "Ley-Line Anomaly (Gendarran Fields)",
           "offset": "04:20",
           "repeat": "06:00",
@@ -118,11 +126,12 @@
       ]
     },
     {
-      "key": "worldBosses-hardcore",
-      "name": "World Bosses",
+      "key": "worldBossesHardcore",
+      "name": "Hard World Bosses",
       "showCombined": true,
       "events": [
         {
+          "key": "evolvedJungleWurm",
           "name": "Evolved Jungle Wurm",
           "offset": "01:00",
           "repeat": "",
@@ -136,6 +145,7 @@
           "api": "triple_trouble_wurm"
         },
         {
+          "key": "evolvedJungleWurm",
           "name": "Evolved Jungle Wurm",
           "offset": "04:00",
           "repeat": "",
@@ -149,6 +159,7 @@
           "api": "triple_trouble_wurm"
         },
         {
+          "key": "evolvedJungleWurm",
           "name": "Evolved Jungle Wurm",
           "offset": "08:00",
           "repeat": "",
@@ -162,6 +173,7 @@
           "api": "triple_trouble_wurm"
         },
         {
+          "key": "evolvedJungleWurm",
           "name": "Evolved Jungle Wurm",
           "offset": "12:30",
           "repeat": "",
@@ -175,6 +187,7 @@
           "api": "triple_trouble_wurm"
         },
         {
+          "key": "evolvedJungleWurm",
           "name": "Evolved Jungle Wurm",
           "offset": "17:00",
           "repeat": "",
@@ -188,6 +201,7 @@
           "api": "triple_trouble_wurm"
         },
         {
+          "key": "evolvedJungleWurm",
           "name": "Evolved Jungle Wurm",
           "colloquial": "Triple Trouble",
           "offset": "20:00",
@@ -202,6 +216,7 @@
           "api": "triple_trouble_wurm"
         },
         {
+          "key": "karkaQueen",
           "name": "Karka Queen",
           "offset": "02:00",
           "repeat": "",
@@ -215,6 +230,7 @@
           "api": "karka_queen"
         },
         {
+          "key": "karkaQueen",
           "name": "Karka Queen",
           "offset": "06:00",
           "repeat": "",
@@ -228,6 +244,7 @@
           "api": "karka_queen"
         },
         {
+          "key": "karkaQueen",
           "name": "Karka Queen",
           "offset": "10:30",
           "repeat": "",
@@ -241,6 +258,7 @@
           "api": "karka_queen"
         },
         {
+          "key": "karkaQueen",
           "name": "Karka Queen",
           "offset": "15:00",
           "repeat": "",
@@ -254,6 +272,7 @@
           "api": "karka_queen"
         },
         {
+          "key": "karkaQueen",
           "name": "Karka Queen",
           "offset": "18:00",
           "repeat": "",
@@ -267,6 +286,7 @@
           "api": "karka_queen"
         },
         {
+          "key": "karkaQueen",
           "name": "Karka Queen",
           "offset": "23:00",
           "repeat": "",
@@ -280,6 +300,7 @@
           "api": "karka_queen"
         },
         {
+          "key": "tequatl",
           "name": "Tequatl the Sunless",
           "offset": "00:00",
           "repeat": "",
@@ -293,6 +314,7 @@
           "api": "tequatl_the_sunless"
         },
         {
+          "key": "tequatl",
           "name": "Tequatl the Sunless",
           "offset": "03:00",
           "repeat": "",
@@ -306,6 +328,7 @@
           "api": "tequatl_the_sunless"
         },
         {
+          "key": "tequatl",
           "name": "Tequatl the Sunless",
           "offset": "07:00",
           "repeat": "",
@@ -319,6 +342,7 @@
           "api": "tequatl_the_sunless"
         },
         {
+          "key": "tequatl",
           "name": "Tequatl the Sunless",
           "offset": "11:30",
           "repeat": "",
@@ -332,6 +356,7 @@
           "api": "tequatl_the_sunless"
         },
         {
+          "key": "tequatl",
           "name": "Tequatl the Sunless",
           "offset": "16:00",
           "repeat": "",
@@ -345,6 +370,7 @@
           "api": "tequatl_the_sunless"
         },
         {
+          "key": "tequatl",
           "name": "Tequatl the Sunless",
           "offset": "19:00",
           "repeat": "",
@@ -365,6 +391,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "taidha",
           "name": "Admiral Taidha Covington",
           "offset": "00:00",
           "repeat": "03:00",
@@ -378,6 +405,7 @@
           "api": "admiral_taidha_covington"
         },
         {
+          "key": "clawOfJormag",
           "name": "Claw of Jormag",
           "offset": "02:30",
           "repeat": "03:00",
@@ -391,6 +419,7 @@
           "api": "claw_of_jormag"
         },
         {
+          "key": "fireElemental",
           "name": "Fire Elemental",
           "offset": "00:45",
           "repeat": "02:00",
@@ -404,6 +433,7 @@
           "api": "fire_elemental"
         },
         {
+          "key": "greatJungleWurm",
           "name": "Great Jungle Wurm",
           "offset": "01:15",
           "repeat": "02:00",
@@ -417,6 +447,7 @@
           "api": "great_jungle_wurm"
         },
         {
+          "key": "golemMarkII",
           "name": "Inquest Golem Mark II",
           "offset": "02:00",
           "repeat": "03:00",
@@ -430,6 +461,7 @@
           "api": "inquest_golem_mark_ii"
         },
         {
+          "key": "megadestroyer",
           "name": "Megadestroyer",
           "offset": "00:30",
           "repeat": "03:00",
@@ -443,6 +475,7 @@
           "api": "megadestroyer"
         },
         {
+          "key": "modniirUlgoth",
           "name": "Modniir Ulgoth",
           "offset": "01:30",
           "repeat": "03:00",
@@ -456,6 +489,7 @@
           "api": "modniir_ulgoth"
         },
         {
+          "key": "shadowBehemoth",
           "name": "Shadow Behemoth",
           "offset": "01:45",
           "repeat": "02:00",
@@ -469,6 +503,7 @@
           "api": "shadow_behemoth"
         },
         {
+          "key": "theShatterer",
           "name": "The Shatterer",
           "offset": "01:00",
           "repeat": "03:00",
@@ -482,6 +517,7 @@
           "api": "the_shatterer"
         },
         {
+          "key": "svanirShamanChief",
           "name": "Svanir Shaman Chief",
           "offset": "00:15",
           "repeat": "02:00",
@@ -502,6 +538,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "twistedMarionette",
           "name": "The Twisted Marionette",
           "offset": "00:00",
           "repeat": "02:00",
@@ -514,6 +551,7 @@
           "color": "#8c03fc"
         },
         {
+          "key": "dragonstorm",
           "name": "Dragonstorm",
           "offset": "01:00",
           "repeat": "02:00",
@@ -533,6 +571,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "madKingSays",
           "name": "Your Mad King says...",
           "offset": "00:00",
           "repeat": "02:00",
@@ -552,6 +591,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "dolyakRace",
           "name": "Dolyak Race",
           "offset": "00:00",
           "repeat": "02:00",
@@ -564,6 +604,7 @@
           "color": "#c40075"
         },
         {
+          "key": "treasureHunt",
           "name": "Treasure Hunt",
           "offset": "00:30",
           "repeat": "02:00",
@@ -576,6 +617,7 @@
           "color": "#fc0398"
         },
         {
+          "key": "skimmerRace",
           "name": "Skimmer Race",
           "offset": "01:30",
           "repeat": "02:00",
@@ -595,6 +637,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "wayfarerFoothills",
           "name": "Wayfarer Foothills",
           "offset": "00:00",
           "repeat": "01:00",
@@ -607,6 +650,7 @@
           "color": "#1689c7"
         },
         {
+          "key": "dredgehauntCliffs",
           "name": "Dredgehaunt Cliffs",
           "offset": "00:15",
           "repeat": "01:00",
@@ -619,6 +663,7 @@
           "color": "#1689c7"
         },
         {
+          "key": "lornarsPass",
           "name": "Lornar's Pass",
           "offset": "00:30",
           "repeat": "01:00",
@@ -631,6 +676,7 @@
           "color": "#1689c7"
         },
         {
+          "key": "snowdenDrifts",
           "name": "Snowden Drifts",
           "offset": "00:45",
           "repeat": "01:00",
@@ -681,6 +727,7 @@
       "showCombined": true,
       "events": [
         {
+          "key": "balthazarsBrawl",
           "name": "Balthazar's Brawl",
           "offset": "00:00",
           "repeat": "",
@@ -693,6 +740,7 @@
           "color": "#42c8d7"
         },
         {
+          "key": "grenthsGame",
           "name": "Grenth's Game",
           "offset": "03:00",
           "repeat": "",
@@ -705,6 +753,7 @@
           "color": "#42c8d7"
         },
         {
+          "key": "melandrusMatchup",
           "name": "Melandru's Matchup",
           "offset": "06:00",
           "repeat": "",
@@ -717,6 +766,7 @@
           "color": "#42c8d7"
         },
         {
+          "key": "lyssasLegions",
           "name": "Lyssa's Legions",
           "offset": "09:00",
           "repeat": "",
@@ -729,6 +779,7 @@
           "color": "#42c8d7"
         },
         {
+          "key": "balthazarsBrawl",
           "name": "Balthazar's Brawl",
           "offset": "12:00",
           "repeat": "",
@@ -741,6 +792,7 @@
           "color": "#42c8d7"
         },
         {
+          "key": "grenthsGame",
           "name": "Grenth's Game",
           "offset": "15:00",
           "repeat": "",
@@ -753,6 +805,7 @@
           "color": "#42c8d7"
         },
         {
+          "key": "melandrusMatchup",
           "name": "Melandru's Matchup",
           "offset": "18:00",
           "repeat": "",
@@ -765,6 +818,7 @@
           "color": "#42c8d7"
         },
         {
+          "key": "lyssasLegions",
           "name": "Lyssa's Legions",
           "offset": "21:00",
           "repeat": "",
@@ -803,6 +857,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "crashSite",
           "name": "Crash Site",
           "offset": "00:00",
           "repeat": "01:00",
@@ -815,6 +870,7 @@
           "color": "#80fcfadc"
         },
         {
+          "key": "sandstorm",
           "name": "Sandstorm",
           "offset": "00:40",
           "repeat": "01:00",
@@ -834,6 +890,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "securingVerdantBrink",
           "name": "Securing Verdant Brink",
           "offset": "00:30",
           "repeat": "02:00",
@@ -846,6 +903,7 @@
           "color": "#80c4e2a5"
         },
         {
+          "key": "nightAndTheEnemy",
           "name": "Night and the Enemy",
           "offset": "01:45",
           "repeat": "02:00",
@@ -858,6 +916,7 @@
           "color": "#8084c147"
         },
         {
+          "key": "nightBosses",
           "name": "Night Bosses",
           "offset": "00:10",
           "repeat": "02:00",
@@ -877,6 +936,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "trailByFire",
           "name": "Trial by Fire",
           "offset": "00:45",
           "repeat": "02:00",
@@ -889,6 +949,7 @@
           "color": "#80ffd53d"
         },
         {
+          "key": "battleInTarir",
           "name": "Battle in Tarir",
           "offset": "01:00",
           "repeat": "02:00",
@@ -901,6 +962,7 @@
           "color": "#80eab700"
         },
         {
+          "key": "defendingTarir",
           "name": "Defending Tarir",
           "offset": "01:30",
           "repeat": "02:00",
@@ -920,6 +982,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "chakGerent",
           "name": "Chak Gerent",
           "offset": "02:30",
           "repeat": "02:00",
@@ -939,6 +1002,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "advancingOnTheBlightingTowers",
           "name": "Advancing on the Blighting Towers",
           "offset": "01:30",
           "repeat": "02:00",
@@ -958,6 +1022,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "noransHomestead",
           "name": "Noran's Homestead",
           "offset": "00:30",
           "repeat": "02:00",
@@ -970,6 +1035,7 @@
           "color": "#d7425b"
         },
         {
+          "key": "saidrasHaven",
           "name": "Saidra's Haven",
           "offset": "01:00",
           "repeat": "02:00",
@@ -982,6 +1048,7 @@
           "color": "#fb8498"
         },
         {
+          "key": "newLoamhurst",
           "name": "New Loamhurst",
           "offset": "01:45",
           "repeat": "02:00",
@@ -1001,6 +1068,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "casinoBlitz",
           "name": "Casino Blitz",
           "offset": "00:05",
           "repeat": "02:00",
@@ -1013,6 +1081,7 @@
           "color": "#80efac74"
         },
         {
+          "key": "choyaPinata",
           "name": "Choya Pinata",
           "offset": "00:21",
           "repeat": "02:00",
@@ -1032,6 +1101,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "theSearchForBuriedTreasure",
           "name": "The Search for Buried Treasure",
           "offset": "01:00",
           "repeat": "02:00",
@@ -1051,6 +1121,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "thePathToAscension",
           "name": "The Path to Ascension",
           "offset": "01:30",
           "repeat": "02:00",
@@ -1070,6 +1141,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "jununduRising",
           "name": "Junundu Rising",
           "offset": "00:30",
           "repeat": "01:00",
@@ -1082,6 +1154,7 @@
           "color": "#80cebca2"
         },
         {
+          "key": "mawsOfTorment",
           "name": "Maws of Torment",
           "offset": "01:00",
           "repeat": "02:00",
@@ -1101,6 +1174,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "forgedWithFire",
           "name": "Forged with Fire",
           "offset": "00:00",
           "repeat": "01:00",
@@ -1113,6 +1187,7 @@
           "color": "#80afa2ce"
         },
         {
+          "key": "serpentsIre",
           "name": "Serpents' Ire",
           "offset": "00:30",
           "repeat": "02:00",
@@ -1132,6 +1207,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "palawadan",
           "name": "Palawadan, Jewel of Istan",
           "offset": "23:45",
           "repeat": "02:00",
@@ -1151,6 +1227,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "dangerousPrey",
           "name": "Dangerous Prey",
           "offset": "01:00",
           "repeat": "02:00",
@@ -1163,6 +1240,7 @@
           "color": "#809787ab"
         },
         {
+          "key": "deathBrandedShatterer",
           "name": "Death-Branded Shatterer",
           "offset": "01:15",
           "repeat": "02:00",
@@ -1182,6 +1260,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "thunderheadKeep",
           "name": "Thunderhead Keep",
           "colloquial": "Northern Keep Meta",
           "offset": "01:45",
@@ -1195,6 +1274,7 @@
           "color": "#80a3e4e4"
         },
         {
+          "key": "theOilFloes",
           "name": "The Oil Floes",
           "colloquial": "Southern Oil Meta",
           "offset": "00:45",
@@ -1215,6 +1295,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "sacredFlame",
           "name": "Ceremony of the Sacred Flame",
           "colloquial": "Effigy",
           "offset": "00:10",
@@ -1228,6 +1309,7 @@
           "color": "#80f0380e"
         },
         {
+          "key": "doomloreShrine",
           "name": "The Haunting of Doomlore Shrine",
           "colloquial": "Doomlore Shrine",
           "offset": "00:40",
@@ -1241,6 +1323,7 @@
           "color": "#80f55b38"
         },
         {
+          "key": "oozePit",
           "name": "The Ooze Pit Trials",
           "colloquial": "Ooze Pit",
           "offset": "01:05",
@@ -1254,6 +1337,7 @@
           "color": "#80f0380e"
         },
         {
+          "key": "concert",
           "name": "A Concert for the Ages",
           "colloquial": "Rock Concert",
           "offset": "01:40",
@@ -1274,6 +1358,7 @@
       "showCombined": false,
       "events": [
         {
+          "key": "stormsOfWinter",
           "name": "Storms of Winter",
           "offset": "01:40",
           "repeat": "02:00",
@@ -1286,6 +1371,7 @@
           "color": "#8065b0e8"
         },
         {
+          "key": "drakkar",
           "name": "Drakkar, the Ice Dragon's Champion",
           "colloquial": "Drakkar",
           "offset": "01:05",
@@ -1298,6 +1384,158 @@
           "icon": "4B6BDF0614656A310E5041F454AA0AE40B26B709/2248191",
           "color": "#8079afff",
           "api": "drakkar"
+        }
+      ]
+    },
+    {
+      "key": "canthaDayNight",
+      "name": "Cantha: Day-Night Cycle",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "dawn",
+          "name": "Dawn",
+          "offset": "00:35",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 5,
+          "color": "#80ffe37f",
+          "icon": "images\\time.png"
+        },
+        {
+          "key": "day",
+          "name": "Day",
+          "offset": "00:40",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 55,
+          "color": "#80ffe37f",
+          "icon": "images\\time.png"
+        },
+        {
+          "key": "dusk",
+          "name": "Dusk",
+          "offset": "01:35",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 5,
+          "color": "#80ffe37f",
+          "icon": "images\\time.png"
+        },
+        {
+          "key": "night",
+          "name": "Night",
+          "offset": "01:40",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 55,
+          "color": "#809f99cc",
+          "icon": "images\\time.png"
+        }
+      ]
+    },
+    {
+      "key": "seitungProvince",
+      "name": "Seitung Province",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "aetherbladeAssault",
+          "name": "Aetherblade Assault",
+          "offset": "01:30",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Seitung Province",
+          "waypoint": "[&BGUNAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Aetherblade_Assault",
+          "duration": 30,
+          "color": "#5af3de",
+          "icon": "1151287819F13DD0ED5CB1E461255CD2CF5D64CA/2604534"
+        }
+      ]
+    },
+    {
+      "key": "newKainengCity",
+      "name": "New Kaineng City",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "kainengBlackout",
+          "name": "Kaineng Blackout",
+          "offset": "00:00",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "New Kaineng City",
+          "waypoint": "[&BBkNAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Kaineng_Blackout",
+          "duration": 30,
+          "color": "#5af3de",
+          "icon": "963ABAD87B9B2021015FC840ED19A2E70509550E/2604533"
+        }
+      ]
+    },
+    {
+      "key": "theEchovaldWilds",
+      "name": "The Echovald Wilds",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "gangWar",
+          "name": "Gang War",
+          "offset": "00:30",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "The Echovald Wilds",
+          "waypoint": "[&BMwMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/The_Gang_War_of_Echovald",
+          "duration": 35,
+          "color": "#5af3de",
+          "icon": "50F9AD6ABE0646DD07665108F5A9D8F90266B219/2604527"
+        }
+      ]
+    },
+    {
+      "key": "dragonsEnd",
+      "name": "Dragon's End",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "preparations",
+          "name": "Preparations",
+          "offset": "00:00",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Dragon's End",
+          "waypoint": "[&BKIMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Preparations",
+          "duration": 60,
+          "color": "#c3fff5",
+          "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
+        },
+        {
+          "key": "theBattleForTheJadeSea",
+          "name": "The Battle for the Jade Sea",
+          "offset": "01:00",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Dragon's End",
+          "waypoint": "[&BMwMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/The_Battle_for_the_Jade_Sea",
+          "duration": 60,
+          "color": "#5af3de",
+          "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
         }
       ]
     }

@@ -10,6 +10,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Estreya.BlishHUD.EventTable.Resources;
 
     public class ModuleSettingsView : View
     {
@@ -41,7 +42,7 @@
                 Parent = parentPanel
             };
 
-            var buttonText = "Open Settings";
+            var buttonText = Strings.SettingsView_OpenSettings;
 
             StandardButton button = new StandardButton()
             {

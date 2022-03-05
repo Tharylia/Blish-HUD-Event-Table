@@ -14,6 +14,7 @@
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Helpers;
     using static Blish_HUD.ContentService;
+    using Estreya.BlishHUD.EventTable.Resources;
 
     public abstract class BaseSettingsView : View
     {
@@ -179,7 +180,7 @@
         {
             if (Colors == null)
             {
-                progress.Report("Loading Colors...");
+                progress.Report(Strings.BaseSettingsView_LoadingColors);
 
                 try
                 {
@@ -198,7 +199,7 @@
 
             if (ColorPicker == null)
             {
-                progress.Report("Loading ColorPicker...");
+                progress.Report(Strings.BaseSettingsView_LoadingColorPicker);
                 // build initial colorpicker
 
                 ColorPickerPanel = new Panel()
@@ -219,7 +220,7 @@
                     Visible = true
                 };
 
-                progress.Report($"Adding Colors to ColorPicker...");
+                progress.Report(Strings.BaseSettingsView_AddingColorsToColorPicker);
                 if (Colors != null)
                 {
                     foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
@@ -229,7 +230,7 @@
                 }
             }
 
-            progress.Report("");
+            progress.Report(string.Empty);
 
             return await this.InternalLoad(progress);
         }
@@ -317,7 +318,17 @@
             };
         }
 
+
         protected void RenderButton(Panel parent, string text, Action action, Func<bool> disabledCallback = null)
+        {
+            this.RenderButton(parent, text, () =>
+            {
+                action.Invoke();
+                return Task.CompletedTask;
+            }, disabledCallback);
+        }
+
+        protected void RenderButton(Panel parent, string text, Func<Task> action, Func<bool> disabledCallback = null)
         {
             Panel panel = GetPanel(parent);
 
@@ -329,7 +340,7 @@
                 Enabled = !disabledCallback?.Invoke() ?? true,
             };
 
-            button.Click += (s, e) => action.Invoke();
+            button.Click += (s, e) => AsyncHelper.RunSync(action.Invoke);
         }
 
         protected void RenderColorSetting(Panel parent, SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> setting)

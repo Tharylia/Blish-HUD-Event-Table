@@ -4,6 +4,7 @@
     using Blish_HUD.Input;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Models;
+    using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.UI.Container;
     using Newtonsoft.Json;
     using System;
@@ -68,6 +69,7 @@
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
         public SettingEntry<WorldbossCompletedAction> WorldbossCompletedAcion { get; private set; }
+        public SettingEntry<bool> UseEventTranslation { get; private set; }
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
 
@@ -144,91 +146,94 @@
         {
             this.GlobalSettings = settings.AddSubCollection(GLOBAL_SETTINGS);
 
-            this.GlobalEnabled = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabled), true, () => "Event Table Enabled", () => "Whether the event table should be displayed.");
+            this.GlobalEnabled = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabled), true, () => Strings.Setting_GlobalEnabled_Name, () => Strings.Setting_GlobalEnabled_Description);
             this.GlobalEnabled.SettingChanged += this.SettingChanged;
 
-            this.GlobalEnabledHotkey = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabledHotkey), new KeyBinding(Microsoft.Xna.Framework.Input.ModifierKeys.Alt, Microsoft.Xna.Framework.Input.Keys.E), () => "Event Table Hotkey", () => "The keybinding which will toggle the event table.");
+            this.GlobalEnabledHotkey = this.GlobalSettings.DefineSetting(nameof(this.GlobalEnabledHotkey), new KeyBinding(Microsoft.Xna.Framework.Input.ModifierKeys.Alt, Microsoft.Xna.Framework.Input.Keys.E), () => Strings.Setting_GlobalEnabledHotkey_Name, () => Strings.Setting_GlobalEnabledHotkey_Description);
             this.GlobalEnabledHotkey.SettingChanged += this.SettingChanged;
             this.GlobalEnabledHotkey.Value.Enabled = true;
             this.GlobalEnabledHotkey.Value.Activated += (s, e) => this.GlobalEnabled.Value = !this.GlobalEnabled.Value;
             this.GlobalEnabledHotkey.Value.BlockSequenceFromGw2 = true;
 
-            this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => "Register Corner Icon", () => "Whether the event table should add it's own corner icon to access settings.");
+            this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => Strings.Setting_RegisterCornerIcon_Name, () => Strings.Setting_RegisterCornerIcon_Description);
             this.RegisterCornerIcon.SettingChanged += this.SettingChanged;
 
-            this.AutomaticallyUpdateEventFile = this.GlobalSettings.DefineSetting(nameof(this.AutomaticallyUpdateEventFile), true, () => "Automatically Update Event File", () => "Whether the event table should automatically update the exported event file to the newest version.");
+            this.AutomaticallyUpdateEventFile = this.GlobalSettings.DefineSetting(nameof(this.AutomaticallyUpdateEventFile), true, () => Strings.Setting_AutomaticallyUpdateEventFile_Name, () => Strings.Setting_AutomaticallyUpdateEventFile_Description);
             this.AutomaticallyUpdateEventFile.SettingChanged += this.SettingChanged;
 
-            this.HideOnOpenMap = this.GlobalSettings.DefineSetting(nameof(this.HideOnOpenMap), true, () => "Hide on open Map", () => "Whether the event table should hide when the map is open.");
+            this.HideOnOpenMap = this.GlobalSettings.DefineSetting(nameof(this.HideOnOpenMap), true, () => Strings.Setting_HideOnMap_Name, () => Strings.Setting_HideOnMap_Description);
             this.HideOnOpenMap.SettingChanged += this.SettingChanged;
 
-            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => "Hide on Cutscenes", () => "Whether the event table should hide when cutscenes are played.");
+            this.HideOnMissingMumbleTicks = this.GlobalSettings.DefineSetting(nameof(this.HideOnMissingMumbleTicks), true, () => Strings.Setting_HideOnMissingMumbleTicks_Name, () => Strings.Setting_HideOnMissingMumbleTicks_Description);
             this.HideOnMissingMumbleTicks.SettingChanged += this.SettingChanged;
 
-            this.HideInCombat = this.GlobalSettings.DefineSetting(nameof(this.HideInCombat), false, () => "Hide in Combat", () => "Whether the event table should hide when the player is in combat.");
+            this.HideInCombat = this.GlobalSettings.DefineSetting(nameof(this.HideInCombat), false, () => Strings.Setting_HideInCombat_Name, () => Strings.Setting_HideInCombat_Description);
             this.HideInCombat.SettingChanged += this.SettingChanged;
 
-            this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), this.DefaultGW2Color, () => "Background Color", () => "Defines the background color.");
+            this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), this.DefaultGW2Color, () => Strings.Setting_BackgroundColor_Name, () => Strings.Setting_BackgroundColor_Description);
             this.BackgroundColor.SettingChanged += this.SettingChanged;
 
-            this.BackgroundColorOpacity = this.GlobalSettings.DefineSetting(nameof(BackgroundColorOpacity), 0.0f, () => "Background Color Opacity", () => "Defines the opacity of the background.");
+            this.BackgroundColorOpacity = this.GlobalSettings.DefineSetting(nameof(BackgroundColorOpacity), 0.0f, () => Strings.Setting_BackgroundColorOpacity_Name, () => Strings.Setting_BackgroundColorOpacity_Description);
             this.BackgroundColorOpacity.SetRange(0.0f, 1f);
             this.BackgroundColorOpacity.SettingChanged += this.SettingChanged;
 
-            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => "Event Timespan", () => "The timespan the event table should cover.");
+            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => Strings.Setting_EventTimeSpan_Name, () => Strings.Setting_EventTimeSpan_Description);
             //this.EventTimeSpan.SetRange(30, 60 * 5);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
 
-            this.EventHistorySplit = this.GlobalSettings.DefineSetting(nameof(this.EventHistorySplit), 50, () => "Event History Split", () => "Defines how much history the timespan should contain.");
+            this.EventHistorySplit = this.GlobalSettings.DefineSetting(nameof(this.EventHistorySplit), 50, () => Strings.Setting_EventHistorySplit_Name, () => Strings.Setting_EventHistorySplit_Description);
             this.EventHistorySplit.SetRange(0, 75);
             this.EventHistorySplit.SettingChanged += this.SettingChanged;
 
-            this.EventHeight = this.GlobalSettings.DefineSetting(nameof(this.EventHeight), 20, () => "Event Height", () => "Defines the height of a single event row.");
+            this.EventHeight = this.GlobalSettings.DefineSetting(nameof(this.EventHeight), 20, () => Strings.Setting_EventHeight_Name, () => Strings.Setting_EventHeight_Description);
             this.EventHeight.SetRange(5, 50);
             this.EventHeight.SettingChanged += this.SettingChanged;
 
-            this.EventFontSize = this.GlobalSettings.DefineSetting(nameof(this.EventFontSize), ContentService.FontSize.Size16, () => "Event Font Size", () => "Defines the size of the font used for events.");
+            this.EventFontSize = this.GlobalSettings.DefineSetting(nameof(this.EventFontSize), ContentService.FontSize.Size16, () => Strings.Setting_EventFontSize_Name, () => Strings.Setting_EventFontSize_Description);
             this.EventFontSize.SettingChanged += this.SettingChanged;
 
-            this.DrawEventBorder = this.GlobalSettings.DefineSetting(nameof(this.DrawEventBorder), true, () => "Draw Event Border", () => "Whether the events should have a small border.");
+            this.DrawEventBorder = this.GlobalSettings.DefineSetting(nameof(this.DrawEventBorder), true, () => Strings.Setting_DrawEventBorder_Name, () => Strings.Setting_DrawEventBorder_Description);
             this.DrawEventBorder.SettingChanged += this.SettingChanged;
 
-            this.DebugEnabled = this.GlobalSettings.DefineSetting(nameof(this.DebugEnabled), false, () => "Debug Enabled", () => "Whether the event table should be running in debug mode.");
+            this.DebugEnabled = this.GlobalSettings.DefineSetting(nameof(this.DebugEnabled), false, () => Strings.Setting_DebugEnabled_Name, () => Strings.Setting_DebugEnabled_Description);
             this.DebugEnabled.SettingChanged += this.SettingChanged;
 
-            this.ShowTooltips = this.GlobalSettings.DefineSetting(nameof(this.ShowTooltips), true, () => "Show Tooltips", () => "Whether the event table should display event information on hover.");
+            this.ShowTooltips = this.GlobalSettings.DefineSetting(nameof(this.ShowTooltips), true, () => Strings.Setting_ShowTooltips_Name, () => Strings.Setting_ShowTooltips_Description);
             this.ShowTooltips.SettingChanged += this.SettingChanged;
 
-            this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => "Tooltip Time Mode", () => "Defines the mode in which the tooltip times are displayed.");
+            this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => Strings.Setting_TooltipTimeMode_Name, () => Strings.Setting_TooltipTimeMode_Description);
             this.TooltipTimeMode.SettingChanged += this.SettingChanged;
 
-            this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => "Copy Waypoints", () => "Whether the event table should copy waypoints to clipboard if event has been left clicked.");
+            this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => Strings.Setting_CopyWaypointOnClick_Name, () => Strings.Setting_CopyWaypointOnClick_Description);
             this.CopyWaypointOnClick.SettingChanged += this.SettingChanged;
 
-            this.ShowContextMenuOnClick = this.GlobalSettings.DefineSetting(nameof(this.ShowContextMenuOnClick), true, () => "Show Context Menu", () => "Whether the event table should show a context menu if an event has been right clicked.");
+            this.ShowContextMenuOnClick = this.GlobalSettings.DefineSetting(nameof(this.ShowContextMenuOnClick), true, () => Strings.Setting_ShowContextMenuOnClick_Name, () => Strings.Setting_ShowContextMenuOnClick_Description);
             this.ShowContextMenuOnClick.SettingChanged += this.SettingChanged;
 
-            this.BuildDirection = this.GlobalSettings.DefineSetting(nameof(this.BuildDirection), Models.BuildDirection.Top, () => "Build Direction", () => "Whether the event table should be build from the top or the bottom.");
+            this.BuildDirection = this.GlobalSettings.DefineSetting(nameof(this.BuildDirection), Models.BuildDirection.Top, () => Strings.Setting_BuildDirection_Name, () => Strings.Setting_BuildDirection_Description);
             this.BuildDirection.SettingChanged += this.SettingChanged;
 
-            this.Opacity = this.GlobalSettings.DefineSetting(nameof(this.Opacity), 1f, () => "Opacity", () => "Defines the opacity of the event table.");
+            this.Opacity = this.GlobalSettings.DefineSetting(nameof(this.Opacity), 1f, () => Strings.Setting_Opacity_Name, () => Strings.Setting_Opacity_Description);
             this.Opacity.SetRange(0.1f, 1f);
             this.Opacity.SettingChanged += this.SettingChanged;
 
-            this.UseFiller = this.GlobalSettings.DefineSetting(nameof(this.UseFiller), false, () => "Use Filler Events", () => "Whether the event table should fill empty spaces with filler events.");
+            this.UseFiller = this.GlobalSettings.DefineSetting(nameof(this.UseFiller), false, () => Strings.Setting_UseFiller_Name, () => Strings.Setting_UseFiller_Description);
             this.UseFiller.SettingChanged += this.SettingChanged;
 
-            this.UseFillerEventNames = this.GlobalSettings.DefineSetting(nameof(this.UseFillerEventNames), false, () => "Use Filler Event Names", () => "Whether the event fillers should have names.");
+            this.UseFillerEventNames = this.GlobalSettings.DefineSetting(nameof(this.UseFillerEventNames), false, () => Strings.Setting_UseFillerEventNames_Name, () => Strings.Setting_UseFillerEventNames_Description);
             this.UseFillerEventNames.SettingChanged += this.SettingChanged;
 
-            this.TextColor = this.GlobalSettings.DefineSetting(nameof(TextColor), this.DefaultGW2Color, () => "Text Color", () => "Defines the text color of events.");
+            this.TextColor = this.GlobalSettings.DefineSetting(nameof(TextColor), this.DefaultGW2Color, () => Strings.Setting_TextColor_Name, () => Strings.Setting_TextColor_Description);
             this.TextColor.SettingChanged += this.SettingChanged;
 
-            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), this.DefaultGW2Color, () => "Filler Text Color", () => "Defines the text color of filler events.");
+            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), this.DefaultGW2Color, () => Strings.Setting_FillerTextColor_Name, () => Strings.Setting_FillerTextColor_Description);
             this.FillerTextColor.SettingChanged += this.SettingChanged;
 
-            this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => "Worldboss Completed Action", () => "Defines the action when a worldboss has been completed.");
+            this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => Strings.Setting_WorldbossCompletedAction_Name, () => Strings.Setting_WorldbossCompletedAction_Description);
             this.WorldbossCompletedAcion.SettingChanged += this.SettingChanged;
+
+            this.UseEventTranslation = this.GlobalSettings.DefineSetting(nameof(UseEventTranslation), true, () => Strings.Setting_UseEventTranslation_Name, () => Strings.Setting_UseEventTranslation_Description);
+            this.UseEventTranslation.SettingChanged += this.SettingChanged;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)
@@ -238,11 +243,11 @@
             var height = 1080;
             var width = 1920;
 
-            this.LocationX = this.LocationSettings.DefineSetting(nameof(this.LocationX), (int)(width * 0.1), () => "Location X", () => "Where the event table should be displayed on the X axis.");
+            this.LocationX = this.LocationSettings.DefineSetting(nameof(this.LocationX), (int)(width * 0.1), () => Strings.Setting_LocationX_Name, () => Strings.Setting_LocationX_Description);
             this.LocationX.SetRange(0, (int)width);// (int)(GameService.Graphics.Resolution.X * 0.8));
             this.LocationX.SettingChanged += this.SettingChanged;
 
-            this.LocationY = this.LocationSettings.DefineSetting(nameof(this.LocationY), (int)(height * 0.1), () => "Location Y", () => "Where the event table should be displayed on the Y axis.");
+            this.LocationY = this.LocationSettings.DefineSetting(nameof(this.LocationY), (int)(height * 0.1), () => Strings.Setting_LocationY_Name, () => Strings.Setting_LocationY_Description);
             this.LocationY.SetRange(0, (int)height);// (int)(GameService.Graphics.Resolution.Y * 0.8));
             this.LocationY.SettingChanged += this.SettingChanged;
 
@@ -260,7 +265,7 @@
             };
             */
 
-            this.Width = this.LocationSettings.DefineSetting(nameof(this.Width), (int)(width * 0.5), () => "Width", () => "The width of the event table.");
+            this.Width = this.LocationSettings.DefineSetting(nameof(this.Width), (int)(width * 0.5), () => Strings.Setting_Width_Name, () => Strings.Setting_Width_Description);
             this.Width.SetRange(0, (int)width);// GameService.Graphics.Resolution.X);
             this.Width.SettingChanged += this.SettingChanged;
         }
@@ -272,10 +277,10 @@
             SettingCollection eventList = this.EventSettings.AddSubCollection(EVENT_LIST_SETTINGS);
             foreach (EventCategory category in eventCategories)
             {
-                IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
+                IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
-                    SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.Name, true);
+                    SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.GetSettingName(), true);
                     setting.SettingChanged += this.SettingChanged;
 
                     this.AllEvents.Add(setting);

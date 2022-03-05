@@ -11,6 +11,7 @@
     using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Models.Settings;
+    using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Container;
     using Gw2Sharp.Models;
@@ -168,9 +169,41 @@
 
             string eventFileContent = await this.EventFileState.GetExternalFileContent();
 
-            this._eventCategories = JsonConvert.DeserializeObject<EventSettingsFile>(eventFileContent).EventCategories ?? new List<EventCategory>();
+            var eventSettingsFile = JsonConvert.DeserializeObject<EventSettingsFile>(eventFileContent);
 
-            this._eventCategories.ForEach(ec => ec.Events.ForEach(e => e.EventCategory = ec));
+            Logger.Info($"Loaded event file version: {eventSettingsFile.Version}");
+
+            this._eventCategories = eventSettingsFile.EventCategories ?? new List<EventCategory>();
+
+            int eventCategoryCount = this._eventCategories.Count;
+            int eventCount = this._eventCategories.Sum(ec => ec.Events.Count);
+
+            Logger.Info($"Loaded {eventCategoryCount} Categories with {eventCount} Events.");
+
+            this._eventCategories.ForEach(ec =>
+            {
+                if (ModuleSettings.UseEventTranslation.Value)
+                {
+                    ec.Name = Strings.ResourceManager.GetString($"eventCategory-{ec.Key}") ?? ec.Name;
+                }
+
+                ec.Events.ForEach(e =>
+                {
+                    e.EventCategory = ec;
+
+                    // Prevent crash on older events.json files
+                    if (string.IsNullOrWhiteSpace(e.Key))
+                    {
+                        e.Key = e.Name;
+                    }
+
+                    if (ModuleSettings.UseEventTranslation.Value)
+                    {
+                        e.Name = Strings.ResourceManager.GetString($"event-{e.GetSettingName()}") ?? e.Name;
+                    }
+                });
+
+            });
 
             this.ModuleSettings.InitializeEventSettings(this._eventCategories);
 
@@ -333,17 +366,17 @@
             this.SettingsWindow = new TabbedWindow2(windowBackground, settingsWindowSize, contentRegion)
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                Title = "Event Table",
+                Title = Strings.SettingsWindow_Title,
                 Emblem = this.ContentsManager.GetIcon(@"images\event_boss.png"),
-                Subtitle = "Settings",
+                Subtitle = Strings.SettingsWindow_Subtitle,
                 SavesPosition = true,
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents), "Manage Events"));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), "General Settings"));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), "Graphic Settings"));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), "Event Settings"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents), Strings.SettingsWindow_ManageEvents_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
 
             this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
 
@@ -383,9 +416,7 @@
             this.ModuleSettings.LocationY.SetRange(minLocationY, maxLocationY);
             this.ModuleSettings.Width.SetRange(minWidth, maxWidth);
 
-#if !DEBUG
             return;
-#endif
 
             if (this.ModuleSettings.LocationX.Value < minLocationX)
             {
