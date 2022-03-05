@@ -20,12 +20,20 @@
     using Estreya.BlishHUD.EventTable.Utils;
     using MonoGame.Extended;
     using Estreya.BlishHUD.EventTable.Extensions;
+    using Estreya.BlishHUD.EventTable.Resources;
 
     [Serializable]
     public class Event
     {
         private static readonly Logger Logger = Logger.GetLogger<Event>();
+        [JsonProperty("key")]
+        public string Key { get; set; }
 
+        /// <summary>
+        /// The name of the event.
+        /// <br/>
+        /// Will get overridden with the localized event name if available.
+        /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
 
@@ -92,27 +100,27 @@
                     _contextMenuStrip = new ContextMenuStrip();
 
                     ContextMenuStripItem copyWaypoint = new ContextMenuStripItem();
-                    copyWaypoint.Text = "Copy Waypoint";
+                    copyWaypoint.Text = Strings.Event_CopyWaypoint;
                     copyWaypoint.Click += (s, e) => this.CopyWaypoint();
                     _contextMenuStrip.AddMenuItem(copyWaypoint);
 
                     ContextMenuStripItem openWiki = new ContextMenuStripItem();
-                    openWiki.Text = "Open Wiki";
+                    openWiki.Text = Strings.Event_OpenWiki;
                     openWiki.Click += (s, e) => this.OpenWiki();
                     _contextMenuStrip.AddMenuItem(openWiki);
 
                     ContextMenuStripItem hideCategory = new ContextMenuStripItem();
-                    hideCategory.Text = "Hide category until Reset";
+                    hideCategory.Text = Strings.Event_HideCategory;
                     hideCategory.Click += (s, e) => this.FinishCategory();
                     _contextMenuStrip.AddMenuItem(hideCategory);
 
                     ContextMenuStripItem hideEvent = new ContextMenuStripItem();
-                    hideEvent.Text = "Hide event until Reset";
+                    hideEvent.Text = Strings.Event_HideEvent;
                     hideEvent.Click += (s, e) => this.Finish();
                     _contextMenuStrip.AddMenuItem(hideEvent);
 
                     ContextMenuStripItem disable = new ContextMenuStripItem();
-                    disable.Text = "Disable";
+                    disable.Text = Strings.Event_Disable;
                     disable.Click += (s, e) => this.Disable();
                     _contextMenuStrip.AddMenuItem(disable);
                 }
@@ -341,13 +349,15 @@
             if (!string.IsNullOrWhiteSpace(this.Waypoint))
             {
                 ClipboardUtil.WindowsClipboardService.SetTextAsync(this.Waypoint);
-                ScreenNotification.ShowNotification($"Waypoint copied to clipboard!");
-                ScreenNotification.ShowNotification($"{this.Name}");
+                Controls.ScreenNotification.ShowNotification(new[] { $"{this.Name}", Strings.Event_WaypointCopied });
+                //ScreenNotification.ShowNotification($"Waypoint copied to clipboard!");
+                //ScreenNotification.ShowNotification($"{this.Name}");
             }
             else
             {
-                ScreenNotification.ShowNotification($"No Waypoint found!");
-                ScreenNotification.ShowNotification($"{this.Name}");
+                Controls.ScreenNotification.ShowNotification(new[] { $"{this.Name}", Strings.Event_NoWaypointFound });
+                //ScreenNotification.ShowNotification($"No Waypoint found!");
+                //ScreenNotification.ShowNotification($"{this.Name}");
             }
         }
 
@@ -450,7 +460,7 @@
 
                     if ((e.Filler && category.Key == evc.Key) || category.Key != evc.Key)
                     {
-                        if (e.Filler || (e.Name != this.Name))
+                        if (e.Filler || (e.GetSettingName() != this.GetSettingName()))
                         {
                             continue;
                         }
@@ -569,26 +579,26 @@
 
                         if (isPrev)
                         {
-                            description += $"Finished since: {FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
+                            description += $"{Strings.Event_Tooltip_FinishedSince}: {FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
                         }
                         else if (isNext)
                         {
-                            description += $"Starts in: {FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                            description += $"{Strings.Event_Tooltip_StartsIn}: {FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
                         }
                         else if (isCurrent)
                         {
-                            description += $"Remaining: {FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
+                            description += $"{Strings.Event_Tooltip_Remaining}: {FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
                         }
                     }
                     else
                     {
                         // Absolute
-                        description += $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\nStarts at: {FormatTime(hoveredOccurence)}";
+                        description += $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {FormatTime(hoveredOccurence)}";
                     }
                 }
                 else
                 {
-                    Logger.Error($"Can't find hovered event: {this.Name} - {string.Join(", ", occurences.Select(o => o.ToString()))}");
+                    Logger.Warn($"Can't find hovered event: {this.Name} - {string.Join(", ", occurences.Select(o => o.ToString()))}");
                 }
 
                 this.UpdateTooltip(description);
@@ -609,19 +619,20 @@
         {
             var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until, true);
+            EventTableModule.ModuleInstance.HiddenState.Add(this.GetSettingName(), until, true);
         }
 
         public void FinishCategory()
         {
-            var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            EventTableModule.ModuleInstance.HiddenState.Add(this.EventCategory.Name, until, true);
+            //var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            //DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            //EventTableModule.ModuleInstance.HiddenState.Add(this.EventCategory.Key, until, true);
+            this.EventCategory.Finish();
         }
 
         public void Disable()
         {
-            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
+            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.GetSettingName());
             if (eventSetting.Any())
             {
                 eventSetting.First().Value = false;
@@ -630,15 +641,20 @@
 
         public bool IsDisabled()
         {
-            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.Name);
+            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.GetSettingName());
             if (eventSetting.Any())
             {
-                bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.HiddenState.IsHidden(this.Name);
+                bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.HiddenState.IsHidden(this.GetSettingName());
 
                 return !enabled;
             }
 
             return false;
+        }
+
+        public string GetSettingName()
+        {
+            return $"{this.EventCategory.Key}-{this.Key}";
         }
     }
 }

@@ -5,8 +5,10 @@
     using Blish_HUD.Controls;
     using Blish_HUD.Graphics.UI;
     using Blish_HUD.Settings;
+    using Estreya.BlishHUD.EventTable.Controls;
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
+    using Estreya.BlishHUD.EventTable.Resources;
     using Microsoft.Xna.Framework;
     using System;
     using System.Collections.Generic;
@@ -54,12 +56,12 @@
                 Parent = Panel,
                 Width = Panel.MenuStandard.Size.X,
                 Location = new Point(0, contentRegion.Y),
-                PlaceholderText = "Search"
+                PlaceholderText = Strings.ManageEventsView_SearchBox_Placeholder
             };
 
             Panel eventCategoriesPanel = new Panel
             {
-                Title = "Event Categories",
+                Title = Strings.ManageEventsView_EventCategories_Title,
                 Parent = Panel,
                 CanScroll = true,
                 ShowBorder = true,
@@ -88,7 +90,7 @@
 
             searchBox.TextChanged += (s, e) =>
             {
-                eventPanel.FilterChildren<DetailsButton>(detailsButton =>
+                eventPanel.FilterChildren<EventDetailsButton>(detailsButton =>
                 {
                     return detailsButton.Text.ToLowerInvariant().Contains(searchBox.Text.ToLowerInvariant());
                 });
@@ -98,11 +100,11 @@
 
             Dictionary<string, MenuItem> menus = new Dictionary<string, MenuItem>();
 
-            MenuItem allEvents = eventCategories.AddMenuItem("All Events");
+            MenuItem allEvents = eventCategories.AddMenuItem(Strings.ManageEventsView_AllEvents);
             allEvents.Select();
             menus.Add(nameof(allEvents), allEvents);
 
-            foreach (EventCategory category in EventCategories.GroupBy(ec => ec.Name).Select(ec => ec.First()))
+            foreach (EventCategory category in EventCategories.GroupBy(ec => ec.Key).Select(ec => ec.First()))
             {
                 menus.Add(category.Key, eventCategories.AddMenuItem(category.Name));
             }
@@ -110,10 +112,15 @@
             menus.ToList().ForEach(menuItemPair => menuItemPair.Value.Click += (s, e) =>
             {
                 MenuItem menuItem = s as MenuItem;
-                eventPanel.FilterChildren<DetailsButton>(detailsButton =>
+
+                var category = EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
+
+                eventPanel.FilterChildren<EventDetailsButton>(detailsButton =>
                 {
-                    IEnumerable<EventCategory> categories = EventCategories.Where(ec => ec.Events.Any(ev => ev.Name == detailsButton.Text));
-                    return menuItem == menus[nameof(allEvents)] || categories.Any(ec => ec.Name == menuItem.Text);
+                    if (menuItem == menus[nameof(allEvents)]) return true;
+
+                    //IEnumerable<EventCategory> categories = EventCategories.Where(ec => ec.Events.Any(ev => ev.Name == detailsButton.Text));
+                    return category.Events.Any(ev => ev.EventCategory.Key == detailsButton.Event.EventCategory.Key && ev.Key == detailsButton.Event.Key);
                 });
             });
 
@@ -128,7 +135,7 @@
 
             StandardButton checkAllButton = new StandardButton()
             {
-                Text = "Check all",
+                Text = Strings.ManageEventsView_CheckAll,
                 Parent = buttons,
                 Right = buttons.Width,
                 Bottom = buttons.Height
@@ -142,7 +149,7 @@
                         // Check Yes - No
                     }
 
-                    DetailsButton detailsButton = control as DetailsButton;
+                    EventDetailsButton detailsButton = control as EventDetailsButton;
 
                     if (detailsButton.Visible)
                     {
@@ -154,7 +161,7 @@
 
             StandardButton uncheckAllButton = new StandardButton()
             {
-                Text = "Uncheck all",
+                Text = Strings.ManageEventsView_UncheckAll,
                 Parent = buttons,
                 Right = checkAllButton.Left,
                 Bottom = buttons.Height
@@ -168,7 +175,7 @@
                         // Check Yes - No
                     }
 
-                    DetailsButton detailsButton = control as DetailsButton;
+                    EventDetailsButton detailsButton = control as EventDetailsButton;
 
                     if (detailsButton.Visible)
                     {
@@ -180,20 +187,21 @@
 
             foreach (EventCategory category in EventCategories)
             {
-                IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Name).Select(eg => eg.First()) : category.Events;
+                IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
                     if (e.Filler) continue;
 
-                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.Name);
+                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.GetSettingName());
 
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
 
                     AsyncTexture2D icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
 
-                    var button = new DetailsButton()
+                    var button = new EventDetailsButton()
                     {
+                        Event = e,
                         Parent = eventPanel,
                         Text = e.Name,
                         Icon = icon,
@@ -208,7 +216,7 @@
                         {
                             Parent = button,
                             ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView("Waypoint", "Click to Copy", icon: "images\\waypoint.png")),
+                            Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Waypoint_Title, Strings.ManageEventsView_Waypoint_Description, icon: "images\\waypoint.png")),
                             Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\waypoint.png") // TODO: Own icon
                         };
 
@@ -224,7 +232,7 @@
                         {
                             Parent = button,
                             ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView("Wiki", "Click to Open", icon: "images\\wiki.png")),
+                            Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Wiki_Title, Strings.ManageEventsView_Wiki_Description, icon: "images\\wiki.png")),
                             Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\wiki.png") // TODO: Own icon
                         };
 

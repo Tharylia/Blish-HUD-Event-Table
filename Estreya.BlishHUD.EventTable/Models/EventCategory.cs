@@ -61,7 +61,8 @@
                     {
                         Name = $"{currentEvent.Value.Name} - {nextEvent.Value.Name}",
                         Duration = (int)gap.TotalMinutes,
-                        Filler = true
+                        Filler = true,
+                        EventCategory = this
                     };
 
                     modifiedEventStarts.Insert(i + 1, new KeyValuePair<DateTime, Event>(currentEnd, filler));
@@ -89,6 +90,7 @@
                     {
                         Name = $"{lastEvent.Value.Name} - {nextEventMapping.Value.Name}",
                         Filler = true,
+                        EventCategory = this,
                         Duration = (int)(nextStart - lastEvent.Key).TotalMinutes
                     };
 
@@ -112,7 +114,8 @@
                     {
                         Name = $"{prevEventMapping.Value.Name} - {firstEvent.Value.Name}",
                         Filler = true,
-                        Duration = (int)(firstEvent.Key - prevEnd).TotalMinutes
+                        Duration = (int)(firstEvent.Key - prevEnd).TotalMinutes,
+                        EventCategory = this
                     };
 
                     modifiedEventStarts.Add(new KeyValuePair<DateTime, Event>(prevEnd, filler));
@@ -140,7 +143,8 @@
                     {
                         Name = $"{currentEvent.Value.Name} - {nextEventMapping.Value.Name}",
                         Filler = true,
-                        Duration = (int)(nextStart - currentEnd).TotalMinutes
+                        Duration = (int)(nextStart - currentEnd).TotalMinutes,
+                        EventCategory = this
                     };
 
                     modifiedEventStarts.Add(new KeyValuePair<DateTime, Event>(currentEnd, filler));
@@ -163,7 +167,8 @@
                     {
                         Name = $"{prevEventMapping.Value.Name} - {currentEvent.Value.Name}",
                         Filler = true,
-                        Duration = (int)(currentStart - prevEnd).TotalMinutes
+                        Duration = (int)(currentStart - prevEnd).TotalMinutes,
+                        EventCategory = this
                     };
 
                     modifiedEventStarts.Add(new KeyValuePair<DateTime, Event>(prevEnd, filler));
@@ -192,7 +197,8 @@
                 {
                     Name = $"{prevEventMapping.Value.Name} - {nextEventMapping.Value.Name}",
                     Duration = (int)(nextStart - prevEnd).TotalMinutes,
-                    Filler = true
+                    Filler = true,
+                    EventCategory = this
                 };
 
                 modifiedEventStarts.Add(new KeyValuePair<DateTime, Event>(prevEnd, filler));
@@ -206,12 +212,12 @@
         {
             var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            EventTableModule.ModuleInstance.HiddenState.Add(this.Name, until, true);
+            EventTableModule.ModuleInstance.HiddenState.Add(this.Key, until, true);
         }
 
         public bool IsDisabled()
         {
-            bool disabled = EventTableModule.ModuleInstance.HiddenState.IsHidden(this.Name);
+            bool disabled = EventTableModule.ModuleInstance.HiddenState.IsHidden(this.Key);
 
             return disabled;
         }

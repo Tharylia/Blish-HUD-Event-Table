@@ -1,7 +1,9 @@
 ﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
+    using Blish_HUD;
     using Blish_HUD.Controls;
     using Estreya.BlishHUD.EventTable.Helpers;
+    using Estreya.BlishHUD.EventTable.Resources;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -21,19 +23,21 @@
             RenderSetting(parent, ModuleSettings.EventTimeSpan);
             RenderSetting(parent, ModuleSettings.EventHistorySplit);
             RenderSetting(parent, ModuleSettings.DrawEventBorder);
+            RenderSetting(parent,ModuleSettings.UseEventTranslation);
             RenderEmptyLine(parent);
             RenderSetting(parent, ModuleSettings.WorldbossCompletedAcion);
             RenderEmptyLine(parent);
             RenderSetting(parent, ModuleSettings.AutomaticallyUpdateEventFile);
-            RenderButton(parent, "Update Event File", () =>
+            RenderButton(parent, Strings.EventSettingsView_UpdateEventFile_Title, async () =>
             {
-                AsyncHelper.RunSync(EventTableModule.ModuleInstance.EventFileState.ExportFile);
-                ScreenNotification.ShowNotification("Successfully updated!");
+                await EventTableModule.ModuleInstance.EventFileState.ExportFile();
+                Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_UpdateEventFile_Success);
             }/*, () => !AsyncHelper.RunSync( EventTableModule.ModuleInstance.EventSettingsFileManager.IsNewEventFileVersionAvaiable)*/);
             RenderEmptyLine(parent);
-            RenderButton(parent, "Reset hidden states", () =>
+            RenderButton(parent, Strings.EventSettingsView_ResetHiddenStates_Title, () =>
             {
                 EventTableModule.ModuleInstance.HiddenState.Clear();
+                Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_ResetHiddenStates_Success);
             });
             RenderEmptyLine(parent);
             RenderSetting(parent, ModuleSettings.UseFiller);
