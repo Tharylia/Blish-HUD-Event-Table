@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0",
   "eventCategories": [
     {
@@ -1298,6 +1298,158 @@
           "icon": "4B6BDF0614656A310E5041F454AA0AE40B26B709/2248191",
           "color": "#8079afff",
           "api": "drakkar"
+        }
+      ]
+    },
+    {
+      "key": "canthaDayNight",
+      "name": "Cantha: Day-Night Cycle",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "dawn",
+          "name": "Dawn",
+          "offset": "00:35",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 5,
+          "color": "#80ffe37f",
+          "icon": "images\\time.png"
+        },
+        {
+          "key": "day",
+          "name": "Day",
+          "offset": "00:40",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 55,
+          "color": "#80ffe37f",
+          "icon": "images\\time.png"
+        },
+        {
+          "key": "dusk",
+          "name": "Dusk",
+          "offset": "01:35",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 5,
+          "color": "#80ffe37f",
+          "icon": "images\\time.png"
+        },
+        {
+          "key": "night",
+          "name": "Night",
+          "offset": "01:40",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "",
+          "waypoint": "",
+          "wiki": "https://wiki.guildwars2.com/wiki/Day_and_night",
+          "duration": 55,
+          "color": "#809f99cc",
+          "icon": "images\\time.png"
+        }
+      ]
+    },
+    {
+      "key": "seitungProvince",
+      "name": "Seitung Province",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "aetherbladeAssault",
+          "name": "Aetherblade Assault",
+          "offset": "01:30",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Seitung Province",
+          "waypoint": "[&BGUNAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Aetherblade_Assault",
+          "duration": 30,
+          "color": "#5af3de",
+          "icon": "1151287819F13DD0ED5CB1E461255CD2CF5D64CA/2604534"
+        }
+      ]
+    },
+    {
+      "key": "newKainengCity",
+      "name": "New Kaineng City",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "kainengBlackout",
+          "name": "Kaineng Blackout",
+          "offset": "00:00",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "New Kaineng City",
+          "waypoint": "[&BBkNAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Kaineng_Blackout",
+          "duration": 30,
+          "color": "#5af3de",
+          "icon": "963ABAD87B9B2021015FC840ED19A2E70509550E/2604533"
+        }
+      ]
+    },
+    {
+      "key": "theEchovaldWilds",
+      "name": "The Echovald Wilds",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "gangWar",
+          "name": "Gang War",
+          "offset": "00:30",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "The Echovald Wilds",
+          "waypoint": "[&BMwMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/The_Gang_War_of_Echovald",
+          "duration": 35,
+          "color": "#5af3de",
+          "icon": "50F9AD6ABE0646DD07665108F5A9D8F90266B219/2604527"
+        }
+      ]
+    },
+    {
+      "key": "dragonsEnd",
+      "name": "Dragon's End",
+      "showCombined": false,
+      "events": [
+        {
+          "key": "preparations",
+          "name": "Preparations",
+          "offset": "00:00",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Dragon's End",
+          "waypoint": "[&BKIMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Preparations",
+          "duration": 60,
+          "color": "#c3fff5",
+          "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
+        },
+        {
+          "key": "theBattleForTheJadeSea",
+          "name": "The Battle for the Jade Sea",
+          "offset": "01:00",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Dragon's End",
+          "waypoint": "[&BMwMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/The_Battle_for_the_Jade_Sea",
+          "duration": 60,
+          "color": "#5af3de",
+          "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
         }
       ]
     }
