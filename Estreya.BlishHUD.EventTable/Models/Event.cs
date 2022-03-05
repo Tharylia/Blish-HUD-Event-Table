@@ -632,7 +632,8 @@
 
         public void Disable()
         {
-            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.GetSettingName());
+            // Check with .ToLower() because settings define is case insensitive
+            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.GetSettingName().ToLowerInvariant());
             if (eventSetting.Any())
             {
                 eventSetting.First().Value = false;
@@ -641,7 +642,8 @@
 
         public bool IsDisabled()
         {
-            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey == this.GetSettingName());
+            // Check with .ToLower() because settings define is case insensitive
+            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.GetSettingName().ToLowerInvariant());
             if (eventSetting.Any())
             {
                 bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.HiddenState.IsHidden(this.GetSettingName());

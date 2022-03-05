@@ -192,7 +192,8 @@
                 {
                     if (e.Filler) continue;
 
-                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey == e.GetSettingName());
+                    // Check with .ToLower() because settings define is case insensitive
+                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.GetSettingName().ToLowerInvariant());
 
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
@@ -257,7 +258,7 @@
                         {
                             setting.Value = eventArgs.Checked;
                             toggleButton.Checked = setting.Value;
-                            settings.Where(x => x.EntryKey != setting.EntryKey).ToList().ForEach(x => x.Value = setting.Value);
+                            //settings.Where(x => x.EntryKey != setting.EntryKey).ToList().ForEach(x => x.Value = setting.Value);
                             UpdateToggleButton(toggleButton);
                         }
                     };
