@@ -199,7 +199,7 @@
 
                     if (ModuleSettings.UseEventTranslation.Value)
                     {
-                        e.Name = Strings.ResourceManager.GetString($"event-{e.GetSettingName()}") ?? e.Name;
+                        e.Name = Strings.ResourceManager.GetString($"event-{e.SettingKey}") ?? e.Name;
                     }
                 });
 
@@ -241,6 +241,11 @@
                         break;
                 }
             };
+
+            foreach (EventCategory ec in this.EventCategories)
+            {
+                await ec.LoadAsync();
+            }
         }
 
         private async Task InitializeStates(bool beforeFileLoaded = false)
@@ -397,6 +402,11 @@
             {
                 state.Update(gameTime);
             }
+
+            this._eventCategories.ForEach(ec =>
+            {
+                ec.Update(gameTime);
+            });
         }
 
         private void CheckContainerSizeAndPosition()

@@ -117,9 +117,10 @@
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
 
+
             InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
-            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories;
+            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories.Where(ec => !ec.IsDisabled()).ToList();
 
             Color backgroundColor = Color.Transparent;
             if (EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value != null && EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Id != 1)
@@ -135,27 +136,29 @@
 
             foreach (EventCategory eventCategory in eventCategories)
             {
-                List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value);
-
-                var groups = eventStarts.GroupBy(ev => ev.Value);
+                //List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value);
 
                 bool anyEventDrawn = false;
 
-                foreach (var group in groups)
+                foreach (var ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
-                    var starts = group.Select(g => g.Key).ToList();
-                    anyEventDrawn = starts.Count > 0;
-                    group.Key.Draw(spriteBatch, bounds, this, this.Texture, eventCategories.ToList(), eventCategory, this.PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.Font, starts);
+                    if (!EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value && ev.Filler)
+                    {
+                        continue;
+                    }
+
+                    var eventDrawn = ev.Draw(spriteBatch, bounds, this, this.Texture, y  ,this.PixelPerMinute,  EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.Font);
+                    anyEventDrawn |= !ev.Filler && eventDrawn;
                 }
 
                 if (anyEventDrawn)
                 {
                     anyCategoryDrawn = true;
-                    y = groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
+                    y += EventTableModule.ModuleInstance.EventHeight;// groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
                 }
             }
 
-            this.Size = new Point(bounds.Width, y + (anyCategoryDrawn ? EventTableModule.ModuleInstance.EventHeight : 0));
+            this.Size = new Point(bounds.Width, y);
 
             float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
             this.DrawLine(spriteBatch, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);

@@ -21,6 +21,7 @@
         public Gw2Sharp.WebApi.V2.Models.Color DefaultGW2Color { get => this._defaultColor; private set => this._defaultColor = value; }
 
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
+        public event EventHandler<EventSettingsChangedEventArgs> EventSettingChanged;
 
         private SettingCollection Settings { get; set; }
 
@@ -280,8 +281,18 @@
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
-                    SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.GetSettingName(), true);
-                    setting.SettingChanged += this.SettingChanged;
+                    SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.SettingKey, true);
+                    setting.SettingChanged += (s, e) =>
+                    {
+                        SettingEntry<bool> settingEntry = (SettingEntry<bool>)s;
+                        this.EventSettingChanged?.Invoke(s, new EventSettingsChangedEventArgs()
+                        {
+                            Name = settingEntry.EntryKey,
+                            Enabled = e.NewValue
+                        });
+
+                        this.SettingChanged(s, e);
+                    };
 
                     this.AllEvents.Add(setting);
                 }
@@ -302,6 +313,12 @@
         {
             public string Name { get; set; }
             public object Value { get; set; }
+        }
+
+        public class EventSettingsChangedEventArgs
+        {
+            public string Name { get; set; }
+            public bool Enabled { get; set; }
         }
 
     }

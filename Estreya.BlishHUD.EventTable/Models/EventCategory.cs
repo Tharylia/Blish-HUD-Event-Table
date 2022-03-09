@@ -1,6 +1,9 @@
 ﻿namespace Estreya.BlishHUD.EventTable.Models
 {
+    using Blish_HUD;
     using Blish_HUD.Settings;
+    using Estreya.BlishHUD.EventTable.Utils;
+    using Microsoft.Xna.Framework;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -12,6 +15,11 @@
     [Serializable]
     public class EventCategory
     {
+        private static readonly Logger Logger = Logger.GetLogger<EventCategory>();
+
+        private readonly TimeSpan updateInterval = TimeSpan.FromMinutes(15);
+        private double timeSinceUpdate = 0;
+
         [JsonProperty("key")]
         public string Key { get; set; }
         [JsonProperty("name")]
@@ -20,27 +28,53 @@
         public bool ShowCombined { get; set; }
 
         [JsonProperty("events")]
-        public List<Event> Events { get; set; }
+        private List<Event> _originalEvents = new List<Event>();
 
-        public List<KeyValuePair<DateTime, Event>> GetEventOccurences(DateTime now, DateTime max, DateTime min, bool fillGaps)
+        [JsonIgnore]
+        private List<Event> _fillerEvents = new List<Event>();
+
+        public List<Event> Events
         {
-            if (this.IsDisabled()) return new List<KeyValuePair<DateTime, Event>>();
+            get
+            {
+                return _originalEvents.Concat(_fillerEvents).ToList();
+            }
+            set => _originalEvents = value;
+        }
+
+        public EventCategory()
+        {
+            this.timeSinceUpdate = updateInterval.TotalMilliseconds;
+        }
+
+        private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
+        {
+            if (this._originalEvents.Any(ev => ev.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant()))
+            {
+                UpdateEventOccurences(null);
+            }
+        }
+
+        private void UpdateEventOccurences(GameTime gameTime)
+        {
+            lock (_fillerEvents)
+            {
+                this._fillerEvents.Clear();
+            }
 
             //var activeEvents = this.Events.Where(e => eventSettings.Find(eventSetting => eventSetting.EntryKey == e.Name).Value).ToList();
-            var activeEvents = this.Events.Where(e => !e.IsDisabled()).ToList();
+            var activeEvents = this._originalEvents.Where(e => !e.IsDisabled()).ToList();
 
             List<KeyValuePair<DateTime, Event>> activeEventStarts = new List<KeyValuePair<DateTime, Event>>();
 
             foreach (var activeEvent in activeEvents)
             {
-                List<DateTime> eventOccurences = activeEvent.GetStartOccurences(now, max, min);
+                List<DateTime> eventOccurences = activeEvent.Occurences.Where(oc => (oc >= EventTableModule.ModuleInstance.EventTimeMin || oc.AddMinutes(activeEvent.Duration) >= EventTableModule.ModuleInstance.EventTimeMin) && oc <= EventTableModule.ModuleInstance.EventTimeMax).ToList();//.GetStartOccurences(now, max, min);
 
                 eventOccurences.ForEach(eo => activeEventStarts.Add(new KeyValuePair<DateTime, Event>(eo, activeEvent)));
             }
 
             activeEventStarts = activeEventStarts.OrderBy(aes => aes.Key).ToList();
-
-            if (!fillGaps) return activeEventStarts.ToList();
 
             var modifiedEventStarts = activeEventStarts.ToList();
 
@@ -77,7 +111,7 @@
                 // We have a following event
                 var nextEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.GetStartOccurences(now, max.AddDays(2), lastEvent.Key, limitsBetweenRanges: true).FirstOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= lastEvent.Key && oc <= EventTableModule.ModuleInstance.EventTimeMax.AddDays(-2))/*GetStartOccurences(now, max.AddDays(2), lastEvent.Key, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).First();
                 var nextEventMapping = new KeyValuePair<DateTime, Event>(nextEvent.Key, nextEvent.Value);
 
@@ -100,7 +134,7 @@
                 // We have a previous event
                 var prevEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.GetStartOccurences(now, firstEvent.Key, min.AddDays(-2), limitsBetweenRanges: true).LastOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc <= firstEvent.Key)/*GetStartOccurences(now, firstEvent.Key, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).Last();
 
                 var prevEventMapping = new KeyValuePair<DateTime, Event>(prevEvent.Key, prevEvent.Value);
@@ -130,7 +164,7 @@
                 // We have a following event
                 var nextEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.GetStartOccurences(now, max.AddDays(2), currentEnd, limitsBetweenRanges: true).FirstOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= currentEnd && oc <= EventTableModule.ModuleInstance.EventTimeMax.AddDays(2))/*GetStartOccurences(now, max.AddDays(2), currentEnd, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).First();
                 var nextEventMapping = new KeyValuePair<DateTime, Event>(nextEvent.Key, nextEvent.Value);
 
@@ -153,7 +187,7 @@
                 // We have a previous event
                 var prevEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.GetStartOccurences(now, currentStart, min.AddDays(-2), limitsBetweenRanges: true).LastOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc <= currentStart)/*GetStartOccurences(now, currentStart, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).Last();
 
                 var prevEventMapping = new KeyValuePair<DateTime, Event>(prevEvent.Key, prevEvent.Value);
@@ -178,12 +212,12 @@
             {
                 var prevEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.GetStartOccurences(now, now, min.AddDays(-2), limitsBetweenRanges: true).LastOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc <= EventTableModule.ModuleInstance.EventTimeMax)/*GetStartOccurences(now, now, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).Last();
 
                 var nextEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.GetStartOccurences(now, max.AddDays(2), now, limitsBetweenRanges: true).FirstOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin && oc <= EventTableModule.ModuleInstance.EventTimeMax.AddDays(2))/*GetStartOccurences(now, max.AddDays(2), now, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).First();
 
                 var prevEventMapping = new KeyValuePair<DateTime, Event>(prevEvent.Key, prevEvent.Value);
@@ -204,9 +238,14 @@
                 modifiedEventStarts.Add(new KeyValuePair<DateTime, Event>(prevEnd, filler));
             }
 
-            //this.Events.AddRange(modifiedEventStarts.Where(e => e.Value.Filler).Select(e => e.Value));
+            lock (_fillerEvents)
+            {
+                modifiedEventStarts.Where(e => e.Value.Filler).ToList().ForEach(modEvent => modEvent.Value.Occurences.Add(modEvent.Key));
+                var modifiedEvents = modifiedEventStarts.Where(e => e.Value.Filler).Select(e => e.Value);
+                this._fillerEvents.AddRange(modifiedEvents);
+            }
 
-            return modifiedEventStarts.OrderBy(mes => mes.Key).ToList();
+            //return modifiedEventStarts.OrderBy(mes => mes.Key).ToList();
         }
         public void Finish()
         {
@@ -220,6 +259,19 @@
             bool disabled = EventTableModule.ModuleInstance.HiddenState.IsHidden(this.Key);
 
             return disabled;
+        }
+
+        public Task LoadAsync()
+        {
+            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += ModuleSettings_EventSettingChanged;
+            return Task.CompletedTask;
+        }
+
+
+        public void Update(GameTime gameTime)
+        {
+            this.Events.ForEach(ev => ev.Update(gameTime));
+            UpdateCadenceUtil.UpdateWithCadence(UpdateEventOccurences, gameTime, updateInterval.TotalMilliseconds, ref timeSinceUpdate);
         }
     }
 }
