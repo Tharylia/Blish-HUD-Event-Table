@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -179,7 +179,6 @@
             this.BackgroundColorOpacity.SettingChanged += this.SettingChanged;
 
             this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => Strings.Setting_EventTimeSpan_Name, () => Strings.Setting_EventTimeSpan_Description);
-            //this.EventTimeSpan.SetRange(30, 60 * 5);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
 
             this.EventHistorySplit = this.GlobalSettings.DefineSetting(nameof(this.EventHistorySplit), 50, () => Strings.Setting_EventHistorySplit_Name, () => Strings.Setting_EventHistorySplit_Description);
@@ -245,29 +244,15 @@
             var width = 1920;
 
             this.LocationX = this.LocationSettings.DefineSetting(nameof(this.LocationX), (int)(width * 0.1), () => Strings.Setting_LocationX_Name, () => Strings.Setting_LocationX_Description);
-            this.LocationX.SetRange(0, (int)width);// (int)(GameService.Graphics.Resolution.X * 0.8));
+            this.LocationX.SetRange(0, (int)width);
             this.LocationX.SettingChanged += this.SettingChanged;
 
             this.LocationY = this.LocationSettings.DefineSetting(nameof(this.LocationY), (int)(height * 0.1), () => Strings.Setting_LocationY_Name, () => Strings.Setting_LocationY_Description);
-            this.LocationY.SetRange(0, (int)height);// (int)(GameService.Graphics.Resolution.Y * 0.8));
+            this.LocationY.SetRange(0, (int)height);
             this.LocationY.SettingChanged += this.SettingChanged;
 
-            //this.Height = this.LocationSettings.DefineSetting(nameof(this.Height), (int)(height * 0.2), () => "Height", () => "The height of the event table.");
-            //this.Height.SetRange(0, (int)height);// GameService.Graphics.Resolution.Y);
-            //this.Height.SetDisabled(true);
-            //this.Height.SettingChanged += this.SettingChanged;
-
-            /*
-            this.SnapHeight = this.LocationSettings.DefineSetting(nameof(this.SnapHeight), true, () => "Snap Height", () => "Whether the event table should auto resize height to content.");
-            this.SnapHeight.SettingChanged += (s, e) =>
-            {
-                this.Height.SetDisabled(e.NewValue);
-                this.SettingChanged(s, e);
-            };
-            */
-
             this.Width = this.LocationSettings.DefineSetting(nameof(this.Width), (int)(width * 0.5), () => Strings.Setting_Width_Name, () => Strings.Setting_Width_Description);
-            this.Width.SetRange(0, (int)width);// GameService.Graphics.Resolution.X);
+            this.Width.SetRange(0, (int)width);
             this.Width.SettingChanged += this.SettingChanged;
         }
 
@@ -303,7 +288,7 @@
         {
             SettingEntry<T> settingEntry = (SettingEntry<T>)sender;
             var prevValue = e.PreviousValue.GetType() == typeof(string) ? e.PreviousValue.ToString() : JsonConvert.SerializeObject(e.PreviousValue);
-            var newValue = e.NewValue.GetType() == typeof(string) ? e.NewValue.ToString() :  JsonConvert.SerializeObject(e.NewValue);
+            var newValue = e.NewValue.GetType() == typeof(string) ? e.NewValue.ToString() : JsonConvert.SerializeObject(e.NewValue);
             Logger.Debug($"Changed setting \"{settingEntry.EntryKey}\" from \"{prevValue}\" to \"{newValue}\"");
 
             ModuleSettingsChanged?.Invoke(this, new ModuleSettingsChangedEventArgs() { Name = settingEntry.EntryKey, Value = e.NewValue });

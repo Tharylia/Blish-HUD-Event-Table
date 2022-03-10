@@ -488,7 +488,7 @@
                         show &= !GameService.Gw2Mumble.PlayerCharacter.IsInCombat;
                     }
 
-                    show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
+                    //show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
 
                     this.ToggleContainer(show);
                 }
