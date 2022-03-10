@@ -606,6 +606,12 @@
   <data name="Setting_EventTimeSpan_Name" xml:space="preserve">
     <value>Event Timespan</value>
   </data>
+  <data name="Setting_EventTimeSpan_Validation_NoDouble" xml:space="preserve">
+    <value>Event Timespan '{0}' no real number.</value>
+  </data>
+  <data name="Setting_EventTimeSpan_Validation_OverLimit" xml:space="preserve">
+    <value>Event Timespan is bigger than {0} minutes. Cap at {0} for performance reasons.</value>
+  </data>
   <data name="Setting_FillerTextColor_Description" xml:space="preserve">
     <value>Defines the text color of filler events.</value>
   </data>

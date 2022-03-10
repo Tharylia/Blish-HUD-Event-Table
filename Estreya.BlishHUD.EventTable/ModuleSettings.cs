@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -180,6 +180,28 @@ namespace Estreya.BlishHUD.EventTable
 
             this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => Strings.Setting_EventTimeSpan_Name, () => Strings.Setting_EventTimeSpan_Description);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
+            this.EventTimeSpan.SetValidation(val =>
+            {
+                bool isValid = true;
+                string message = null;
+                double limit = 1440;
+
+                if (double.TryParse(val, out double timespan))
+                {
+                    if (timespan > limit)
+                    {
+                        isValid = false;
+                        message = string.Format(Strings.Setting_EventTimeSpan_Validation_OverLimit, limit);
+                    }
+                }
+                else
+                {
+                    isValid = false;
+                    message = string.Format(Strings.Setting_EventTimeSpan_Validation_NoDouble, val);
+                }
+
+                return new SettingValidationResult(isValid, message);
+            });
 
             this.EventHistorySplit = this.GlobalSettings.DefineSetting(nameof(this.EventHistorySplit), 50, () => Strings.Setting_EventHistorySplit_Name, () => Strings.Setting_EventHistorySplit_Description);
             this.EventHistorySplit.SetRange(0, 75);

@@ -86,5 +86,15 @@
         {
             return settingEntry.GetComplianceRequisite()?.Any(cr => cr is SettingDisabledComplianceRequisite) ?? false;
         }
+
+        public static bool HasValidation<T>(this SettingEntry<T> settingEntry)
+        {
+            return settingEntry.GetComplianceRequisite()?.Any(cr => cr is SettingValidationComplianceRequisite<T>) ?? false;
+        }
+
+        public static SettingValidationComplianceRequisite<T> GetValidation<T>(this SettingEntry<T> settingEntry)
+        {
+            return (SettingValidationComplianceRequisite<T>)settingEntry.GetComplianceRequisite()?.First(cr => cr is SettingValidationComplianceRequisite<T>);
+        }
     }
 }
