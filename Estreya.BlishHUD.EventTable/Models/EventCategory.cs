@@ -111,7 +111,7 @@
                 // We have a following event
                 var nextEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= lastEvent.Key && oc <= EventTableModule.ModuleInstance.EventTimeMax.AddDays(-2))/*GetStartOccurences(now, max.AddDays(2), lastEvent.Key, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc > lastEvent.Key && oc < EventTableModule.ModuleInstance.EventTimeMax.AddDays(2))/*GetStartOccurences(now, max.AddDays(2), lastEvent.Key, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).First();
                 var nextEventMapping = new KeyValuePair<DateTime, Event>(nextEvent.Key, nextEvent.Value);
 
@@ -134,7 +134,7 @@
                 // We have a previous event
                 var prevEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc <= firstEvent.Key)/*GetStartOccurences(now, firstEvent.Key, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc > EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc < firstEvent.Key)/*GetStartOccurences(now, firstEvent.Key, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).Last();
 
                 var prevEventMapping = new KeyValuePair<DateTime, Event>(prevEvent.Key, prevEvent.Value);
@@ -164,7 +164,7 @@
                 // We have a following event
                 var nextEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= currentEnd && oc <= EventTableModule.ModuleInstance.EventTimeMax.AddDays(2))/*GetStartOccurences(now, max.AddDays(2), currentEnd, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc > currentEnd && oc < EventTableModule.ModuleInstance.EventTimeMax.AddDays(2))/*GetStartOccurences(now, max.AddDays(2), currentEnd, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).First();
                 var nextEventMapping = new KeyValuePair<DateTime, Event>(nextEvent.Key, nextEvent.Value);
 
@@ -187,7 +187,7 @@
                 // We have a previous event
                 var prevEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc <= currentStart)/*GetStartOccurences(now, currentStart, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc > EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc < currentStart)/*GetStartOccurences(now, currentStart, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).Last();
 
                 var prevEventMapping = new KeyValuePair<DateTime, Event>(prevEvent.Key, prevEvent.Value);
@@ -212,12 +212,12 @@
             {
                 var prevEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc <= EventTableModule.ModuleInstance.EventTimeMax)/*GetStartOccurences(now, now, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc > EventTableModule.ModuleInstance.EventTimeMin.AddDays(-2) && oc < EventTableModule.ModuleInstance.EventTimeMax)/*GetStartOccurences(now, now, min.AddDays(-2), limitsBetweenRanges: true)*/.LastOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).Last();
 
                 var nextEvent = activeEvents.Select(ae =>
                 {
-                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc >= EventTableModule.ModuleInstance.EventTimeMin && oc <= EventTableModule.ModuleInstance.EventTimeMax.AddDays(2))/*GetStartOccurences(now, max.AddDays(2), now, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
+                    return new KeyValuePair<DateTime, Event>(ae.Occurences.Where(oc => oc > EventTableModule.ModuleInstance.EventTimeMin && oc < EventTableModule.ModuleInstance.EventTimeMax.AddDays(2))/*GetStartOccurences(now, max.AddDays(2), now, limitsBetweenRanges: true)*/.FirstOrDefault(), ae);
                 }).OrderBy(aeo => aeo.Key).First();
 
                 var prevEventMapping = new KeyValuePair<DateTime, Event>(prevEvent.Key, prevEvent.Value);
