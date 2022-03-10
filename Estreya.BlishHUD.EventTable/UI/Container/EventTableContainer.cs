@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -20,7 +20,6 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
     public class EventTableContainer : Blish_HUD.Controls.Container
     {
-        private TimeSpan TimeSinceDraw { get; set; }
         private bool _currentVisibilityDirection = false;
 
         private static bool CursorVisible => GameService.Input.Mouse.CursorIsVisible;
@@ -124,12 +123,8 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
             int y = 0;
 
-            bool anyCategoryDrawn = false;
-
             foreach (EventCategory eventCategory in eventCategories)
             {
-                //List<KeyValuePair<DateTime, Event>> eventStarts = eventCategory.GetEventOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value);
-
                 bool anyEventDrawn = false;
 
                 foreach (var ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
@@ -145,8 +140,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
 
                 if (anyEventDrawn)
                 {
-                    anyCategoryDrawn = true;
-                    y += EventTableModule.ModuleInstance.EventHeight;// groups.ElementAt(0).Key.GetYPosition(eventCategories, eventCategory, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug);
+                    y += EventTableModule.ModuleInstance.EventHeight;
                 }
             }
 
@@ -217,14 +211,12 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
                 height = this.Size.Y;
             }
 
-            this.Size = new Point(width, /*this.Settings.SnapHeight.Value && */!overrideHeight ? this.Size.Y : height);
+            this.Size = new Point(width, !overrideHeight ? this.Size.Y : height);
         }
 
         public override void UpdateContainer(GameTime gameTime)
         {
             base.UpdateContainer(gameTime);
-
-            TimeSinceDraw += gameTime.ElapsedGameTime;
         }
 
         private void InitializeBaseTexture(GraphicsDevice graphicsDevice)

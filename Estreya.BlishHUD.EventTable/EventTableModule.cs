@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -46,8 +46,6 @@ namespace Estreya.BlishHUD.EventTable
         internal ModuleSettings ModuleSettings;
 
         private CornerIcon CornerIcon { get; set; }
-
-        //private WindowTab ManageEventTab { get; set; }
 
         internal TabbedWindow2 SettingsWindow { get; private set; }
 
@@ -431,8 +429,7 @@ namespace Estreya.BlishHUD.EventTable
             this.ModuleSettings.LocationY.SetRange(minLocationY, maxLocationY);
             this.ModuleSettings.Width.SetRange(minWidth, maxWidth);
 
-            return;
-
+            /*
             if (this.ModuleSettings.LocationX.Value < minLocationX)
             {
                 Logger.Debug($"LocationX unter min, set to: {minLocationX}");
@@ -468,6 +465,7 @@ namespace Estreya.BlishHUD.EventTable
                 Logger.Debug($"Width over max, set to: {maxWidth}");
                 this.ModuleSettings.Width.Value = maxWidth;
             }
+            */
         }
 
         private void CheckMumble()
@@ -503,12 +501,7 @@ namespace Estreya.BlishHUD.EventTable
         /// <inheritdoc />
         protected override void Unload()
         {
-            /*
-            if (this.ManageEventTab != null)
-            {
-                GameService.Overlay.BlishHudWindow.RemoveTab(this.ManageEventTab);
-            }
-            */
+            base.Unload();
 
             if (this.Container != null)
             {
