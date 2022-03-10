@@ -606,6 +606,12 @@
   <data name="Setting_EventTimeSpan_Name" xml:space="preserve">
     <value>Event Zeitspanne</value>
   </data>
+  <data name="Setting_EventTimeSpan_Validation_NoDouble" xml:space="preserve">
+    <value>Event Zeitspanne '{0}' ist keine gültige Zahl.</value>
+  </data>
+  <data name="Setting_EventTimeSpan_Validation_OverLimit" xml:space="preserve">
+    <value>Event Zeitspanne ist größer als {0} Minuten. Limitiere Zeitspanne bei {0} aus Gründen der Performance.</value>
+  </data>
   <data name="Setting_FillerTextColor_Description" xml:space="preserve">
     <value>Gibt an, welche Schriftfarbe für Füll-Events verwendet werden soll.</value>
   </data>

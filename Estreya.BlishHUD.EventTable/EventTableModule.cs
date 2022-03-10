@@ -47,8 +47,6 @@
 
         private CornerIcon CornerIcon { get; set; }
 
-        //private WindowTab ManageEventTab { get; set; }
-
         internal TabbedWindow2 SettingsWindow { get; private set; }
 
         internal bool Debug => this.ModuleSettings.DebugEnabled.Value;
@@ -136,7 +134,7 @@
 
         internal List<EventCategory> EventCategories
         {
-            get => _eventCategories.Where(ec => !ec.IsDisabled()).ToList();
+            get => _eventCategories;
         }
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
@@ -163,7 +161,7 @@
 
         protected override async Task LoadAsync()
         {
-            await this.ModuleSettings.Load();
+            await this.ModuleSettings.LoadAsync();
 
             await InitializeStates(true);
 
@@ -199,7 +197,7 @@
 
                     if (ModuleSettings.UseEventTranslation.Value)
                     {
-                        e.Name = Strings.ResourceManager.GetString($"event-{e.GetSettingName()}") ?? e.Name;
+                        e.Name = Strings.ResourceManager.GetString($"event-{e.SettingKey}") ?? e.Name;
                     }
                 });
 
@@ -217,12 +215,13 @@
                 Visible = false
             };
 
+            await this.Container.LoadAsync();
+
             this.ModuleSettings.ModuleSettingsChanged += (sender, eventArgs) =>
             {
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                        //case nameof(this.ModuleSettings.Height):
                         this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
@@ -237,10 +236,19 @@
                     case nameof(ModuleSettings.RegisterCornerIcon):
                         this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
                         break;
+                    case nameof(ModuleSettings.BackgroundColor):
+                    case nameof(ModuleSettings.BackgroundColorOpacity):
+                        this.Container.UpdateBackgroundColor();
+                        break;
                     default:
                         break;
                 }
             };
+
+            foreach (EventCategory ec in this.EventCategories)
+            {
+                await ec.LoadAsync();
+            }
         }
 
         private async Task InitializeStates(bool beforeFileLoaded = false)
@@ -397,6 +405,11 @@
             {
                 state.Update(gameTime);
             }
+
+            this._eventCategories.ForEach(ec =>
+            {
+                ec.Update(gameTime);
+            });
         }
 
         private void CheckContainerSizeAndPosition()
@@ -416,8 +429,7 @@
             this.ModuleSettings.LocationY.SetRange(minLocationY, maxLocationY);
             this.ModuleSettings.Width.SetRange(minWidth, maxWidth);
 
-            return;
-
+            /*
             if (this.ModuleSettings.LocationX.Value < minLocationX)
             {
                 Logger.Debug($"LocationX unter min, set to: {minLocationX}");
@@ -453,6 +465,7 @@
                 Logger.Debug($"Width over max, set to: {maxWidth}");
                 this.ModuleSettings.Width.Value = maxWidth;
             }
+            */
         }
 
         private void CheckMumble()
@@ -478,7 +491,7 @@
                         show &= !GameService.Gw2Mumble.PlayerCharacter.IsInCombat;
                     }
 
-                    show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
+                    //show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
 
                     this.ToggleContainer(show);
                 }
@@ -488,12 +501,7 @@
         /// <inheritdoc />
         protected override void Unload()
         {
-            /*
-            if (this.ManageEventTab != null)
-            {
-                GameService.Overlay.BlishHudWindow.RemoveTab(this.ManageEventTab);
-            }
-            */
+            base.Unload();
 
             if (this.Container != null)
             {

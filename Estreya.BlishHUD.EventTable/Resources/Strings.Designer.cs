@@ -1465,6 +1465,24 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Event Timespan &apos;{0}&apos; no real number. ähnelt.
+        /// </summary>
+        internal static string Setting_EventTimeSpan_Validation_NoDouble {
+            get {
+                return ResourceManager.GetString("Setting_EventTimeSpan_Validation_NoDouble", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Event Timespan is bigger than {0} minutes. Cap at {0} for performance reasons. ähnelt.
+        /// </summary>
+        internal static string Setting_EventTimeSpan_Validation_OverLimit {
+            get {
+                return ResourceManager.GetString("Setting_EventTimeSpan_Validation_OverLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Defines the text color of filler events. ähnelt.
         /// </summary>
         internal static string Setting_FillerTextColor_Description {
