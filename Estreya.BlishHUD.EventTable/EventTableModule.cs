@@ -217,12 +217,13 @@ namespace Estreya.BlishHUD.EventTable
                 Visible = false
             };
 
+            await this.Container.LoadAsync();
+
             this.ModuleSettings.ModuleSettingsChanged += (sender, eventArgs) =>
             {
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                        //case nameof(this.ModuleSettings.Height):
                         this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
@@ -236,6 +237,10 @@ namespace Estreya.BlishHUD.EventTable
                         break;
                     case nameof(ModuleSettings.RegisterCornerIcon):
                         this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
+                        break;
+                    case nameof(ModuleSettings.BackgroundColor):
+                    case nameof(ModuleSettings.BackgroundColorOpacity):
+                        this.Container.UpdateBackgroundColor();
                         break;
                     default:
                         break;

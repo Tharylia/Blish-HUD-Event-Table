@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -16,6 +16,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Threading.Tasks;
 
     public class EventTableContainer : Blish_HUD.Controls.Container
     {
@@ -117,18 +118,9 @@
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
 
-
             InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
             List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories.Where(ec => !ec.IsDisabled()).ToList();
-
-            Color backgroundColor = Color.Transparent;
-            if (EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value != null && EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Id != 1)
-            {
-                backgroundColor = EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Cloth.ToXnaColor();
-            }
-
-            this.BackgroundColor = backgroundColor * EventTableModule.ModuleInstance.ModuleSettings.BackgroundColorOpacity.Value;
 
             int y = 0;
 
@@ -262,6 +254,23 @@
             }
 
             base.DisposeControl();
+        }
+
+        public void UpdateBackgroundColor()
+        {
+            Color backgroundColor = Color.Transparent;
+            if (EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value != null && EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Id != 1)
+            {
+                backgroundColor = EventTableModule.ModuleInstance.ModuleSettings.BackgroundColor.Value.Cloth.ToXnaColor();
+            }
+
+            this.BackgroundColor = backgroundColor * EventTableModule.ModuleInstance.ModuleSettings.BackgroundColorOpacity.Value;
+        }
+
+        public Task LoadAsync()
+        {
+            this.UpdateBackgroundColor();
+            return Task.CompletedTask;
         }
 
     }
