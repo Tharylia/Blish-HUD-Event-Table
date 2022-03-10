@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -136,7 +136,7 @@
 
         internal List<EventCategory> EventCategories
         {
-            get => _eventCategories.Where(ec => !ec.IsDisabled()).ToList();
+            get => _eventCategories;
         }
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
