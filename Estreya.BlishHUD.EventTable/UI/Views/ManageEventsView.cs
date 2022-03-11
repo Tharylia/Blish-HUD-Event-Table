@@ -10,13 +10,8 @@
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Resources;
     using Microsoft.Xna.Framework;
-    using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using static Blish_HUD.ContentService;
 
     public class ManageEventsView : View
     {
@@ -42,14 +37,16 @@
 
         protected override void Build(Container buildPanel)
         {
-            this.Panel = new Panel();
-            Panel.Parent = buildPanel;
-            Panel.Location = new Point(MAIN_PADDING.X, MAIN_PADDING.Y);
-            Panel.Width = buildPanel.ContentRegion.Width - MAIN_PADDING.Y * 2;
-            Panel.Height = buildPanel.ContentRegion.Height - MAIN_PADDING.X;
-            Panel.CanScroll = true;
+            this.Panel = new Panel
+            {
+                Parent = buildPanel,
+                Location = new Point(MAIN_PADDING.X, MAIN_PADDING.Y),
+                Width = buildPanel.ContentRegion.Width - MAIN_PADDING.Y * 2,
+                Height = buildPanel.ContentRegion.Height - MAIN_PADDING.X,
+                CanScroll = true
+            };
 
-            Rectangle contentRegion = Panel.ContentRegion;
+            Rectangle contentRegion = this.Panel.ContentRegion;
 
             TextBox searchBox = new TextBox()
             {
@@ -86,7 +83,7 @@
                 Location = new Point(eventCategoriesPanel.Right + Panel.ControlStandard.ControlOffset.X, contentRegion.Y)
             };
 
-            eventPanel.Size = new Point(contentRegion.Width - eventPanel.Left, contentRegion.Height  - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
+            eventPanel.Size = new Point(contentRegion.Width - eventPanel.Left, contentRegion.Height - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
 
             searchBox.TextChanged += (s, e) =>
             {
@@ -104,7 +101,7 @@
             allEvents.Select();
             menus.Add(nameof(allEvents), allEvents);
 
-            foreach (EventCategory category in EventCategories.GroupBy(ec => ec.Key).Select(ec => ec.First()))
+            foreach (EventCategory category in this.EventCategories.GroupBy(ec => ec.Key).Select(ec => ec.First()))
             {
                 menus.Add(category.Key, eventCategories.AddMenuItem(category.Name));
             }
@@ -113,11 +110,14 @@
             {
                 MenuItem menuItem = s as MenuItem;
 
-                var category = EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
+                EventCategory category = this.EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
 
                 eventPanel.FilterChildren<EventDetailsButton>(detailsButton =>
                 {
-                    if (menuItem == menus[nameof(allEvents)]) return true;
+                    if (menuItem == menus[nameof(allEvents)])
+                    {
+                        return true;
+                    }
 
                     //IEnumerable<EventCategory> categories = EventCategories.Where(ec => ec.Events.Any(ev => ev.Name == detailsButton.Text));
                     return category.Events.Any(ev => ev.EventCategory.Key == detailsButton.Event.EventCategory.Key && ev.Key == detailsButton.Event.Key);
@@ -185,12 +185,15 @@
                 });
             };
 
-            foreach (EventCategory category in EventCategories)
+            foreach (EventCategory category in this.EventCategories)
             {
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
                 {
-                    if (e.Filler) continue;
+                    if (e.Filler)
+                    {
+                        continue;
+                    }
 
                     // Check with .ToLower() because settings define is case insensitive
                     IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.SettingKey.ToLowerInvariant());
@@ -200,7 +203,7 @@
 
                     AsyncTexture2D icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
 
-                    var button = new EventDetailsButton()
+                    EventDetailsButton button = new EventDetailsButton()
                     {
                         Event = e,
                         Parent = eventPanel,
@@ -213,7 +216,7 @@
 
                     if (!string.IsNullOrWhiteSpace(e.Waypoint))
                     {
-                        var waypointButton = new GlowButton()
+                        GlowButton waypointButton = new GlowButton()
                         {
                             Parent = button,
                             ToggleGlow = false,
@@ -229,7 +232,7 @@
 
                     if (!string.IsNullOrWhiteSpace(e.Wiki))
                     {
-                        var wikiButton = new GlowButton()
+                        GlowButton wikiButton = new GlowButton()
                         {
                             Parent = button,
                             ToggleGlow = false,
@@ -243,14 +246,14 @@
                         };
                     }
 
-                    var toggleButton = new GlowButton()
+                    GlowButton toggleButton = new GlowButton()
                     {
                         Parent = button,
                         Checked = enabled,
                         ToggleGlow = false
                     };
 
-                    UpdateToggleButton(toggleButton);
+                    this.UpdateToggleButton(toggleButton);
 
                     toggleButton.CheckedChanged += (s, eventArgs) =>
                     {
@@ -259,7 +262,7 @@
                             setting.Value = eventArgs.Checked;
                             toggleButton.Checked = setting.Value;
                             //settings.Where(x => x.EntryKey != setting.EntryKey).ToList().ForEach(x => x.Value = setting.Value);
-                            UpdateToggleButton(toggleButton);
+                            this.UpdateToggleButton(toggleButton);
                         }
                     };
 

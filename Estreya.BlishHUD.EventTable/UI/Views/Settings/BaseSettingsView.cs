@@ -1,20 +1,18 @@
 ﻿namespace Estreya.BlishHUD.EventTable.UI.Views
 {
+    using Blish_HUD;
     using Blish_HUD.Controls;
-    using Microsoft.Xna.Framework;
-    using Blish_HUD.Settings.UI.Views;
     using Blish_HUD.Graphics.UI;
     using Blish_HUD.Input;
     using Blish_HUD.Settings;
-    using System.Threading.Tasks;
+    using Estreya.BlishHUD.EventTable.Extensions;
+    using Estreya.BlishHUD.EventTable.Helpers;
+    using Estreya.BlishHUD.EventTable.Resources;
+    using Microsoft.Xna.Framework;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Blish_HUD;
-    using Estreya.BlishHUD.EventTable.Extensions;
-    using Estreya.BlishHUD.EventTable.Helpers;
-    using static Blish_HUD.ContentService;
-    using Estreya.BlishHUD.EventTable.Resources;
+    using System.Threading.Tasks;
 
     public abstract class BaseSettingsView : View
     {
@@ -41,8 +39,8 @@
                 typeof(bool),
                 (SettingEntry settingEntry, int definedWidth, int xPos) =>
                 {
-                    var setting =settingEntry as SettingEntry<bool>;
-                    var checkbox = new Checkbox()
+                    SettingEntry<bool> setting =settingEntry as SettingEntry<bool>;
+                    Checkbox checkbox = new Checkbox()
                     {
                         Width = definedWidth,
                         Location = new Point(xPos, 0),
@@ -61,7 +59,7 @@
                 typeof(string),
                 (SettingEntry settingEntry, int definedWidth, int xPos) =>
                 {
-                    var setting =settingEntry as SettingEntry<string>;
+                    SettingEntry<string> setting =settingEntry as SettingEntry<string>;
                     TextBox textBox =  new TextBox()
                     {
                         Width= definedWidth,
@@ -81,8 +79,8 @@
                 typeof(float),
                 (SettingEntry settingEntry, int definedWidth, int xPos) =>
                 {
-                    var setting =settingEntry as SettingEntry<float>;
-                    var range = setting?.GetRange() ?? null;
+                    SettingEntry<float> setting =settingEntry as SettingEntry<float>;
+                    (float Min, float Max)? range = setting?.GetRange() ?? null;
                     TrackBar trackBar = new TrackBar()
                     {
                         Width= definedWidth,
@@ -105,8 +103,8 @@
                 typeof(int),
                 (SettingEntry settingEntry, int definedWidth, int xPos) =>
                 {
-                    var setting =settingEntry as SettingEntry<int>;
-                    var range = setting?.GetRange() ?? null;
+                    SettingEntry<int> setting =settingEntry as SettingEntry<int>;
+                    (int Min, int Max)? range = setting?.GetRange() ?? null;
                     TrackBar trackBar = new TrackBar()
                     {
                         Width= definedWidth,
@@ -128,7 +126,7 @@
                 typeof(KeyBinding),
                 (SettingEntry settingEntry, int definedWidth, int xPos) =>
                 {
-                    var setting =settingEntry as SettingEntry<KeyBinding>;
+                    SettingEntry<KeyBinding> setting =settingEntry as SettingEntry<KeyBinding>;
                     Controls.KeybindingAssigner  keybindingAssigner= new Controls.KeybindingAssigner(setting.Value, false)
                     {
                         Width = definedWidth,
@@ -147,9 +145,9 @@
                 typeof(Enum),
                 (SettingEntry settingEntry, int definedWidth,int xPos) =>
                 {
-                    var setting = (dynamic)settingEntry;
+                    dynamic setting = (dynamic)settingEntry;
 
-                    var dropdown = new Dropdown
+                    Dropdown dropdown = new Dropdown
                     {
                         Width = definedWidth,
                         Location = new Point(xPos, 0),
@@ -157,7 +155,7 @@
                         Enabled = !settingEntry.IsDisabled()
                     };
 
-                    foreach(var enumValue in Enum.GetNames(settingEntry.SettingType))
+                    foreach(string enumValue in Enum.GetNames(settingEntry.SettingType))
                     {
                         dropdown.Items.Add(enumValue);
                     }
@@ -223,7 +221,7 @@
                 progress.Report(Strings.BaseSettingsView_AddingColorsToColorPicker);
                 if (Colors != null)
                 {
-                    foreach (var color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
+                    foreach (Gw2Sharp.WebApi.V2.Models.Color color in Colors.OrderBy(color => color.Categories.FirstOrDefault()))
                     {
                         ColorPicker.Colors.Add(color);
                     }
@@ -239,7 +237,7 @@
         {
             Rectangle bounds = buildPanel.ContentRegion;
 
-            var parentPanel = new FlowPanel()
+            FlowPanel parentPanel = new FlowPanel()
             {
                 Size = bounds.Size,
                 FlowDirection = ControlFlowDirection.SingleTopToBottom,
@@ -260,7 +258,7 @@
 
         protected void RenderEmptyLine(Panel parent)
         {
-            var settingContainer = new ViewContainer()
+            ViewContainer settingContainer = new ViewContainer()
             {
                 WidthSizingMode = SizingMode.Fill,
                 HeightSizingMode = SizingMode.AutoSize,
@@ -272,9 +270,9 @@
 
         protected Panel RenderSetting(Panel parent, SettingEntry setting)
         {
-            Panel panel = GetPanel(parent);
+            Panel panel = this.GetPanel(parent);
 
-            Label label = GetLabel(panel, setting.DisplayName);
+            Label label = this.GetLabel(panel, setting.DisplayName);
 
             Type type = setting.SettingType;
 
@@ -283,7 +281,7 @@
                 type = typeof(Enum);
             }
 
-            if (_typeLookup.TryGetValue(type, out var controlBuilder))
+            if (_typeLookup.TryGetValue(type, out Func<SettingEntry, int, int, Control> controlBuilder))
             {
                 Control ctrl = controlBuilder.Invoke(setting, BINDING_WIDTH, label.Right + CONTROL_X_SPACING);
                 ctrl.Parent = panel;
@@ -330,7 +328,7 @@
 
         protected void RenderButton(Panel parent, string text, Func<Task> action, Func<bool> disabledCallback = null)
         {
-            Panel panel = GetPanel(parent);
+            Panel panel = this.GetPanel(parent);
 
             StandardButton button = new StandardButton()
             {
@@ -345,10 +343,10 @@
 
         protected void RenderColorSetting(Panel parent, SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> setting)
         {
-            var panel = GetPanel(parent);
-            Label label = GetLabel(panel, setting.DisplayName);
+            Panel panel = this.GetPanel(parent);
+            Label label = this.GetLabel(panel, setting.DisplayName);
 
-            var colorBox = new ColorBox()
+            ColorBox colorBox = new ColorBox()
             {
                 Location = new Point(label.Right + CONTROL_X_SPACING, 0),
                 Parent = panel,
@@ -379,7 +377,10 @@
 
             ColorPicker.SelectedColorChanged += (sender, eArgs) =>
             {
-                if (SelectedColorSetting != setting.EntryKey) return;
+                if (SelectedColorSetting != setting.EntryKey)
+                {
+                    return;
+                }
 
                 setting.Value = ColorPicker.SelectedColor;
                 ColorPickerPanel.Visible = false;

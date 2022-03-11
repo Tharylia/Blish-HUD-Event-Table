@@ -8,7 +8,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
 
     public class WorldbossState : ManagedState
@@ -33,7 +32,7 @@
 
         public bool IsCompleted(string apiCode)
         {
-            return completedWorldbosses.Contains(apiCode);
+            return this.completedWorldbosses.Contains(apiCode);
         }
 
         public override async Task Reload()
@@ -104,7 +103,7 @@
 
             lock (this.completedWorldbosses)
             {
-                completedWorldbosses.Clear();
+                this.completedWorldbosses.Clear();
             }
 
             return Task.CompletedTask;
@@ -112,7 +111,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateAsyncWithCadence(UpdateCompletedWorldbosses, gameTime, updateInterval.TotalMilliseconds, ref timeSinceUpdate);
+            UpdateCadenceUtil.UpdateAsyncWithCadence(this.UpdateCompletedWorldbosses, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
 
         protected override async Task Load()

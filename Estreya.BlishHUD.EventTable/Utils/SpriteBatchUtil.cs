@@ -8,12 +8,7 @@
     using MonoGame.Extended;
     using MonoGame.Extended.BitmapFonts;
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Windows.Controls;
 
     public static class SpriteBatchUtil
     {
@@ -24,9 +19,9 @@
 
         public static void DrawOnCtrl(this SpriteBatch spriteBatch, Blish_HUD.Controls.Control control, Texture2D texture, RectangleF destinationRectangle, Color tint, float angle)
         {
-            var rectangle = destinationRectangle.ToBounds(control.AbsoluteBounds);
+            RectangleF rectangle = destinationRectangle.ToBounds(control.AbsoluteBounds);
             // Hacky trick to let us use RectangleF with spritebatch.
-            var scale = new Vector2(rectangle.Width / texture.Width, rectangle.Height / texture.Height);
+            Vector2 scale = new Vector2(rectangle.Width / texture.Width, rectangle.Height / texture.Height);
 
             spriteBatch.Draw(texture, rectangle.Center - rectangle.Size / 2f, null, tint, angle, Vector2.Zero, scale, SpriteEffects.None, 0f);
         }

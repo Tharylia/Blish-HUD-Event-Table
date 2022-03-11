@@ -5,14 +5,10 @@
     using Blish_HUD.Modules.Managers;
     using Estreya.BlishHUD.EventTable.Models.Settings;
     using Estreya.BlishHUD.EventTable.Utils;
-    using Gw2Sharp.WebApi.Exceptions;
     using Microsoft.Xna.Framework;
     using Newtonsoft.Json;
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
 
     public class EventFileState : ManagedState
@@ -25,7 +21,7 @@
         private string Directory { get; set; }
         private string FileName { get; set; }
 
-        private string FilePath { get => Path.Combine(Directory, FileName); }
+        private string FilePath => Path.Combine(this.Directory, this.FileName);
 
         private bool _notified = false;
 
@@ -50,7 +46,7 @@
                 await this.ExportFile();
             }
 
-            timeSinceUpdate = updateInterval.TotalMilliseconds;
+            this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
         }
 
         protected override Task InternalUnload()
@@ -60,7 +56,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateAsyncWithCadence(CheckAndNotify, gameTime, updateInterval.TotalMilliseconds, ref timeSinceUpdate);
+            UpdateCadenceUtil.UpdateAsyncWithCadence(this.CheckAndNotify, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
 
         protected override Task Load()
@@ -77,7 +73,10 @@
         {
             lock (_lockObject)
             {
-                if (_notified) return;
+                if (this._notified)
+                {
+                    return;
+                }
             }
 
             if (await this.IsNewFileVersionAvaiable())
@@ -87,7 +86,7 @@
 
                 lock (_lockObject)
                 {
-                    _notified = true;
+                    this._notified = true;
                 }
             }
         }

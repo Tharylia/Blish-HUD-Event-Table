@@ -2,9 +2,6 @@
 {
     using Blish_HUD.Controls;
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
 
     public class GraphicsSettingsView : BaseSettingsView
@@ -15,14 +12,14 @@
 
         protected override void InternalBuild(Panel parent)
         {
-            RenderSetting(parent, ModuleSettings.LocationX);
-            RenderSetting(parent, ModuleSettings.LocationY);
-            RenderSetting(parent, ModuleSettings.Width);
-            RenderEmptyLine(parent);
-            RenderSetting(parent, ModuleSettings.Opacity);
-            RenderEmptyLine(parent);
-            RenderSetting(parent, ModuleSettings.BackgroundColorOpacity);
-            RenderColorSetting(parent, ModuleSettings.BackgroundColor);
+            this.RenderSetting(parent, this.ModuleSettings.LocationX);
+            this.RenderSetting(parent, this.ModuleSettings.LocationY);
+            this.RenderSetting(parent, this.ModuleSettings.Width);
+            this.RenderEmptyLine(parent);
+            this.RenderSetting(parent, this.ModuleSettings.Opacity);
+            this.RenderEmptyLine(parent);
+            this.RenderSetting(parent, this.ModuleSettings.BackgroundColorOpacity);
+            this.RenderColorSetting(parent, this.ModuleSettings.BackgroundColor);
         }
 
         protected override Task<bool> InternalLoad(IProgress<string> progress)

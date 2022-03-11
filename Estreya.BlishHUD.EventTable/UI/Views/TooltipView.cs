@@ -7,10 +7,6 @@
     using Estreya.BlishHUD.EventTable.Extensions;
     using Microsoft.Xna.Framework;
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     public class TooltipView : View, ITooltipView, IView
     {
@@ -33,7 +29,7 @@
             buildPanel.HeightSizingMode = SizingMode.AutoSize;
             buildPanel.WidthSizingMode = SizingMode.AutoSize;
 
-            var image = new Image()
+            Image image = new Image()
             {
                 Size = new Point(48, 48),
                 Location = new Point(8, 8),
@@ -41,7 +37,7 @@
                 Texture = EventTableModule.ModuleInstance.ContentsManager.GetIcon(this.Icon)
             };
 
-            var nameLabel = new Label()
+            Label nameLabel = new Label()
             {
                 AutoSizeHeight = false,
                 AutoSizeWidth = true,
@@ -55,7 +51,7 @@
                 Parent = buildPanel
             };
 
-            var descriptionLabel = new Label()
+            Label descriptionLabel = new Label()
             {
                 AutoSizeHeight = true,
                 AutoSizeWidth = false,

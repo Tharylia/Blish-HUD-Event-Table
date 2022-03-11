@@ -8,7 +8,6 @@
     using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
 
     public class HiddenState : ManagedState
@@ -44,22 +43,22 @@
 
         public override async Task Reload()
         {
-            lock (Instances)
+            lock (this.Instances)
             {
-                Instances.Clear();
+                this.Instances.Clear();
             }
 
-            await Load();
+            await this.Load();
         }
 
         protected override void InternalUpdate(GameTime gameTime)
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            lock (Instances)
+            lock (this.Instances)
             {
-                for (int i = Instances.Count - 1; i >= 0; i--)
+                for (int i = this.Instances.Count - 1; i >= 0; i--)
                 {
-                    var instance = Instances.ElementAt(i);
+                    KeyValuePair<string, DateTime> instance = this.Instances.ElementAt(i);
                     string name = instance.Key;
                     DateTime hiddenUntil = instance.Value;
 
@@ -75,11 +74,11 @@
 
         public void Add(string name, DateTime hideUntil, bool isUTC)
         {
-            lock (Instances)
+            lock (this.Instances)
             {
-                if (Instances.ContainsKey(name))
+                if (this.Instances.ContainsKey(name))
                 {
-                    Instances.Remove(name);
+                    this.Instances.Remove(name);
                 }
 
                 if (!isUTC)
@@ -89,86 +88,98 @@
 
                 Logger.Info($"Add hidden state for \"{name}\" until {hideUntil} UTC.");
 
-                Instances.Add(name, hideUntil);
-                dirty = true;
+                this.Instances.Add(name, hideUntil);
+                this.dirty = true;
             }
         }
 
         public void Remove(string name)
         {
-            lock (Instances)
+            lock (this.Instances)
             {
-                if (!Instances.ContainsKey(name)) return;
+                if (!this.Instances.ContainsKey(name))
+                {
+                    return;
+                }
 
                 Logger.Info($"Remove hidden state for \"{name}\".");
 
-                Instances.Remove(name);
-                dirty = true;
+                this.Instances.Remove(name);
+                this.dirty = true;
             }
         }
 
         public void Clear()
         {
-            lock (Instances)
+            lock (this.Instances)
             {
                 Logger.Info($"Remove all hidden states.");
 
-                Instances.Clear();
-                dirty = true;
+                this.Instances.Clear();
+                this.dirty = true;
             }
         }
 
         public bool IsHidden(string name)
         {
-            lock (Instances)
+            lock (this.Instances)
             {
-                return Instances.ContainsKey(name);
+                return this.Instances.ContainsKey(name);
             }
         }
 
-        protected override  Task Initialize()
+        protected override Task Initialize()
         {
             return Task.CompletedTask;
         }
 
         protected override async Task Load()
         {
-            if (!File.Exists(this.Path)) return;
+            if (!File.Exists(this.Path))
+            {
+                return;
+            }
 
             string[] lines = await FileUtil.ReadLinesAsync(this.Path);
 
-            if (lines == null ||  lines.Length == 0) return;
+            if (lines == null || lines.Length == 0)
+            {
+                return;
+            }
 
-            lock (Instances)
+            lock (this.Instances)
             {
                 foreach (string line in lines)
                 {
-                    var parts = line.Split(new[] { LINE_SPLIT }, StringSplitOptions.None);
+                    string[] parts = line.Split(new[] { LINE_SPLIT }, StringSplitOptions.None);
 
-                    var name = parts[0];
+                    string name = parts[0];
                     DateTime hiddenUntil = DateTime.Parse(parts[1]);
 
-                    Instances.Add(name, hiddenUntil);
+                    this.Instances.Add(name, hiddenUntil);
                 }
             }
         }
 
         protected override async Task Save()
         {
-            if (!dirty) return;
+            if (!this.dirty)
+            {
+                return;
+            }
 
             Collection<string> lines = new Collection<string>();
 
-            lock (Instances)
+            lock (this.Instances)
             {
-                foreach (var instance in Instances)
+                foreach (KeyValuePair<string, DateTime> instance in this.Instances)
                 {
                     lines.Add($"{instance.Key}{LINE_SPLIT}{instance.Value}");
                 }
             }
 
             await FileUtil.WriteLinesAsync(this.Path, lines.ToArray());
-            dirty = false;
+            this.dirty = false;
         }
 
         protected override Task InternalUnload()

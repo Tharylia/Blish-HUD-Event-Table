@@ -2,25 +2,19 @@
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
-    using Blish_HUD.Contexts;
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
-    using Estreya.BlishHUD.EventTable.Helpers;
+    using Estreya.BlishHUD.EventTable.Resources;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using MonoGame.Extended;
     using MonoGame.Extended.BitmapFonts;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Diagnostics;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Estreya.BlishHUD.EventTable.Utils;
-    using MonoGame.Extended;
-    using Estreya.BlishHUD.EventTable.Extensions;
-    using Estreya.BlishHUD.EventTable.Resources;
 
     [Serializable]
     public class Event
@@ -85,12 +79,12 @@
         {
             get
             {
-                if (_tooltip == null)
+                if (this._tooltip == null)
                 {
-                    _tooltip = new Tooltip(new UI.Views.TooltipView(this.Name, $"{this.Location}", this.Icon));
+                    this._tooltip = new Tooltip(new UI.Views.TooltipView(this.Name, $"{this.Location}", this.Icon));
                 }
 
-                return _tooltip;
+                return this._tooltip;
             }
         }
 
@@ -102,7 +96,7 @@
         {
             get
             {
-                if (_settingKey == null)
+                if (this._settingKey == null)
                 {
                     this._settingKey = $"{this.EventCategory.Key}-{this.Key ?? this.Name}";
                 }
@@ -116,37 +110,47 @@
         {
             get
             {
-                if (_contextMenuStrip == null)
+                if (this._contextMenuStrip == null)
                 {
-                    _contextMenuStrip = new ContextMenuStrip();
+                    this._contextMenuStrip = new ContextMenuStrip();
 
-                    ContextMenuStripItem copyWaypoint = new ContextMenuStripItem();
-                    copyWaypoint.Text = Strings.Event_CopyWaypoint;
+                    ContextMenuStripItem copyWaypoint = new ContextMenuStripItem
+                    {
+                        Text = Strings.Event_CopyWaypoint
+                    };
                     copyWaypoint.Click += (s, e) => this.CopyWaypoint();
-                    _contextMenuStrip.AddMenuItem(copyWaypoint);
+                    this._contextMenuStrip.AddMenuItem(copyWaypoint);
 
-                    ContextMenuStripItem openWiki = new ContextMenuStripItem();
-                    openWiki.Text = Strings.Event_OpenWiki;
+                    ContextMenuStripItem openWiki = new ContextMenuStripItem
+                    {
+                        Text = Strings.Event_OpenWiki
+                    };
                     openWiki.Click += (s, e) => this.OpenWiki();
-                    _contextMenuStrip.AddMenuItem(openWiki);
+                    this._contextMenuStrip.AddMenuItem(openWiki);
 
-                    ContextMenuStripItem hideCategory = new ContextMenuStripItem();
-                    hideCategory.Text = Strings.Event_HideCategory;
+                    ContextMenuStripItem hideCategory = new ContextMenuStripItem
+                    {
+                        Text = Strings.Event_HideCategory
+                    };
                     hideCategory.Click += (s, e) => this.FinishCategory();
-                    _contextMenuStrip.AddMenuItem(hideCategory);
+                    this._contextMenuStrip.AddMenuItem(hideCategory);
 
-                    ContextMenuStripItem hideEvent = new ContextMenuStripItem();
-                    hideEvent.Text = Strings.Event_HideEvent;
+                    ContextMenuStripItem hideEvent = new ContextMenuStripItem
+                    {
+                        Text = Strings.Event_HideEvent
+                    };
                     hideEvent.Click += (s, e) => this.Finish();
-                    _contextMenuStrip.AddMenuItem(hideEvent);
+                    this._contextMenuStrip.AddMenuItem(hideEvent);
 
-                    ContextMenuStripItem disable = new ContextMenuStripItem();
-                    disable.Text = Strings.Event_Disable;
+                    ContextMenuStripItem disable = new ContextMenuStripItem
+                    {
+                        Text = Strings.Event_Disable
+                    };
                     disable.Click += (s, e) => this.Disable();
-                    _contextMenuStrip.AddMenuItem(disable);
+                    this._contextMenuStrip.AddMenuItem(disable);
                 }
 
-                return _contextMenuStrip;
+                return this._contextMenuStrip;
             }
         }
 
@@ -158,7 +162,7 @@
         {
             get
             {
-                if (_backgroundColor == null)
+                if (this._backgroundColor == null)
                 {
                     if (!this.Filler)
                     {
@@ -167,7 +171,7 @@
                     }
                 }
 
-                return _backgroundColor.HasValue ? _backgroundColor.Value : Color.Transparent;
+                return this._backgroundColor ?? Color.Transparent;
             }
         }
 
@@ -179,20 +183,20 @@
 
         public Event()
         {
-            timeSinceUpdate = updateInterval.TotalMilliseconds;
+            this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
         }
 
         public bool Draw(SpriteBatch spriteBatch, Rectangle bounds, Control control, Texture2D baseTexture, int y, double pixelPerMinute, DateTime now, DateTime min, DateTime max, BitmapFont font)
         {
-            var occurences = new List<DateTime>();
+            List<DateTime> occurences = new List<DateTime>();
             lock (this.Occurences)
             {
-                occurences.AddRange(this.Occurences.Where(oc => (oc >=min || oc.AddMinutes(this.Duration) >= min) && oc <= max));
+                occurences.AddRange(this.Occurences.Where(oc => (oc >= min || oc.AddMinutes(this.Duration) >= min) && oc <= max));
             }
 
             this._lastYPosition = y;
 
-            foreach (var eventStart in occurences)
+            foreach (DateTime eventStart in occurences)
             {
                 float width = (float)this.GetWidth(eventStart, min, bounds, pixelPerMinute);
                 if (width <= 0)
@@ -250,7 +254,7 @@
                 {
                     DateTime end = eventStart.AddMinutes(this.Duration);
                     TimeSpan timeRemaining = end.Subtract(now);
-                    string timeRemainingString = FormatTime(timeRemaining);// timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
+                    string timeRemainingString = this.FormatTime(timeRemaining);// timeRemaining.Hours > 0 ? timeRemaining.ToString("hh\\:mm\\:ss") : timeRemaining.ToString("mm\\:ss");
                     float timeRemainingWidth = this.MeasureStringWidth(timeRemainingString, font);
                     float timeRemainingX = eventTexturePosition.X + ((eventTexturePosition.Width / 2) - (timeRemainingWidth / 2));
                     if (timeRemainingX < eventTextPosition.X + eventTextPosition.Width)
@@ -287,7 +291,7 @@
 
         private void UpdateTooltip(string description)
         {
-            _tooltip = new Tooltip(new UI.Views.TooltipView(this.Name, description, this.Icon));
+            this._tooltip = new Tooltip(new UI.Views.TooltipView(this.Name, description, this.Icon));
         }
 
         private string FormatTime(TimeSpan ts)
@@ -370,10 +374,10 @@
 
             if (borderSize > 0 && borderColor != Microsoft.Xna.Framework.Color.Transparent)
             {
-                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
                 //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
                 //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
                 //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
@@ -477,11 +481,14 @@
 
         public bool IsHovered(DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute)
         {
-            if (this.IsDisabled()) return false;
+            if (this.IsDisabled())
+            {
+                return false;
+            }
 
-            var occurences = this.Occurences;
+            List<DateTime> occurences = this.Occurences;
 
-            foreach (var occurence in occurences)
+            foreach (DateTime occurence in occurences)
             {
                 double x = this.GetXPosition(occurence, min, pixelPerMinute);
                 double width = this.GetWidth(occurence, min, bounds, pixelPerMinute);
@@ -490,7 +497,10 @@
 
                 bool hovered = (relativeMousePosition.X >= x && relativeMousePosition.X < x + width) && (relativeMousePosition.Y >= this._lastYPosition && relativeMousePosition.Y < this._lastYPosition + EventTableModule.ModuleInstance.EventHeight);
 
-                if (hovered) return true;
+                if (hovered)
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -498,7 +508,10 @@
 
         public void HandleClick(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            if (this.Filler) return; // Currently don't do anything when filler
+            if (this.Filler)
+            {
+                return; // Currently don't do anything when filler
+            }
 
             if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed)
             {
@@ -527,10 +540,13 @@
 
         public void HandleHover(object sender, Input.MouseEventArgs e, double pixelPerMinute)
         {
-            if (this.Filler) return; // Currently don't do anything when filler
+            if (this.Filler)
+            {
+                return; // Currently don't do anything when filler
+            }
 
-            var occurences = this.Occurences;
-            var hoveredOccurences = occurences.Where(eo =>
+            List<DateTime> occurences = this.Occurences;
+            IEnumerable<DateTime> hoveredOccurences = occurences.Where(eo =>
             {
                 double xStart = this.GetXPosition(eo, EventTableModule.ModuleInstance.EventTimeMin, pixelPerMinute);
                 double xEnd = xStart + this.Duration * pixelPerMinute;
@@ -546,7 +562,7 @@
 
                 if (hoveredOccurences.Any())
                 {
-                    var hoveredOccurence = hoveredOccurences.First();
+                    DateTime hoveredOccurence = hoveredOccurences.First();
 
                     if (EventTableModule.ModuleInstance.ModuleSettings.TooltipTimeMode.Value == TooltipTimeMode.Relative)
                     {
@@ -558,21 +574,21 @@
 
                         if (isPrev)
                         {
-                            description += $"{Strings.Event_Tooltip_FinishedSince}: {FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
+                            description += $"{Strings.Event_Tooltip_FinishedSince}: {this.FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
                         }
                         else if (isNext)
                         {
-                            description += $"{Strings.Event_Tooltip_StartsIn}: {FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                            description += $"{Strings.Event_Tooltip_StartsIn}: {this.FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
                         }
                         else if (isCurrent)
                         {
-                            description += $"{Strings.Event_Tooltip_Remaining}: {FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
+                            description += $"{Strings.Event_Tooltip_Remaining}: {this.FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
                         }
                     }
                     else
                     {
                         // Absolute
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {FormatTime(hoveredOccurence)}";
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {this.FormatTime(hoveredOccurence)}";
                     }
                 }
                 else
@@ -596,7 +612,7 @@
 
         public void Finish()
         {
-            var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
             EventTableModule.ModuleInstance.HiddenState.Add(this.SettingKey, until, true);
         }
@@ -609,7 +625,7 @@
         public void Disable()
         {
             // Check with .ToLower() because settings define is case insensitive
-            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
+            IEnumerable<SettingEntry<bool>> eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
             if (eventSetting.Any())
             {
                 eventSetting.First().Value = false;
@@ -618,10 +634,13 @@
 
         public bool IsDisabled()
         {
-            if (this.Filler) return false;
+            if (this.Filler)
+            {
+                return false;
+            }
 
             // Check with .ToLower() because settings define is case insensitive
-            var eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
+            IEnumerable<SettingEntry<bool>> eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
             if (eventSetting.Any())
             {
                 bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.HiddenState.IsHidden(this.SettingKey);
@@ -634,18 +653,21 @@
 
         private void UpdateEventOccurences(GameTime gameTime)
         {
-            if (this.Filler) return;
+            if (this.Filler)
+            {
+                return;
+            }
 
             lock (this.Occurences)
             {
                 this.Occurences.Clear();
             }
 
-            var now = EventTableModule.ModuleInstance.DateTimeNow;
-            var min = now.AddDays(-4);
-            var max = now.AddDays(4);
+            DateTime now = EventTableModule.ModuleInstance.DateTimeNow;
+            DateTime min = now.AddDays(-4);
+            DateTime max = now.AddDays(4);
 
-            var occurences = this.GetStartOccurences(now, max, min);
+            List<DateTime> occurences = this.GetStartOccurences(now, max, min);
 
             lock (this.Occurences)
             {
@@ -655,7 +677,7 @@
 
         public void Update(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateWithCadence(UpdateEventOccurences, gameTime, updateInterval.TotalMilliseconds, ref timeSinceUpdate);
+            UpdateCadenceUtil.UpdateWithCadence(this.UpdateEventOccurences, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
     }
 }

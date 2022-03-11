@@ -3,18 +3,14 @@
     using Blish_HUD;
     using Blish_HUD._Extensions;
     using Blish_HUD.Controls;
-    using Blish_HUD.Settings;
-    using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Utils;
     using Glide;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended;
-    using MonoGame.Extended.BitmapFonts;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -28,22 +24,19 @@
         {
             get
             {
-                if (_currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
+                if (this._currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
                 {
                     return true;
                 }
 
-                if (!_currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
+                if (!this._currentVisibilityDirection && this.CurrentVisibilityAnimation != null)
                 {
                     return false;
                 }
 
                 return base.Visible;
             }
-            set
-            {
-                base.Visible = value;
-            }
+            set => base.Visible = value;
         }
 
         private double PixelPerMinute
@@ -71,14 +64,17 @@
 
         private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            if (!CursorVisible) return;
+            if (!CursorVisible)
+            {
+                return;
+            }
 
-            var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
+            Input.MouseEventArgs mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, this.RelativeMousePosition, this.PixelPerMinute))
                     {
                         ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
                     }
@@ -92,13 +88,16 @@
 
         private void EventTableContainer_Click(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
-            if (!CursorVisible) return;
+            if (!CursorVisible)
+            {
+                return;
+            }
 
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
                 foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, this.RelativeMousePosition, this.PixelPerMinute))
                     {
                         ev.HandleClick(sender, e);
                         return;
@@ -117,7 +116,7 @@
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
 
-            InitializeBaseTexture(spriteBatch.GraphicsDevice);
+            this.InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
             List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories; // Already checks for IsDisabled()
 
@@ -130,7 +129,7 @@
             {
                 bool categoryHasEvents = false;
 
-                foreach (var ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
                     categoryHasEvents = true;
                     if (!EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value && ev.Filler)
@@ -159,7 +158,10 @@
 
         public new void Show()
         {
-            if (this.Visible && this.CurrentVisibilityAnimation == null) return;
+            if (this.Visible && this.CurrentVisibilityAnimation == null)
+            {
+                return;
+            }
 
             if (this.CurrentVisibilityAnimation != null)
             {
@@ -177,7 +179,10 @@
 
         public new void Hide()
         {
-            if (!this.Visible && this.CurrentVisibilityAnimation == null) return;
+            if (!this.Visible && this.CurrentVisibilityAnimation == null)
+            {
+                return;
+            }
 
             if (this.CurrentVisibilityAnimation != null)
             {

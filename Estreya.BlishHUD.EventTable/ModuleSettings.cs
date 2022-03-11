@@ -5,14 +5,11 @@
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Resources;
-    using Estreya.BlishHUD.EventTable.UI.Container;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using System.Windows;
-    using System.Windows.Forms;
 
     public class ModuleSettings
     {
@@ -171,10 +168,10 @@
             this.HideInCombat = this.GlobalSettings.DefineSetting(nameof(this.HideInCombat), false, () => Strings.Setting_HideInCombat_Name, () => Strings.Setting_HideInCombat_Description);
             this.HideInCombat.SettingChanged += this.SettingChanged;
 
-            this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(BackgroundColor), this.DefaultGW2Color, () => Strings.Setting_BackgroundColor_Name, () => Strings.Setting_BackgroundColor_Description);
+            this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(this.BackgroundColor), this.DefaultGW2Color, () => Strings.Setting_BackgroundColor_Name, () => Strings.Setting_BackgroundColor_Description);
             this.BackgroundColor.SettingChanged += this.SettingChanged;
 
-            this.BackgroundColorOpacity = this.GlobalSettings.DefineSetting(nameof(BackgroundColorOpacity), 0.0f, () => Strings.Setting_BackgroundColorOpacity_Name, () => Strings.Setting_BackgroundColorOpacity_Description);
+            this.BackgroundColorOpacity = this.GlobalSettings.DefineSetting(nameof(this.BackgroundColorOpacity), 0.0f, () => Strings.Setting_BackgroundColorOpacity_Name, () => Strings.Setting_BackgroundColorOpacity_Description);
             this.BackgroundColorOpacity.SetRange(0.0f, 1f);
             this.BackgroundColorOpacity.SettingChanged += this.SettingChanged;
 
@@ -245,16 +242,16 @@
             this.UseFillerEventNames = this.GlobalSettings.DefineSetting(nameof(this.UseFillerEventNames), false, () => Strings.Setting_UseFillerEventNames_Name, () => Strings.Setting_UseFillerEventNames_Description);
             this.UseFillerEventNames.SettingChanged += this.SettingChanged;
 
-            this.TextColor = this.GlobalSettings.DefineSetting(nameof(TextColor), this.DefaultGW2Color, () => Strings.Setting_TextColor_Name, () => Strings.Setting_TextColor_Description);
+            this.TextColor = this.GlobalSettings.DefineSetting(nameof(this.TextColor), this.DefaultGW2Color, () => Strings.Setting_TextColor_Name, () => Strings.Setting_TextColor_Description);
             this.TextColor.SettingChanged += this.SettingChanged;
 
-            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(FillerTextColor), this.DefaultGW2Color, () => Strings.Setting_FillerTextColor_Name, () => Strings.Setting_FillerTextColor_Description);
+            this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(this.FillerTextColor), this.DefaultGW2Color, () => Strings.Setting_FillerTextColor_Name, () => Strings.Setting_FillerTextColor_Description);
             this.FillerTextColor.SettingChanged += this.SettingChanged;
 
-            this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => Strings.Setting_WorldbossCompletedAction_Name, () => Strings.Setting_WorldbossCompletedAction_Description);
+            this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(this.WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => Strings.Setting_WorldbossCompletedAction_Name, () => Strings.Setting_WorldbossCompletedAction_Description);
             this.WorldbossCompletedAcion.SettingChanged += this.SettingChanged;
 
-            this.UseEventTranslation = this.GlobalSettings.DefineSetting(nameof(UseEventTranslation), true, () => Strings.Setting_UseEventTranslation_Name, () => Strings.Setting_UseEventTranslation_Description);
+            this.UseEventTranslation = this.GlobalSettings.DefineSetting(nameof(this.UseEventTranslation), true, () => Strings.Setting_UseEventTranslation_Name, () => Strings.Setting_UseEventTranslation_Description);
             this.UseEventTranslation.SettingChanged += this.SettingChanged;
         }
 
@@ -262,19 +259,19 @@
         {
             this.LocationSettings = settings.AddSubCollection(LOCATION_SETTINGS);
 
-            var height = 1080;
-            var width = 1920;
+            int height = 1080;
+            int width = 1920;
 
             this.LocationX = this.LocationSettings.DefineSetting(nameof(this.LocationX), (int)(width * 0.1), () => Strings.Setting_LocationX_Name, () => Strings.Setting_LocationX_Description);
-            this.LocationX.SetRange(0, (int)width);
+            this.LocationX.SetRange(0, width);
             this.LocationX.SettingChanged += this.SettingChanged;
 
             this.LocationY = this.LocationSettings.DefineSetting(nameof(this.LocationY), (int)(height * 0.1), () => Strings.Setting_LocationY_Name, () => Strings.Setting_LocationY_Description);
-            this.LocationY.SetRange(0, (int)height);
+            this.LocationY.SetRange(0, height);
             this.LocationY.SettingChanged += this.SettingChanged;
 
             this.Width = this.LocationSettings.DefineSetting(nameof(this.Width), (int)(width * 0.5), () => Strings.Setting_Width_Name, () => Strings.Setting_Width_Description);
-            this.Width.SetRange(0, (int)width);
+            this.Width.SetRange(0, width);
             this.Width.SettingChanged += this.SettingChanged;
         }
 
@@ -309,8 +306,8 @@
         private void SettingChanged<T>(object sender, ValueChangedEventArgs<T> e)
         {
             SettingEntry<T> settingEntry = (SettingEntry<T>)sender;
-            var prevValue = e.PreviousValue.GetType() == typeof(string) ? e.PreviousValue.ToString() : JsonConvert.SerializeObject(e.PreviousValue);
-            var newValue = e.NewValue.GetType() == typeof(string) ? e.NewValue.ToString() : JsonConvert.SerializeObject(e.NewValue);
+            string prevValue = e.PreviousValue.GetType() == typeof(string) ? e.PreviousValue.ToString() : JsonConvert.SerializeObject(e.PreviousValue);
+            string newValue = e.NewValue.GetType() == typeof(string) ? e.NewValue.ToString() : JsonConvert.SerializeObject(e.NewValue);
             Logger.Debug($"Changed setting \"{settingEntry.EntryKey}\" from \"{prevValue}\" to \"{newValue}\"");
 
             ModuleSettingsChanged?.Invoke(this, new ModuleSettingsChangedEventArgs() { Name = settingEntry.EntryKey, Value = e.NewValue });
