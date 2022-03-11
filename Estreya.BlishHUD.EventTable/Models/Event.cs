@@ -290,22 +290,6 @@ namespace Estreya.BlishHUD.EventTable.Models
             _tooltip = new Tooltip(new UI.Views.TooltipView(this.Name, description, this.Icon));
         }
 
-        private string GetTimeRemaining(DateTime now, DateTime max, DateTime min)
-        {
-            var startOccurences = this.GetStartOccurences(now, max, min);
-            var filteredStartOccurences = startOccurences.Where(so => so <= now && so.AddMinutes(this.Duration) > now);
-
-            if (filteredStartOccurences.Any())
-            {
-                DateTime end = filteredStartOccurences.First().AddMinutes(this.Duration);
-                TimeSpan timeRemaining = end.Subtract(now);
-                string timeRemainingString = this.FormatTime(timeRemaining);
-                return timeRemainingString;
-            }
-
-            return null;
-        }
-
         private string FormatTime(TimeSpan ts)
         {
             return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
@@ -422,7 +406,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        public List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
+        private List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
         {
             List<DateTime> startOccurences = new List<DateTime>();
 
@@ -467,28 +451,6 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             double minutesSinceMin = start.Subtract(min).TotalMinutes;
             return minutesSinceMin * pixelPerMinute;
-        }
-
-        private int GetMinYPosition(IEnumerable<EventCategory> eventCategories, int eventHight, bool debugEnabled)
-        {
-            int minY = 0;
-
-            if (debugEnabled)
-            {
-                foreach (EventCategory eventCategory in eventCategories)
-                {
-                    foreach (Event e in eventCategory.Events)
-                    {
-                        minY += eventHight;
-                        if (this == e)
-                        {
-                            return minY;
-                        }
-                    }
-                }
-            }
-
-            return minY;
         }
 
         public double GetWidth(DateTime eventOccurence, DateTime min, Rectangle bounds, double pixelPerMinute)
@@ -578,7 +540,7 @@ namespace Estreya.BlishHUD.EventTable.Models
 
             if (!this.Tooltip.Visible)
             {
-                Debug.WriteLine($"Show Tooltip for Event: {this.Name}{e.Position}");
+                Debug.WriteLine($"Show Tooltip for Event: {this.Name} | {e.Position}");
 
                 string description = $"{this.Location}";
 
@@ -627,7 +589,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             if (this.Tooltip.Visible)
             {
-                Debug.WriteLine($"Hide Tooltip for Event: {this.Name}{e.Position}");
+                Debug.WriteLine($"Hide Tooltip for Event: {this.Name} | {e.Position}");
                 this.Tooltip.Hide();
             }
         }
@@ -641,9 +603,6 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         public void FinishCategory()
         {
-            //var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            //DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            //EventTableModule.ModuleInstance.HiddenState.Add(this.EventCategory.Key, until, true);
             this.EventCategory.Finish();
         }
 
