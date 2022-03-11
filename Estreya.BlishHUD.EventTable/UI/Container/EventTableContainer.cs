@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -78,7 +78,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             {
                 foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(  EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute))
                     {
                         ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
                     }
@@ -98,7 +98,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Container
             {
                 foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(  EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute))
                     {
                         ev.HandleClick(sender, e);
                         return;

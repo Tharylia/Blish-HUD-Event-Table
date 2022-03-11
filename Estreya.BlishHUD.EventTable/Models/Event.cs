@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -475,7 +475,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             return eventWidth;
         }
 
-        public bool IsHovered(IEnumerable<EventCategory> eventCategories, EventCategory eventCategory, DateTime now, DateTime max, DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute, int eventHeight, bool debugEnabled)
+        public bool IsHovered(DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute)
         {
             if (this.IsDisabled()) return false;
 
@@ -488,7 +488,7 @@ namespace Estreya.BlishHUD.EventTable.Models
 
                 x = Math.Max(x, 0);
 
-                bool hovered = (relativeMousePosition.X >= x && relativeMousePosition.X < x + width) && (relativeMousePosition.Y >= this._lastYPosition && relativeMousePosition.Y < this._lastYPosition + eventHeight);
+                bool hovered = (relativeMousePosition.X >= x && relativeMousePosition.X < x + width) && (relativeMousePosition.Y >= this._lastYPosition && relativeMousePosition.Y < this._lastYPosition + EventTableModule.ModuleInstance.EventHeight);
 
                 if (hovered) return true;
             }
