@@ -1,16 +1,11 @@
 ﻿namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD.Controls;
-    using Microsoft.Xna.Framework;
-    using Blish_HUD.Settings.UI.Views;
     using Blish_HUD.Graphics.UI;
-    using Blish_HUD.Input;
-    using Blish_HUD.Settings;
-    using System.Threading.Tasks;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Estreya.BlishHUD.EventTable.Resources;
+    using Microsoft.Xna.Framework;
+    using System;
+    using System.Threading.Tasks;
 
     public class ModuleSettingsView : View
     {
@@ -23,7 +18,7 @@
         {
             Rectangle bounds = buildPanel.ContentRegion;
 
-            var parentPanel = new FlowPanel()
+            FlowPanel parentPanel = new FlowPanel()
             {
                 Size = bounds.Size,
                 FlowDirection = ControlFlowDirection.SingleTopToBottom,
@@ -35,14 +30,14 @@
                 Parent = buildPanel
             };
 
-            var settingContainer = new ViewContainer()
+            ViewContainer settingContainer = new ViewContainer()
             {
                 WidthSizingMode = SizingMode.Fill,
                 HeightSizingMode = SizingMode.AutoSize,
                 Parent = parentPanel
             };
 
-            var buttonText = Strings.SettingsView_OpenSettings;
+            string buttonText = Strings.SettingsView_OpenSettings;
 
             StandardButton button = new StandardButton()
             {

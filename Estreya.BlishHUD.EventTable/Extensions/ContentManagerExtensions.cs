@@ -2,16 +2,10 @@
 {
     using Blish_HUD;
     using Blish_HUD.Content;
-    using Blish_HUD.Controls;
     using Blish_HUD.Modules.Managers;
     using Microsoft.Xna.Framework.Graphics;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Windows.Forms;
-    using static Blish_HUD.ContentService;
 
     public static class ContentManagerExtensions
     {
@@ -27,7 +21,10 @@
 
             lock (IconCache)
             {
-                if (IconCache.ContainsKey(identifier)) return IconCache[identifier];
+                if (IconCache.ContainsKey(identifier))
+                {
+                    return IconCache[identifier];
+                }
 
                 AsyncTexture2D icon = null;// new AsyncTexture2D(Textures.TransparentPixel.Duplicate());
                 if (!string.IsNullOrWhiteSpace(identifier))

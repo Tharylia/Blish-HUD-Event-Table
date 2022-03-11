@@ -4,8 +4,6 @@
     using Microsoft.Xna.Framework;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
 
     public static class UpdateCadenceUtil
@@ -43,8 +41,12 @@
                     _asyncStateMonitor.Add(call.Method.MethodHandle.Value);
                 }
 
-                call(gameTime).ContinueWith(_ => {
-                    lock (_asyncStateMonitor) _asyncStateMonitor.Remove(call.Method.MethodHandle.Value);
+                call(gameTime).ContinueWith(_ =>
+                {
+                    lock (_asyncStateMonitor)
+                    {
+                        _asyncStateMonitor.Remove(call.Method.MethodHandle.Value);
+                    }
                 });
                 lastCheck = 0;
             }

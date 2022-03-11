@@ -4,9 +4,6 @@
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     public class TimeSpanJsonConverter : JsonConverter<TimeSpan>
     {
@@ -20,22 +17,25 @@
         public TimeSpanJsonConverter(string toStringFormat, IEnumerable<string> parseFormats) : this()
         {
             this.ToStringFormat = toStringFormat;
-            Formats = parseFormats;
+            this.Formats = parseFormats;
         }
 
         public override void WriteJson(JsonWriter writer, TimeSpan value, JsonSerializer serializer)
         {
-            if (string.IsNullOrWhiteSpace(ToStringFormat))
+            if (string.IsNullOrWhiteSpace(this.ToStringFormat))
             {
-                throw new ArgumentNullException(nameof(ToStringFormat), "Format has not been specified.");
+                throw new ArgumentNullException(nameof(this.ToStringFormat), "Format has not been specified.");
             }
 
-            writer.WriteValue(value.ToString(ToStringFormat));
+            writer.WriteValue(value.ToString(this.ToStringFormat));
         }
 
         public override TimeSpan ReadJson(JsonReader reader, Type objectType, TimeSpan existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            if (objectType != typeof(TimeSpan)) return TimeSpan.Zero;
+            if (objectType != typeof(TimeSpan))
+            {
+                return TimeSpan.Zero;
+            }
 
             string value = (string)reader.Value;
 

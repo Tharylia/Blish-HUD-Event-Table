@@ -2,9 +2,6 @@
 {
     using Blish_HUD.Controls;
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
 
     public class GeneralSettingsView : BaseSettingsView
@@ -15,21 +12,21 @@
 
         protected override void InternalBuild(Panel parent)
         {
-            RenderSetting(parent, ModuleSettings.GlobalEnabled);
-            RenderSetting(parent, ModuleSettings.GlobalEnabledHotkey);
+            this.RenderSetting(parent, this.ModuleSettings.GlobalEnabled);
+            this.RenderSetting(parent, this.ModuleSettings.GlobalEnabledHotkey);
 #if DEBUG
-            RenderSetting(parent, ModuleSettings.DebugEnabled);
+            this.RenderSetting(parent, this.ModuleSettings.DebugEnabled);
 #endif
-            RenderSetting(parent, ModuleSettings.RegisterCornerIcon);
-            RenderEmptyLine(parent);
-            RenderSetting(parent, ModuleSettings.HideOnOpenMap);
-            RenderSetting(parent, ModuleSettings.HideOnMissingMumbleTicks);
-            RenderSetting(parent, ModuleSettings.HideInCombat);
-            RenderSetting(parent, ModuleSettings.ShowTooltips);
-            RenderSetting(parent, ModuleSettings.TooltipTimeMode);
-            RenderSetting(parent, ModuleSettings.CopyWaypointOnClick);
-            RenderSetting(parent, ModuleSettings.ShowContextMenuOnClick);
-            RenderSetting(parent, ModuleSettings.BuildDirection);
+            this.RenderSetting(parent, this.ModuleSettings.RegisterCornerIcon);
+            this.RenderEmptyLine(parent);
+            this.RenderSetting(parent, this.ModuleSettings.HideOnOpenMap);
+            this.RenderSetting(parent, this.ModuleSettings.HideOnMissingMumbleTicks);
+            this.RenderSetting(parent, this.ModuleSettings.HideInCombat);
+            this.RenderSetting(parent, this.ModuleSettings.ShowTooltips);
+            this.RenderSetting(parent, this.ModuleSettings.TooltipTimeMode);
+            this.RenderSetting(parent, this.ModuleSettings.CopyWaypointOnClick);
+            this.RenderSetting(parent, this.ModuleSettings.ShowContextMenuOnClick);
+            this.RenderSetting(parent, this.ModuleSettings.BuildDirection);
         }
 
         protected override Task<bool> InternalLoad(IProgress<string> progress)

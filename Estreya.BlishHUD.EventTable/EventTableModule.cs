@@ -1,20 +1,17 @@
 ﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
-    using Blish_HUD.Content;
     using Blish_HUD.Controls;
     using Blish_HUD.Graphics.UI;
     using Blish_HUD.Modules;
     using Blish_HUD.Modules.Managers;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Extensions;
-    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Models.Settings;
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Container;
-    using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended.BitmapFonts;
@@ -23,7 +20,6 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -112,8 +108,8 @@
         {
             get
             {
-                var millis = this.EventTimeSpan.TotalMilliseconds * (this.EventTimeSpanRatio);
-                var timespan = TimeSpan.FromMilliseconds(millis);
+                double millis = this.EventTimeSpan.TotalMilliseconds * (this.EventTimeSpanRatio);
+                TimeSpan timespan = TimeSpan.FromMilliseconds(millis);
                 DateTime min = EventTableModule.ModuleInstance.DateTimeNow.Subtract(timespan);
                 return min;
             }
@@ -123,8 +119,8 @@
         {
             get
             {
-                var millis = this.EventTimeSpan.TotalMilliseconds * (1f - this.EventTimeSpanRatio);
-                var timespan = TimeSpan.FromMilliseconds(millis);
+                double millis = this.EventTimeSpan.TotalMilliseconds * (1f - this.EventTimeSpanRatio);
+                TimeSpan timespan = TimeSpan.FromMilliseconds(millis);
                 DateTime max = EventTableModule.ModuleInstance.DateTimeNow.Add(timespan);
                 return max;
             }
@@ -132,10 +128,7 @@
 
         private List<EventCategory> _eventCategories;
 
-        internal List<EventCategory> EventCategories
-        {
-            get => _eventCategories.Where(ec => !ec.IsDisabled()).ToList();
-        }
+        internal List<EventCategory> EventCategories => this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
 
@@ -163,11 +156,11 @@
         {
             await this.ModuleSettings.LoadAsync();
 
-            await InitializeStates(true);
+            await this.InitializeStates(true);
 
             string eventFileContent = await this.EventFileState.GetExternalFileContent();
 
-            var eventSettingsFile = JsonConvert.DeserializeObject<EventSettingsFile>(eventFileContent);
+            EventSettingsFile eventSettingsFile = JsonConvert.DeserializeObject<EventSettingsFile>(eventFileContent);
 
             Logger.Info($"Loaded event file version: {eventSettingsFile.Version}");
 
@@ -180,7 +173,7 @@
 
             this._eventCategories.ForEach(ec =>
             {
-                if (ModuleSettings.UseEventTranslation.Value)
+                if (this.ModuleSettings.UseEventTranslation.Value)
                 {
                     ec.Name = Strings.ResourceManager.GetString($"eventCategory-{ec.Key}") ?? ec.Name;
                 }
@@ -195,7 +188,7 @@
                         e.Key = e.Name;
                     }
 
-                    if (ModuleSettings.UseEventTranslation.Value)
+                    if (this.ModuleSettings.UseEventTranslation.Value)
                     {
                         e.Name = Strings.ResourceManager.GetString($"event-{e.SettingKey}") ?? e.Name;
                     }
@@ -205,7 +198,7 @@
 
             this.ModuleSettings.InitializeEventSettings(this._eventCategories);
 
-            await InitializeStates(false);
+            await this.InitializeStates(false);
 
             this.Container = new EventTableContainer()
             {
@@ -227,17 +220,17 @@
                     case nameof(this.ModuleSettings.GlobalEnabled):
                         this.ToggleContainer(this.ModuleSettings.GlobalEnabled.Value);
                         break;
-                    case nameof(ModuleSettings.EventTimeSpan):
+                    case nameof(this.ModuleSettings.EventTimeSpan):
                         this._eventTimeSpan = TimeSpan.Zero;
                         break;
-                    case nameof(ModuleSettings.EventFontSize):
+                    case nameof(this.ModuleSettings.EventFontSize):
                         this._font = null;
                         break;
-                    case nameof(ModuleSettings.RegisterCornerIcon):
+                    case nameof(this.ModuleSettings.RegisterCornerIcon):
                         this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
                         break;
-                    case nameof(ModuleSettings.BackgroundColor):
-                    case nameof(ModuleSettings.BackgroundColorOpacity):
+                    case nameof(this.ModuleSettings.BackgroundColor):
+                    case nameof(this.ModuleSettings.BackgroundColorOpacity):
                         this.Container.UpdateBackgroundColor();
                         break;
                     default:
@@ -263,7 +256,7 @@
                 {
                     if (this.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Hide)
                     {
-                        var events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
+                        List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
                         events.ForEach(ev => ev.Finish());
 
                     }
@@ -301,7 +294,7 @@
                 this.CornerIcon = new CornerIcon()
                 {
                     IconName = "Event Table",
-                    Icon = ContentsManager.GetTexture(@"images\event_boss_grey.png"),
+                    Icon = this.ContentsManager.GetTexture(@"images\event_boss_grey.png"),
                 };
 
                 this.CornerIcon.Click += (s, ea) =>
@@ -321,7 +314,10 @@
 
         private void ToggleContainer(bool show)
         {
-            if (this.Container == null) return;
+            if (this.Container == null)
+            {
+                return;
+            }
 
             if (!this.ModuleSettings.GlobalEnabled.Value)
             {
