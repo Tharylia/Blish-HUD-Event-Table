@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+namespace Estreya.BlishHUD.EventTable.UI.Container
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -76,7 +76,7 @@
             var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
-                foreach (Event ev in eventCategory.Events)
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
                     if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
@@ -96,7 +96,7 @@
 
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
-                foreach (Event ev in eventCategory.Events)
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
                     if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
                     {
@@ -119,7 +119,7 @@
 
             InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
-            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories.Where(ec => !ec.IsDisabled()).ToList();
+            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories; // Already checks for IsDisabled()
 
             int y = 0;
 

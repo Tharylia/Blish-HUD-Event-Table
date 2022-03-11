@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -515,7 +515,9 @@
 
         public bool IsHovered(IEnumerable<EventCategory> eventCategories, EventCategory eventCategory, DateTime now, DateTime max, DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute, int eventHeight, bool debugEnabled)
         {
-            var occurences = this.GetStartOccurences(now, max, min);
+            if (this.IsDisabled()) return false;
+
+            var occurences = this.Occurences;
 
             foreach (var occurence in occurences)
             {
@@ -534,6 +536,7 @@
 
         public void HandleClick(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
+            if (this.Filler) return; // Currently don't do anything when filler
 
             if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed)
             {
@@ -562,7 +565,9 @@
 
         public void HandleHover(object sender, Input.MouseEventArgs e, double pixelPerMinute)
         {
-            var occurences = this.GetStartOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin);
+            if (this.Filler) return; // Currently don't do anything when filler
+
+            var occurences = this.Occurences;
             var hoveredOccurences = occurences.Where(eo =>
             {
                 double xStart = this.GetXPosition(eo, EventTableModule.ModuleInstance.EventTimeMin, pixelPerMinute);

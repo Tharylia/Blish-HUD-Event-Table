@@ -134,7 +134,7 @@
 
         internal List<EventCategory> EventCategories
         {
-            get => _eventCategories;
+            get => _eventCategories.Where(ec => !ec.IsDisabled()).ToList();
         }
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
@@ -245,7 +245,7 @@
                 }
             };
 
-            foreach (EventCategory ec in this.EventCategories)
+            foreach (EventCategory ec in this._eventCategories)
             {
                 await ec.LoadAsync();
             }
