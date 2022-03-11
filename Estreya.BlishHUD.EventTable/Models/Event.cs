@@ -610,7 +610,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                     else
                     {
                         // Absolute
-                        description += $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {FormatTime(hoveredOccurence)}";
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {FormatTime(hoveredOccurence)}";
                     }
                 }
                 else
