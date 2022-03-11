@@ -290,22 +290,6 @@
             _tooltip = new Tooltip(new UI.Views.TooltipView(this.Name, description, this.Icon));
         }
 
-        private string GetTimeRemaining(DateTime now, DateTime max, DateTime min)
-        {
-            var startOccurences = this.GetStartOccurences(now, max, min);
-            var filteredStartOccurences = startOccurences.Where(so => so <= now && so.AddMinutes(this.Duration) > now);
-
-            if (filteredStartOccurences.Any())
-            {
-                DateTime end = filteredStartOccurences.First().AddMinutes(this.Duration);
-                TimeSpan timeRemaining = end.Subtract(now);
-                string timeRemainingString = this.FormatTime(timeRemaining);
-                return timeRemainingString;
-            }
-
-            return null;
-        }
-
         private string FormatTime(TimeSpan ts)
         {
             return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
@@ -422,7 +406,7 @@
             }
         }
 
-        public List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
+        private List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
         {
             List<DateTime> startOccurences = new List<DateTime>();
 
@@ -469,28 +453,6 @@
             return minutesSinceMin * pixelPerMinute;
         }
 
-        private int GetMinYPosition(IEnumerable<EventCategory> eventCategories, int eventHight, bool debugEnabled)
-        {
-            int minY = 0;
-
-            if (debugEnabled)
-            {
-                foreach (EventCategory eventCategory in eventCategories)
-                {
-                    foreach (Event e in eventCategory.Events)
-                    {
-                        minY += eventHight;
-                        if (this == e)
-                        {
-                            return minY;
-                        }
-                    }
-                }
-            }
-
-            return minY;
-        }
-
         public double GetWidth(DateTime eventOccurence, DateTime min, Rectangle bounds, double pixelPerMinute)
         {
             double eventWidth = this.Duration * pixelPerMinute;
@@ -513,9 +475,11 @@
             return eventWidth;
         }
 
-        public bool IsHovered(IEnumerable<EventCategory> eventCategories, EventCategory eventCategory, DateTime now, DateTime max, DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute, int eventHeight, bool debugEnabled)
+        public bool IsHovered(DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute)
         {
-            var occurences = this.GetStartOccurences(now, max, min);
+            if (this.IsDisabled()) return false;
+
+            var occurences = this.Occurences;
 
             foreach (var occurence in occurences)
             {
@@ -524,7 +488,7 @@
 
                 x = Math.Max(x, 0);
 
-                bool hovered = (relativeMousePosition.X >= x && relativeMousePosition.X < x + width) && (relativeMousePosition.Y >= this._lastYPosition && relativeMousePosition.Y < this._lastYPosition + eventHeight);
+                bool hovered = (relativeMousePosition.X >= x && relativeMousePosition.X < x + width) && (relativeMousePosition.Y >= this._lastYPosition && relativeMousePosition.Y < this._lastYPosition + EventTableModule.ModuleInstance.EventHeight);
 
                 if (hovered) return true;
             }
@@ -534,6 +498,7 @@
 
         public void HandleClick(object sender, Blish_HUD.Input.MouseEventArgs e)
         {
+            if (this.Filler) return; // Currently don't do anything when filler
 
             if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed)
             {
@@ -562,7 +527,9 @@
 
         public void HandleHover(object sender, Input.MouseEventArgs e, double pixelPerMinute)
         {
-            var occurences = this.GetStartOccurences(EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin);
+            if (this.Filler) return; // Currently don't do anything when filler
+
+            var occurences = this.Occurences;
             var hoveredOccurences = occurences.Where(eo =>
             {
                 double xStart = this.GetXPosition(eo, EventTableModule.ModuleInstance.EventTimeMin, pixelPerMinute);
@@ -573,7 +540,7 @@
 
             if (!this.Tooltip.Visible)
             {
-                Debug.WriteLine($"Show Tooltip for Event: {this.Name}{e.Position}");
+                Debug.WriteLine($"Show Tooltip for Event: {this.Name} | {e.Position}");
 
                 string description = $"{this.Location}";
 
@@ -605,7 +572,7 @@
                     else
                     {
                         // Absolute
-                        description += $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {FormatTime(hoveredOccurence)}";
+                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {FormatTime(hoveredOccurence)}";
                     }
                 }
                 else
@@ -622,7 +589,7 @@
         {
             if (this.Tooltip.Visible)
             {
-                Debug.WriteLine($"Hide Tooltip for Event: {this.Name}{e.Position}");
+                Debug.WriteLine($"Hide Tooltip for Event: {this.Name} | {e.Position}");
                 this.Tooltip.Hide();
             }
         }
@@ -636,9 +603,6 @@
 
         public void FinishCategory()
         {
-            //var now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            //DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            //EventTableModule.ModuleInstance.HiddenState.Add(this.EventCategory.Key, until, true);
             this.EventCategory.Finish();
         }
 

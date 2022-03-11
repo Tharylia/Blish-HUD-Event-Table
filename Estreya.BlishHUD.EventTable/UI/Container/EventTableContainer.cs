@@ -76,9 +76,9 @@
             var mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
-                foreach (Event ev in eventCategory.Events)
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute))
                     {
                         ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
                     }
@@ -96,9 +96,9 @@
 
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
-                foreach (Event ev in eventCategory.Events)
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventCategories, eventCategory, EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute, EventTableModule.ModuleInstance.EventHeight, EventTableModule.ModuleInstance.Debug))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, RelativeMousePosition, PixelPerMinute))
                     {
                         ev.HandleClick(sender, e);
                         return;
@@ -119,26 +119,29 @@
 
             InitializeBaseTexture(spriteBatch.GraphicsDevice);
 
-            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories.Where(ec => !ec.IsDisabled()).ToList();
+            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories; // Already checks for IsDisabled()
 
             int y = 0;
+            DateTime now = EventTableModule.ModuleInstance.DateTimeNow;
+            DateTime min = EventTableModule.ModuleInstance.EventTimeMin;
+            DateTime max = EventTableModule.ModuleInstance.EventTimeMax;
 
             foreach (EventCategory eventCategory in eventCategories)
             {
-                bool anyEventDrawn = false;
+                bool categoryHasEvents = false;
 
                 foreach (var ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
                 {
+                    categoryHasEvents = true;
                     if (!EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value && ev.Filler)
                     {
                         continue;
                     }
 
-                    var eventDrawn = ev.Draw(spriteBatch, bounds, this, this.Texture, y  ,this.PixelPerMinute,  EventTableModule.ModuleInstance.DateTimeNow, EventTableModule.ModuleInstance.EventTimeMin, EventTableModule.ModuleInstance.EventTimeMax, EventTableModule.ModuleInstance.Font);
-                    anyEventDrawn |= !ev.Filler && eventDrawn;
+                    _ = ev.Draw(spriteBatch, bounds, this, this.Texture, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
                 }
 
-                if (anyEventDrawn)
+                if (categoryHasEvents)
                 {
                     y += EventTableModule.ModuleInstance.EventHeight;
                 }
