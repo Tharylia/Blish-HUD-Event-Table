@@ -27,6 +27,10 @@
             this.RenderSetting(parent, this.ModuleSettings.CopyWaypointOnClick);
             this.RenderSetting(parent, this.ModuleSettings.ShowContextMenuOnClick);
             this.RenderSetting(parent, this.ModuleSettings.BuildDirection);
+#if DEBUG
+            this.RenderEmptyLine(parent);
+            this.RenderButton(parent, "Test Error", () => this.ShowError("New error" + new Random().Next()));
+#endif
         }
 
         protected override Task<bool> InternalLoad(IProgress<string> progress)

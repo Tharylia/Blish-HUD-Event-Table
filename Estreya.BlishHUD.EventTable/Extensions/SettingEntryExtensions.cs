@@ -111,5 +111,24 @@
         {
             return (SettingValidationComplianceRequisite<T>)settingEntry.GetComplianceRequisite()?.First(cr => cr is SettingValidationComplianceRequisite<T>);
         }
+
+        public static SettingValidationResult CheckValidation<T>(this SettingEntry<T> settingEntry, T value)
+        {
+            if (settingEntry == null)
+            {
+                return new SettingValidationResult(true);
+            }
+
+            if (!settingEntry.HasValidation())
+            {
+                return new SettingValidationResult(true);
+            }
+
+            SettingValidationComplianceRequisite<T> validation = settingEntry.GetValidation();
+
+            SettingValidationResult result = validation.ValidationFunc?.Invoke(value) ?? new SettingValidationResult(false);
+
+            return result;
+        }
     }
 }
