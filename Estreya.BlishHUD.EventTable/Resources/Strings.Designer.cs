@@ -304,6 +304,15 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jade Maw ähnelt.
+        /// </summary>
+        internal static string event_dragonsEnd_jadeMaw {
+            get {
+                return ResourceManager.GetString("event-dragonsEnd-jadeMaw", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preparations ähnelt.
         /// </summary>
         internal static string event_dragonsEnd_preparations {
@@ -633,6 +642,15 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         internal static string event_tangledDepth_chakGerent {
             get {
                 return ResourceManager.GetString("event-tangledDepth-chakGerent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aspenwood ähnelt.
+        /// </summary>
+        internal static string event_theEchovaldWilds_aspenwood {
+            get {
+                return ResourceManager.GetString("event-theEchovaldWilds-aspenwood", resourceCulture);
             }
         }
         

@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.1.0",
+  "version": "1.2.0",
   "eventCategories": [
     {
       "key": "dayNightCycle",
@@ -1503,13 +1503,26 @@
           "duration": 35,
           "color": "#5af3de",
           "icon": "50F9AD6ABE0646DD07665108F5A9D8F90266B219/2604527"
+        },
+        {
+          "key": "aspenwood",
+          "name": "Aspenwood",
+          "offset": "01:40",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "The Echovald Wilds",
+          "waypoint": "[&BPkMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Use_the_siege_turtles_to_destroy_the_shield_generators_as_you_fight_through_the_fort",
+          "duration": 20,
+          "color": "#60dceb",
+          "icon": "50F9AD6ABE0646DD07665108F5A9D8F90266B219/2604527"
         }
       ]
     },
     {
       "key": "dragonsEnd",
       "name": "Dragon's End",
-      "showCombined": false,
+      "showCombined": true,
       "events": [
         {
           "key": "preparations",
@@ -1520,8 +1533,47 @@
           "location": "Dragon's End",
           "waypoint": "[&BKIMAAA=]",
           "wiki": "https://wiki.guildwars2.com/wiki/Preparations",
-          "duration": 60,
+          "duration": 5,
           "color": "#c3fff5",
+          "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
+        },
+        {
+          "key": "jadeMaw",
+          "name": "Jade Maw",
+          "offset": "00:05",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Dragon's End",
+          "waypoint": "[&BKIMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Void-corrupted_Jade_Maw",
+          "duration": 8,
+          "color": "#5af3de",
+          "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
+        },
+        {
+          "key": "preparations",
+          "name": "Preparations",
+          "offset": "00:13",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Dragon's End",
+          "waypoint": "[&BKIMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Preparations",
+          "duration": 32,
+          "color": "#c3fff5",
+          "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
+        },
+        {
+          "key": "jadeMaw",
+          "name": "Jade Maw",
+          "offset": "00:45",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Dragon's End",
+          "waypoint": "[&BKIMAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/Defeat_the_Void-corrupted_Jade_Maw",
+          "duration": 15,
+          "color": "#5af3de",
           "icon": "742201F5EB421D0F9216AA6E9FD095FDA3512798/2604528"
         },
         {

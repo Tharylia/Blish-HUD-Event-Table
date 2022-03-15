@@ -192,6 +192,9 @@
   <data name="event-dragonBash-wayfarerFoothills" xml:space="preserve">
     <value>Wayfarer Foothills</value>
   </data>
+  <data name="event-dragonsEnd-jadeMaw" xml:space="preserve">
+    <value>Jade Maw</value>
+  </data>
   <data name="event-dragonsEnd-preparations" xml:space="preserve">
     <value>Preparations</value>
   </data>
@@ -290,6 +293,9 @@
   </data>
   <data name="event-tangledDepth-chakGerent" xml:space="preserve">
     <value>Chak Gerent</value>
+  </data>
+  <data name="event-theEchovaldWilds-aspenwood" xml:space="preserve">
+    <value>Aspenwood</value>
   </data>
   <data name="event-theEchovaldWilds-gangWar" xml:space="preserve">
     <value>Gang War</value>
