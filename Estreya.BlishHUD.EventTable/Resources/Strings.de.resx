@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -191,6 +191,9 @@
   </data>
   <data name="event-dragonBash-wayfarerFoothills" xml:space="preserve">
     <value>Wanderer-Hügel</value>
+  </data>
+  <data name="event-dragonsEnd-jadeMaw" xml:space="preserve">
+    <value>Jade Maw</value>
   </data>
   <data name="event-dragonsEnd-preparations" xml:space="preserve">
     <value>Preparations</value>
