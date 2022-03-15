@@ -222,14 +222,20 @@
                         }
 
                         if (setting != null){
+                            bool resetingValue = false;
                             dropdown.ValueChanged += (s,e) => {
-                                if (HandleValidation(setting, e.CurrentValue))
+                                if (resetingValue) return;
+
+                                var newValue = (dynamic)Enum.Parse(settingEntry.SettingType, e.CurrentValue);
+                                if (HandleValidation(setting, newValue))
                                 {
-                                    setting.Value = (dynamic)Enum.Parse(settingEntry.SettingType, e.CurrentValue);
+                                    setting.Value = newValue;
                                 }
                                 else
                                 {
+                                    resetingValue = true;
                                     dropdown.SelectedItem = e.PreviousValue;
+                                    resetingValue = false;
                                 }
                             };
                         }
