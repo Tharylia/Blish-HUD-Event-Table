@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -290,6 +290,9 @@
   </data>
   <data name="event-tangledDepth-chakGerent" xml:space="preserve">
     <value>Chak Gerent</value>
+  </data>
+  <data name="event-theEchovaldWilds-aspenwood" xml:space="preserve">
+    <value>Aspenwood</value>
   </data>
   <data name="event-theEchovaldWilds-gangWar" xml:space="preserve">
     <value>Gang War</value>
