@@ -26,13 +26,13 @@
             this.RenderButton(parent, Strings.EventSettingsView_UpdateEventFile_Title, async () =>
             {
                 await EventTableModule.ModuleInstance.EventFileState.ExportFile();
-                Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_UpdateEventFile_Success);
+                EventTable.Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_UpdateEventFile_Success);
             }/*, () => !AsyncHelper.RunSync( EventTableModule.ModuleInstance.EventSettingsFileManager.IsNewEventFileVersionAvaiable)*/);
             this.RenderEmptyLine(parent);
             this.RenderButton(parent, Strings.EventSettingsView_ResetHiddenStates_Title, () =>
             {
                 EventTableModule.ModuleInstance.HiddenState.Clear();
-                Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_ResetHiddenStates_Success);
+                EventTable.Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_ResetHiddenStates_Success);
             });
             this.RenderEmptyLine(parent);
             this.RenderSetting(parent, this.ModuleSettings.UseFiller);
