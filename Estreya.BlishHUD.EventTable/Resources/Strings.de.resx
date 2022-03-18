@@ -210,6 +210,9 @@
   <data name="event-dryTop-sandstorm" xml:space="preserve">
     <value>Sandsturm</value>
   </data>
+  <data name="event-elonRiverlands-doppelganger" xml:space="preserve">
+    <value>Doppelgänger</value>
+  </data>
   <data name="event-elonRiverlands-thePathToAscension" xml:space="preserve">
     <value>Der Pfad zum Aufstieg</value>
   </data>

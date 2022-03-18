@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.2.0",
+  "version": "1.2.1",
   "eventCategories": [
     {
       "key": "dayNightCycle",
@@ -1129,9 +1129,22 @@
           "location": "Elon Riverlands",
           "waypoint": "[&BFMKAAA=]",
           "wiki": "https://wiki.guildwars2.com/wiki/The_Path_to_Ascension",
-          "duration": 45,
+          "duration": 25,
           "icon": "D65580C1D2B45CB14D04CBE17BF470657890BB31/1769813",
-          "color": "#80dae3b4"
+          "color": "#eaaf62"
+        },
+        {
+          "key": "doppelganger",
+          "name": "Doppelganger",
+          "offset": "01:55",
+          "repeat": "02:00",
+          "difficulty": "none",
+          "location": "Elon Riverlands",
+          "waypoint": "[&BFMKAAA=]",
+          "wiki": "https://wiki.guildwars2.com/wiki/The_Path_to_Ascension",
+          "duration": 20,
+          "icon": "D65580C1D2B45CB14D04CBE17BF470657890BB31/1769813",
+          "color": "#d79642"
         }
       ]
     },
