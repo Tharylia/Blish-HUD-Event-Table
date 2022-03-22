@@ -62,6 +62,9 @@
         public string Icon { get; set; }
         [JsonProperty("color")]
         public string BackgroundColorCode { get; set; }
+        [JsonProperty("apiType")]
+        public APICodeType APICodeType { get; set; }
+
         [JsonProperty("api")]
         public string APICode { get; set; }
 
@@ -275,11 +278,11 @@
 
                 #region Draw Cross out
 
-                if (EventTableModule.ModuleInstance.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
+                if (EventTableModule.ModuleInstance.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
                 {
-                    if (EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode))
+                    if (this.IsCompleted())
                     {
-                        this.DrawCrossOut(spriteBatch, control, baseTexture, eventTexturePosition, Microsoft.Xna.Framework.Color.Red);
+                        this.DrawCrossOut(spriteBatch, control, baseTexture, eventTexturePosition, Color.Red);
                     }
                 }
                 #endregion
@@ -287,6 +290,26 @@
             }
 
             return occurences.Any();
+        }
+
+        public bool IsCompleted()
+        {
+            bool completed = false;
+
+            switch (this.APICodeType)
+            {
+                case APICodeType.Worldboss:
+                    completed |= EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode);
+                    break;
+                case APICodeType.Mapchest:
+                    completed |= EventTableModule.ModuleInstance.MapchestState.IsCompleted(this.APICode);
+                    break;
+                default:
+                    Logger.Warn($"Unsupported api code type: {this.APICodeType}");
+                    break;
+            }
+
+            return completed;
         }
 
         private void UpdateTooltip(string description)
@@ -353,8 +376,8 @@
         {
             Point2 topLeft = new Point2(coords.Left, coords.Top);
             Point2 topRight = new Point2(coords.Right, coords.Top);
-            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom);
-            Point2 bottomRight = new Point2(coords.Right, coords.Bottom);
+            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom - 1.5f);
+            Point2 bottomRight = new Point2(coords.Right, coords.Bottom - 1.5f);
 
             this.DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
             this.DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);

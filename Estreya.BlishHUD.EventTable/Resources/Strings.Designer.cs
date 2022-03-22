@@ -1420,7 +1420,25 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Defines the size of the font used for events..
+        ///   Sucht eine lokalisierte Zeichenfolge, die Defines the action when an event has been completed. ähnelt.
+        /// </summary>
+        internal static string Setting_EventCompletedAction_Description {
+            get {
+                return ResourceManager.GetString("Setting_EventCompletedAction_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Event Completed Action ähnelt.
+        /// </summary>
+        internal static string Setting_EventCompletedAction_Name {
+            get {
+                return ResourceManager.GetString("Setting_EventCompletedAction_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Defines the size of the font used for events. ähnelt.
         /// </summary>
         internal static string Setting_EventFontSize_Description {
             get {
@@ -1834,25 +1852,7 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Defines the action when a worldboss has been completed..
-        /// </summary>
-        internal static string Setting_WorldbossCompletedAction_Description {
-            get {
-                return ResourceManager.GetString("Setting_WorldbossCompletedAction_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Worldboss Completed Action.
-        /// </summary>
-        internal static string Setting_WorldbossCompletedAction_Name {
-            get {
-                return ResourceManager.GetString("Setting_WorldbossCompletedAction_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Open Settings.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Open Settings ähnelt.
         /// </summary>
         internal static string SettingsView_OpenSettings {
             get {

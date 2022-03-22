@@ -134,6 +134,7 @@
 
         public HiddenState HiddenState { get; private set; }
         public WorldbossState WorldbossState { get; private set; }
+        public MapchestState MapchestState { get; private set;}
 
         public EventFileState EventFileState { get; private set; }
 
@@ -254,11 +255,20 @@
                 this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
                 this.WorldbossState.WorldbossCompleted += (s, e) =>
                 {
-                    if (this.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Hide)
+                    if (this.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Hide)
                     {
                         List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
                         events.ForEach(ev => ev.Finish());
 
+                    }
+                };
+                this.MapchestState = new MapchestState(this.Gw2ApiManager);
+                this.MapchestState.MapchestCompleted += (s, e) =>
+                {
+                    if (this.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Hide)
+                    {
+                        List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
+                        events.ForEach(ev => ev.Finish());
                     }
                 };
             }
@@ -274,6 +284,7 @@
                 {
                     this.States.Add(this.HiddenState);
                     this.States.Add(this.WorldbossState);
+                    this.States.Add(this.MapchestState);
                 }
                 else
                 {

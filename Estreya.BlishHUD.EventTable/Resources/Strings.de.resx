@@ -591,6 +591,12 @@
   <data name="Setting_DrawEventBorder_Name" xml:space="preserve">
     <value>Eventrahmen anzeigen</value>
   </data>
+  <data name="Setting_EventCompletedAction_Description" xml:space="preserve">
+    <value>Gibt an, welche Aktion beim abschließen von Events durchgeführt werden soll.</value>
+  </data>
+  <data name="Setting_EventCompletedAction_Name" xml:space="preserve">
+    <value>Aktion bei Event-Abschluss</value>
+  </data>
   <data name="Setting_EventFontSize_Description" xml:space="preserve">
     <value>Gibt an, welche Schriftgröße für Events verwendet werden soll.</value>
   </data>
@@ -728,11 +734,5 @@
   </data>
   <data name="Setting_Width_Name" xml:space="preserve">
     <value>Breite</value>
-  </data>
-  <data name="Setting_WorldbossCompletedAction_Description" xml:space="preserve">
-    <value>Gibt an, welche Aktion beim abschließen von Worldbossen durchgeführt werden soll.</value>
-  </data>
-  <data name="Setting_WorldbossCompletedAction_Name" xml:space="preserve">
-    <value>Aktion bei Worldboss-Abschluss</value>
   </data>
 </root>

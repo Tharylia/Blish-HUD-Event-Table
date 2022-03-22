@@ -591,6 +591,12 @@
   <data name="Setting_DrawEventBorder_Name" xml:space="preserve">
     <value>Draw Event Border</value>
   </data>
+  <data name="Setting_EventCompletedAction_Description" xml:space="preserve">
+    <value>Defines the action when an event has been completed.</value>
+  </data>
+  <data name="Setting_EventCompletedAction_Name" xml:space="preserve">
+    <value>Event Completed Action</value>
+  </data>
   <data name="Setting_EventFontSize_Description" xml:space="preserve">
     <value>Defines the size of the font used for events.</value>
   </data>
@@ -728,11 +734,5 @@
   </data>
   <data name="Setting_Width_Name" xml:space="preserve">
     <value>Width</value>
-  </data>
-  <data name="Setting_WorldbossCompletedAction_Description" xml:space="preserve">
-    <value>Defines the action when a worldboss has been completed.</value>
-  </data>
-  <data name="Setting_WorldbossCompletedAction_Name" xml:space="preserve">
-    <value>Worldboss Completed Action</value>
   </data>
 </root>

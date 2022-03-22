@@ -66,7 +66,7 @@
         public SettingEntry<bool> UseFillerEventNames { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> TextColor { get; private set; } // Is listed in global
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
-        public SettingEntry<WorldbossCompletedAction> WorldbossCompletedAcion { get; private set; }
+        public SettingEntry<EventCompletedAction> EventCompletedAcion { get; private set; }
         public SettingEntry<bool> UseEventTranslation { get; private set; }
         public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
         #endregion
@@ -248,8 +248,8 @@
             this.FillerTextColor = this.GlobalSettings.DefineSetting(nameof(this.FillerTextColor), this.DefaultGW2Color, () => Strings.Setting_FillerTextColor_Name, () => Strings.Setting_FillerTextColor_Description);
             this.FillerTextColor.SettingChanged += this.SettingChanged;
 
-            this.WorldbossCompletedAcion = this.GlobalSettings.DefineSetting(nameof(this.WorldbossCompletedAcion), WorldbossCompletedAction.Crossout, () => Strings.Setting_WorldbossCompletedAction_Name, () => Strings.Setting_WorldbossCompletedAction_Description);
-            this.WorldbossCompletedAcion.SettingChanged += this.SettingChanged;
+            this.EventCompletedAcion = this.GlobalSettings.DefineSetting(nameof(this.EventCompletedAcion), EventCompletedAction.Crossout, () => Strings.Setting_EventCompletedAction_Name, () => Strings.Setting_EventCompletedAction_Description);
+            this.EventCompletedAcion.SettingChanged += this.SettingChanged;
 
             this.UseEventTranslation = this.GlobalSettings.DefineSetting(nameof(this.UseEventTranslation), true, () => Strings.Setting_UseEventTranslation_Name, () => Strings.Setting_UseEventTranslation_Description);
             this.UseEventTranslation.SettingChanged += this.SettingChanged;
