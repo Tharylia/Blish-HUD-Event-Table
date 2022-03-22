@@ -62,6 +62,9 @@
         public string Icon { get; set; }
         [JsonProperty("color")]
         public string BackgroundColorCode { get; set; }
+        [JsonProperty("apiType")]
+        public APICodeType APICodeType { get; set; }
+
         [JsonProperty("api")]
         public string APICode { get; set; }
 
@@ -275,11 +278,11 @@
 
                 #region Draw Cross out
 
-                if (EventTableModule.ModuleInstance.ModuleSettings.WorldbossCompletedAcion.Value == WorldbossCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
+                if (EventTableModule.ModuleInstance.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
                 {
-                    if (EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode))
+                    if (this.IsCompleted())
                     {
-                        this.DrawCrossOut(spriteBatch, control, baseTexture, eventTexturePosition, Microsoft.Xna.Framework.Color.Red);
+                        this.DrawCrossOut(spriteBatch, control, baseTexture, eventTexturePosition, Color.Red);
                     }
                 }
                 #endregion
@@ -287,6 +290,16 @@
             }
 
             return occurences.Any();
+        }
+
+        public bool IsCompleted()
+        {
+            bool completed = false;
+
+            completed |= EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode);
+            completed |= EventTableModule.ModuleInstance.MapchestState.IsCompleted(this.APICode);
+
+            return completed;
         }
 
         private void UpdateTooltip(string description)

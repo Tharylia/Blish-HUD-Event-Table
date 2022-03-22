@@ -20,7 +20,7 @@
             this.RenderSetting(parent, this.ModuleSettings.DrawEventBorder);
             this.RenderSetting(parent, this.ModuleSettings.UseEventTranslation);
             this.RenderEmptyLine(parent);
-            this.RenderSetting(parent, this.ModuleSettings.WorldbossCompletedAcion);
+            this.RenderSetting(parent, this.ModuleSettings.EventCompletedAcion);
             this.RenderEmptyLine(parent);
             this.RenderSetting(parent, this.ModuleSettings.AutomaticallyUpdateEventFile);
             this.RenderButton(parent, Strings.EventSettingsView_UpdateEventFile_Title, async () =>
