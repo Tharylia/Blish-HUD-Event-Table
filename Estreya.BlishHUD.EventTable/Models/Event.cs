@@ -296,8 +296,18 @@
         {
             bool completed = false;
 
-            completed |= EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode);
-            completed |= EventTableModule.ModuleInstance.MapchestState.IsCompleted(this.APICode);
+            switch (this.APICodeType)
+            {
+                case APICodeType.Worldboss:
+                    completed |= EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode);
+                    break;
+                case APICodeType.Mapchest:
+                    completed |= EventTableModule.ModuleInstance.MapchestState.IsCompleted(this.APICode);
+                    break;
+                default:
+                    Logger.Warn($"Unsupported api code type: {this.APICodeType}");
+                    break;
+            }
 
             return completed;
         }
@@ -366,8 +376,8 @@
         {
             Point2 topLeft = new Point2(coords.Left, coords.Top);
             Point2 topRight = new Point2(coords.Right, coords.Top);
-            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom);
-            Point2 bottomRight = new Point2(coords.Right, coords.Bottom);
+            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom - 1.5f);
+            Point2 bottomRight = new Point2(coords.Right, coords.Bottom - 1.5f);
 
             this.DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
             this.DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);
