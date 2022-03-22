@@ -8,6 +8,7 @@
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Resources;
+    using Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls;
     using Microsoft.Xna.Framework;
     using MonoGame.Extended.BitmapFonts;
     using System;
@@ -37,213 +38,9 @@
         private Panel ErrorPanel { get; set; }
         private CancellationTokenSource ErrorCancellationTokenSource = new CancellationTokenSource();
 
-
-        private Dictionary<Type, Func<SettingEntry, int, int, Control>> _typeLookup;
-
         public BaseSettingsView(ModuleSettings settings)
         {
             this.ModuleSettings = settings;
-            this.LoadTypeLookup();
-        }
-
-        private void LoadTypeLookup()
-        {
-            this._typeLookup = new Dictionary<Type, Func<SettingEntry, int, int, Control>>
-            {
-                {
-                    typeof(bool),
-                    (SettingEntry settingEntry, int definedWidth, int xPos) =>
-                    {
-                        SettingEntry<bool> setting =settingEntry as SettingEntry<bool>;
-                        Checkbox checkbox = new Checkbox()
-                        {
-                            Width = definedWidth,
-                            Location = new Point(xPos, 0),
-                            Checked = setting?.Value ?? false,
-                            Enabled = !settingEntry.IsDisabled()
-                        };
-
-                        if (setting != null){
-                            checkbox.CheckedChanged += (s,e) => {
-                                if (this.HandleValidation(setting, e.Checked))
-                                {
-                                    setting.Value = e.Checked;
-                                }
-                                else
-                                {
-                                    checkbox.Checked = !e.Checked;
-                                }
-                            };
-                        }
-
-                        return checkbox;
-                    }
-                },
-                {
-                    typeof(string),
-                    (SettingEntry settingEntry, int definedWidth, int xPos) =>
-                    {
-                        SettingEntry<string> setting =settingEntry as SettingEntry<string>;
-                        TextBox textBox =  new TextBox()
-                        {
-                            Width= definedWidth,
-                            Location = new Point(xPos, 0),
-                            Text = setting?.Value ?? string.Empty,
-                            Enabled = !settingEntry.IsDisabled()
-                        };
-
-                        if (setting != null){
-                            textBox.TextChanged += (s,e) => {
-                                ValueChangedEventArgs<string> eventArgs = (ValueChangedEventArgs<string>)e;
-                                if (this.HandleValidation(setting, eventArgs.NewValue))
-                                {
-                                    setting.Value = eventArgs.NewValue;
-                                }
-                                else
-                                {
-                                    textBox.Text = eventArgs.PreviousValue;
-                                }
-                            };
-                        }
-
-                        return textBox;
-                    }
-                },
-                {
-                    typeof(float),
-                    (SettingEntry settingEntry, int definedWidth, int xPos) =>
-                    {
-                        SettingEntry<float> setting =settingEntry as SettingEntry<float>;
-                        (float Min, float Max)? range = setting?.GetRange() ?? null;
-                        TrackBar trackBar = new TrackBar()
-                        {
-                            Width= definedWidth,
-                            Location = new Point(xPos, 0),
-                            Enabled = !settingEntry.IsDisabled(),
-                            MinValue = range.HasValue ? range.Value.Min: 0,
-                            MaxValue = range.HasValue ? range.Value.Max:100,
-                            SmallStep = true,
-                            Value = setting?.GetValue() ?? 50
-                        };
-
-                        if (setting != null){
-                            trackBar.ValueChanged += (s,e) => {
-                                if (this.HandleValidation(setting, e.Value))
-                                {
-                                    setting.Value = e.Value;
-                                }
-                                else
-                                {
-                                    trackBar.Value = setting.Value;
-                                }
-                            };
-                        }
-
-                        return trackBar;
-                    }
-                },
-                {
-                    typeof(int),
-                    (SettingEntry settingEntry, int definedWidth, int xPos) =>
-                    {
-                        SettingEntry<int> setting =settingEntry as SettingEntry<int>;
-                        (int Min, int Max)? range = setting?.GetRange() ?? null;
-                        TrackBar trackBar = new TrackBar()
-                        {
-                            Width= definedWidth,
-                            Location = new Point(xPos, 0),
-                            Enabled = !settingEntry.IsDisabled(),
-                            MinValue = range.HasValue ? range.Value.Min: 0,
-                            MaxValue = range.HasValue ? range.Value.Max:100,
-                            Value = setting?.GetValue() ?? 50
-                        };
-
-                        if (setting != null){
-                            trackBar.ValueChanged += (s,e) => {
-                                if (this.HandleValidation(setting, (int)e.Value))
-                                {
-                                    setting.Value = (int)e.Value;
-                                }
-                                else
-                                {
-                                    trackBar.Value = setting.Value;
-                                }
-                            };
-                        }
-
-                        return trackBar;
-                    }
-                },
-                {
-                    typeof(KeyBinding),
-                    (SettingEntry settingEntry, int definedWidth, int xPos) =>
-                    {
-                        SettingEntry<KeyBinding> setting =settingEntry as SettingEntry<KeyBinding>;
-                        Controls.KeybindingAssigner  keybindingAssigner= new Controls.KeybindingAssigner(setting.Value, false)
-                        {
-                            Width = definedWidth,
-                            Location = new Point(xPos, 0),
-                            Enabled = !settingEntry.IsDisabled()
-                        };
-
-                        if (setting != null){
-                            keybindingAssigner.BindingChanged += (s,e) => {
-                                if (this.HandleValidation(setting, keybindingAssigner.KeyBinding))
-                                {
-                                    setting.Value = keybindingAssigner.KeyBinding;
-                                }
-                                else
-                                {
-                                    keybindingAssigner.KeyBinding = setting.Value;
-                                }
-                            };
-                        }
-
-                        return keybindingAssigner;
-                    }
-                },
-                {
-                    typeof(Enum),
-                    (SettingEntry settingEntry, int definedWidth,int xPos) =>
-                    {
-                        dynamic setting = (dynamic)settingEntry;
-
-                        Dropdown dropdown = new Dropdown
-                        {
-                            Width = definedWidth,
-                            Location = new Point(xPos, 0),
-                            SelectedItem =   setting?.Value.ToString(),
-                            Enabled = !settingEntry.IsDisabled()
-                        };
-
-                        foreach(string enumValue in Enum.GetNames(settingEntry.SettingType))
-                        {
-                            dropdown.Items.Add(enumValue);
-                        }
-
-                        if (setting != null){
-                            bool resetingValue = false;
-                            dropdown.ValueChanged += (s,e) => {
-                                if (resetingValue) return;
-
-                                var newValue = (dynamic)Enum.Parse(settingEntry.SettingType, e.CurrentValue);
-                                if (HandleValidation(setting, newValue))
-                                {
-                                    setting.Value = newValue;
-                                }
-                                else
-                                {
-                                    resetingValue = true;
-                                    dropdown.SelectedItem = e.PreviousValue;
-                                    resetingValue = false;
-                                }
-                            };
-                        }
-
-                        return dropdown;
-                    }
-                }
-            };
         }
 
         protected override async Task<bool> Load(IProgress<string> progress)
@@ -343,7 +140,7 @@
             settingContainer.Show(new EmptySettingsLineView(25));
         }
 
-        protected Panel RenderSetting(Panel parent, SettingEntry setting)
+        protected Panel RenderSetting<T>(Panel parent, SettingEntry<T> setting)
         {
             Panel panel = this.GetPanel(parent);
 
@@ -351,20 +148,15 @@
 
             Type type = setting.SettingType;
 
-            if (setting.SettingType.IsEnum)
+            try
             {
-                type = typeof(Enum);
-            }
-
-            if (this._typeLookup.TryGetValue(type, out Func<SettingEntry, int, int, Control> controlBuilder))
-            {
-                Control ctrl = controlBuilder.Invoke(setting, BINDING_WIDTH, label.Right + CONTROL_X_SPACING);
+                Control ctrl = ControlProvider<T>.Create(setting, this.HandleValidation, BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
                 ctrl.Parent = panel;
                 ctrl.BasicTooltipText = setting.Description;
             }
-            else
+            catch (Exception ex)
             {
-                Logger.Warn($"Type \"{setting.SettingType.FullName}\" could not be found in internal type lookup.");
+                Logger.Error(ex, $"Type \"{setting.SettingType.FullName}\" could not be found in internal type lookup:");
             }
 
             return panel;
