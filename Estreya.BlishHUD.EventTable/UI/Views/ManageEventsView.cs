@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -10,8 +10,10 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Resources;
     using Microsoft.Xna.Framework;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     public class ManageEventsView : View
     {
@@ -23,7 +25,10 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
 
         private void UpdateToggleButton(GlowButton button)
         {
-            button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\plus.png"); // TODO: Own icon
+            GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+            {
+                button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\plus.png"); // TODO: Own icon
+            });
         }
 
         protected override void Build(Container buildPanel)
@@ -192,28 +197,34 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
 
-                    AsyncTexture2D icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
-
                     EventDetailsButton button = new EventDetailsButton()
                     {
                         Event = e,
                         Parent = eventPanel,
                         Text = e.Name,
-                        Icon = icon,
                         ShowToggleButton = true,
                         FillColor = Color.LightBlue,
                         //Size = new Point((events.ContentRegion.Size.X - Panel.ControlStandard.Size.X) / 2, events.ContentRegion.Size.X - Panel.ControlStandard.Size.X)
                     };
+
+                    GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+                    {
+                        button.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
+                    });
 
                     if (!string.IsNullOrWhiteSpace(e.Waypoint))
                     {
                         GlowButton waypointButton = new GlowButton()
                         {
                             Parent = button,
-                            ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Waypoint_Title, Strings.ManageEventsView_Waypoint_Description, icon: "images\\waypoint.png")),
-                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\waypoint.png") // TODO: Own icon
+                            ToggleGlow = false
                         };
+
+                        GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+                        {
+                            waypointButton.Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Waypoint_Title, Strings.ManageEventsView_Waypoint_Description, icon: "images\\waypoint.png"));
+                            waypointButton.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\waypoint.png");
+                        });
 
                         waypointButton.Click += (s, eventArgs) =>
                         {
@@ -226,10 +237,14 @@ namespace Estreya.BlishHUD.EventTable.UI.Views
                         GlowButton wikiButton = new GlowButton()
                         {
                             Parent = button,
-                            ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Wiki_Title, Strings.ManageEventsView_Wiki_Description, icon: "images\\wiki.png")),
-                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\wiki.png") // TODO: Own icon
+                            ToggleGlow = false
                         };
+
+                        GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+                        {
+                            wikiButton.Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Wiki_Title, Strings.ManageEventsView_Wiki_Description, icon: "images\\wiki.png"));
+                            wikiButton.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\wiki.png");
+                        });
 
                         wikiButton.Click += (s, eventArgs) =>
                         {

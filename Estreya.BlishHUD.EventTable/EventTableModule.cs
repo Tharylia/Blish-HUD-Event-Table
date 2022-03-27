@@ -163,6 +163,13 @@ namespace Estreya.BlishHUD.EventTable
 
         protected override void Initialize()
         {
+            this.Container = new EventTableContainer()
+            {
+                Parent = GameService.Graphics.SpriteScreen,
+                BackgroundColor = Microsoft.Xna.Framework.Color.Transparent,
+                Opacity = 0f,
+                Visible = false
+            };
         }
 
         protected override async Task LoadAsync()
@@ -179,14 +186,6 @@ namespace Estreya.BlishHUD.EventTable
             }
 
             await this.InitializeStates(false);
-
-            this.Container = new EventTableContainer()
-            {
-                Parent = GameService.Graphics.SpriteScreen,
-                BackgroundColor = Microsoft.Xna.Framework.Color.Transparent,
-                Opacity = 0f,
-                Visible = false
-            };
 
             await this.Container.LoadAsync();
 
