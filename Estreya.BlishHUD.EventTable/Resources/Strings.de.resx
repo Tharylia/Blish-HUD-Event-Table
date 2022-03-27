@@ -456,6 +456,18 @@
   <data name="eventCategory-worldBossesHardcore" xml:space="preserve">
     <value>Hardcore Welt-Bosse</value>
   </data>
+  <data name="EventSettingsView_CurrentVersion_Title" xml:space="preserve">
+    <value>Aktuelle Version</value>
+  </data>
+  <data name="EventSettingsView_CurrentVersion_Unknown" xml:space="preserve">
+    <value>Unbekannt</value>
+  </data>
+  <data name="EventSettingsView_NewestVersion_Title" xml:space="preserve">
+    <value>Neuste Version</value>
+  </data>
+  <data name="EventSettingsView_NewestVersion_Unknown" xml:space="preserve">
+    <value>Unbekannt</value>
+  </data>
   <data name="EventSettingsView_ReloadEvents_Success" xml:space="preserve">
     <value>Events wurden neu geladen!</value>
   </data>

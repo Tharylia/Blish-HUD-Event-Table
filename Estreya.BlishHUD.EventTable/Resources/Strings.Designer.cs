@@ -1177,6 +1177,42 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Current Version ähnelt.
+        /// </summary>
+        internal static string EventSettingsView_CurrentVersion_Title {
+            get {
+                return ResourceManager.GetString("EventSettingsView_CurrentVersion_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unknown ähnelt.
+        /// </summary>
+        internal static string EventSettingsView_CurrentVersion_Unknown {
+            get {
+                return ResourceManager.GetString("EventSettingsView_CurrentVersion_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Newest Version ähnelt.
+        /// </summary>
+        internal static string EventSettingsView_NewestVersion_Title {
+            get {
+                return ResourceManager.GetString("EventSettingsView_NewestVersion_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unknown ähnelt.
+        /// </summary>
+        internal static string EventSettingsView_NewestVersion_Unknown {
+            get {
+                return ResourceManager.GetString("EventSettingsView_NewestVersion_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Events reloaded! ähnelt.
         /// </summary>
         internal static string EventSettingsView_ReloadEvents_Success {

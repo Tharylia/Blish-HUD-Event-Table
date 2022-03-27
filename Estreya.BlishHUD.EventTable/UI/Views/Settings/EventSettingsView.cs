@@ -45,8 +45,8 @@
                 EventTable.Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_UpdateEventFile_Success);
             });
 
-            this.RenderLabel(parent, "Current Version", this.CurrentVersion?.ToString() ?? "Unknown");
-            this.RenderLabel(parent, "Newest Version", this.NewestVersion?.ToString() ?? "Unknown");
+            this.RenderLabel(parent, Strings.EventSettingsView_CurrentVersion_Title, this.CurrentVersion?.ToString() ?? Strings.EventSettingsView_CurrentVersion_Unknown);
+            this.RenderLabel(parent, Strings.EventSettingsView_NewestVersion_Title, this.NewestVersion?.ToString() ?? Strings.EventSettingsView_NewestVersion_Unknown);
 
             this.RenderEmptyLine(parent);
 
