@@ -10,8 +10,10 @@
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Resources;
     using Microsoft.Xna.Framework;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     public class ManageEventsView : View
     {
@@ -21,18 +23,12 @@
 
         public Panel Panel { get; private set; }
 
-        private IEnumerable<EventCategory> EventCategories { get; set; }
-        private List<SettingEntry<bool>> EventSettings { get; set; }
-
-        public ManageEventsView(IEnumerable<EventCategory> categories, List<SettingEntry<bool>> settings)
-        {
-            this.EventCategories = categories;
-            this.EventSettings = settings;
-        }
-
         private void UpdateToggleButton(GlowButton button)
         {
-            button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\plus.png"); // TODO: Own icon
+            GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+            {
+                button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\plus.png"); // TODO: Own icon
+            });
         }
 
         protected override void Build(Container buildPanel)
@@ -101,7 +97,7 @@
             allEvents.Select();
             menus.Add(nameof(allEvents), allEvents);
 
-            foreach (EventCategory category in this.EventCategories.GroupBy(ec => ec.Key).Select(ec => ec.First()))
+            foreach (EventCategory category in EventTableModule.ModuleInstance.EventCategories.GroupBy(ec => ec.Key).Select(ec => ec.First()))
             {
                 menus.Add(category.Key, eventCategories.AddMenuItem(category.Name));
             }
@@ -110,7 +106,7 @@
             {
                 MenuItem menuItem = s as MenuItem;
 
-                EventCategory category = this.EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
+                EventCategory category = EventTableModule.ModuleInstance.EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
 
                 eventPanel.FilterChildren<EventDetailsButton>(detailsButton =>
                 {
@@ -185,7 +181,7 @@
                 });
             };
 
-            foreach (EventCategory category in this.EventCategories)
+            foreach (EventCategory category in EventTableModule.ModuleInstance.EventCategories)
             {
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
@@ -196,33 +192,39 @@
                     }
 
                     // Check with .ToLower() because settings define is case insensitive
-                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.SettingKey.ToLowerInvariant());
+                    IEnumerable<SettingEntry<bool>> settings = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.SettingKey.ToLowerInvariant());
 
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
-
-                    AsyncTexture2D icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
 
                     EventDetailsButton button = new EventDetailsButton()
                     {
                         Event = e,
                         Parent = eventPanel,
                         Text = e.Name,
-                        Icon = icon,
                         ShowToggleButton = true,
                         FillColor = Color.LightBlue,
                         //Size = new Point((events.ContentRegion.Size.X - Panel.ControlStandard.Size.X) / 2, events.ContentRegion.Size.X - Panel.ControlStandard.Size.X)
                     };
+
+                    GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+                    {
+                        button.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
+                    });
 
                     if (!string.IsNullOrWhiteSpace(e.Waypoint))
                     {
                         GlowButton waypointButton = new GlowButton()
                         {
                             Parent = button,
-                            ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Waypoint_Title, Strings.ManageEventsView_Waypoint_Description, icon: "images\\waypoint.png")),
-                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\waypoint.png") // TODO: Own icon
+                            ToggleGlow = false
                         };
+
+                        GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+                        {
+                            waypointButton.Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Waypoint_Title, Strings.ManageEventsView_Waypoint_Description, icon: "images\\waypoint.png"));
+                            waypointButton.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\waypoint.png");
+                        });
 
                         waypointButton.Click += (s, eventArgs) =>
                         {
@@ -235,10 +237,14 @@
                         GlowButton wikiButton = new GlowButton()
                         {
                             Parent = button,
-                            ToggleGlow = false,
-                            Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Wiki_Title, Strings.ManageEventsView_Wiki_Description, icon: "images\\wiki.png")),
-                            Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\wiki.png") // TODO: Own icon
+                            ToggleGlow = false
                         };
+
+                        GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+                        {
+                            wikiButton.Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Wiki_Title, Strings.ManageEventsView_Wiki_Description, icon: "images\\wiki.png"));
+                            wikiButton.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\wiki.png");
+                        });
 
                         wikiButton.Click += (s, eventArgs) =>
                         {

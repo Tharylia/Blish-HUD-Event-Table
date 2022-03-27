@@ -162,7 +162,7 @@
             return panel;
         }
 
-        private Panel GetPanel(Container parent)
+        protected Panel GetPanel(Container parent)
         {
             return new Panel
             {
@@ -172,7 +172,7 @@
             };
         }
 
-        private Label GetLabel(Panel parent, string text)
+        protected Label GetLabel(Panel parent, string text)
         {
             return new Label()
             {
@@ -205,7 +205,16 @@
                 Enabled = !disabledCallback?.Invoke() ?? true,
             };
 
-            button.Click += (s, e) => AsyncHelper.RunSync(action.Invoke);
+            button.Click += (s, e) => Task.Run(action.Invoke);
+        }
+
+        protected void RenderLabel(Panel parent, string title, string value)
+        {
+            Panel panel = this.GetPanel(parent);
+
+            Label titleLabel = this.GetLabel(panel, title);
+            Label valueLabel = this.GetLabel(panel, value);
+            valueLabel.Left = titleLabel.Right + CONTROL_X_SPACING;
         }
 
         protected void RenderColorSetting(Panel parent, SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> setting)

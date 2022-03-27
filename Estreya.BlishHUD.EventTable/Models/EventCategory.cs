@@ -261,6 +261,14 @@
             return Task.CompletedTask;
         }
 
+        public void Unload()
+        {
+            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
+
+            this.Events.ForEach(ev => ev.Unload());
+
+            Logger.Debug("Unloaded event category: {0}", this.Key);
+        }
 
         public void Update(GameTime gameTime)
         {
