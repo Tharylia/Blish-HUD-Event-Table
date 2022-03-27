@@ -698,6 +698,17 @@
             }
         }
 
+        public void Unload()
+        {
+            this._tooltip?.Dispose();
+            this._tooltip = null;
+
+            this._contextMenuStrip?.Dispose();
+            this._contextMenuStrip = null;
+
+            Logger.Debug("Unloaded event: {0}", this.Key);
+        }
+
         public void Update(GameTime gameTime)
         {
             UpdateCadenceUtil.UpdateWithCadence(this.UpdateEventOccurences, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);

@@ -456,6 +456,12 @@
   <data name="eventCategory-worldBossesHardcore" xml:space="preserve">
     <value>Hard World Bosses</value>
   </data>
+  <data name="EventSettingsView_ReloadEvents_Success" xml:space="preserve">
+    <value>Events reloaded!</value>
+  </data>
+  <data name="EventSettingsView_ReloadEvents_Title" xml:space="preserve">
+    <value>Reload Events</value>
+  </data>
   <data name="EventSettingsView_ResetHiddenStates_Success" xml:space="preserve">
     <value>Hidden states cleared!</value>
   </data>

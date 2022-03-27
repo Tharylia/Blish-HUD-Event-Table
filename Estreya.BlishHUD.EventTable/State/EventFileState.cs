@@ -111,21 +111,48 @@
             return json;
         }
 
-        public async Task<string> GetExternalFileContent()
+        private async Task<string> GetExternalFileContent()
         {
             using StreamReader eventsReader = new StreamReader(this.FilePath);
             string json = await eventsReader.ReadToEndAsync();
             return json;
         }
 
+        public async Task<EventSettingsFile> GetInternalFile()
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<EventSettingsFile>(await this.GetInternalFileContent());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Could not load internal file.");
+            }
+
+            return null;
+        }
+        public async Task<EventSettingsFile> GetExternalFile()
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<EventSettingsFile>(await this.GetExternalFileContent());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Could not load external file.");
+            }
+
+            return null;
+        }
+
         private async Task<bool> IsNewFileVersionAvaiable()
         {
             try
             {
-                EventSettingsFile internalEventFile = JsonConvert.DeserializeObject<EventSettingsFile>(await this.GetInternalFileContent());
-                EventSettingsFile externalEventFile = JsonConvert.DeserializeObject<EventSettingsFile>(await this.GetExternalFileContent());
+                EventSettingsFile internalEventFile = await this.GetInternalFile();
+                EventSettingsFile externalEventFile = await this.GetExternalFile();
 
-                return internalEventFile.Version > externalEventFile.Version;
+                return internalEventFile?.Version > externalEventFile?.Version;
             }
             catch (Exception ex)
             {
@@ -134,10 +161,16 @@
             }
         }
 
+        internal async Task ExportFile(string content)
+        {
+            using StreamWriter writer = File.CreateText(this.FilePath);
+            await writer.WriteAsync(content);
+        }
+
         public async Task ExportFile()
         {
             string json = await this.GetInternalFileContent();
-            File.WriteAllText(this.FilePath, json);
+            await this.ExportFile(json);
         }
 
     }

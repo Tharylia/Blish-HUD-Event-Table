@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -21,6 +21,7 @@
     using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     [Export(typeof(Blish_HUD.Modules.Module))]
@@ -39,7 +40,7 @@
         internal Gw2ApiManager Gw2ApiManager => this.ModuleParameters.Gw2ApiManager;
         #endregion
 
-        internal ModuleSettings ModuleSettings;
+        internal ModuleSettings ModuleSettings { get; private set; }
 
         private CornerIcon CornerIcon { get; set; }
 
@@ -126,9 +127,20 @@
             }
         }
 
-        private List<EventCategory> _eventCategories;
+        private SemaphoreSlim EventCategorySemaphore = new SemaphoreSlim(1, 1);
 
-        internal List<EventCategory> EventCategories => this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
+        private List<EventCategory> _eventCategories = new List<EventCategory>();
+
+        internal List<EventCategory> EventCategories
+        {
+            get
+            {
+                lock (this._eventCategories)
+                {
+                    return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
+                }
+            }
+        }
 
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
 
@@ -159,45 +171,12 @@
 
             await this.InitializeStates(true);
 
-            string eventFileContent = await this.EventFileState.GetExternalFileContent();
+            await this.LoadEvents();
 
-            EventSettingsFile eventSettingsFile = JsonConvert.DeserializeObject<EventSettingsFile>(eventFileContent);
-
-            Logger.Info($"Loaded event file version: {eventSettingsFile.Version}");
-
-            this._eventCategories = eventSettingsFile.EventCategories ?? new List<EventCategory>();
-
-            int eventCategoryCount = this._eventCategories.Count;
-            int eventCount = this._eventCategories.Sum(ec => ec.Events.Count);
-
-            Logger.Info($"Loaded {eventCategoryCount} Categories with {eventCount} Events.");
-
-            this._eventCategories.ForEach(ec =>
-            {
-                if (this.ModuleSettings.UseEventTranslation.Value)
-                {
-                    ec.Name = Strings.ResourceManager.GetString($"eventCategory-{ec.Key}") ?? ec.Name;
-                }
-
-                ec.Events.ForEach(e =>
-                {
-                    e.EventCategory = ec;
-
-                    // Prevent crash on older events.json files
-                    if (string.IsNullOrWhiteSpace(e.Key))
+            lock (this._eventCategories)
                     {
-                        e.Key = e.Name;
-                    }
-
-                    if (this.ModuleSettings.UseEventTranslation.Value)
-                    {
-                        e.Name = Strings.ResourceManager.GetString($"event-{e.SettingKey}") ?? e.Name;
-                    }
-                });
-
-            });
-
             this.ModuleSettings.InitializeEventSettings(this._eventCategories);
+            }
 
             await this.InitializeStates(false);
 
@@ -239,9 +218,96 @@
                 }
             };
 
-            foreach (EventCategory ec in this._eventCategories)
+        }
+
+        /// <summary>
+        /// Reloads all events.
+        /// </summary>
+        /// <returns></returns>
+        public async Task LoadEvents()
+        {
+            string threadName = $"{Thread.CurrentThread.ManagedThreadId}";
+            Logger.Debug("Try loading events from thread: {0}", threadName);
+
+            await EventCategorySemaphore.WaitAsync();
+
+            Logger.Debug("Thread \"{0}\" started loading", threadName);
+
+            try
+            {
+                if (this._eventCategories != null)
+                {
+                    lock (this._eventCategories)
+                    {
+                        foreach (EventCategory ec in _eventCategories)
+                        {
+                            ec.Unload();
+                        }
+
+                        this._eventCategories.Clear();
+                    }
+                }
+
+                EventSettingsFile eventSettingsFile = await this.EventFileState.GetExternalFile();
+
+                if (eventSettingsFile == null)
+                {
+                    Logger.Error($"Failed to load event file.");
+                    return;
+                }
+
+                Logger.Info($"Loaded event file version: {eventSettingsFile.Version}");
+
+                List<EventCategory> categories = eventSettingsFile.EventCategories ?? new List<EventCategory>();
+
+                int eventCategoryCount = categories.Count;
+                int eventCount = categories.Sum(ec => ec.Events.Count);
+
+                Logger.Info($"Loaded {eventCategoryCount} Categories with {eventCount} Events.");
+
+                categories.ForEach(ec =>
+                    {
+                        if (this.ModuleSettings.UseEventTranslation.Value)
+                        {
+                            ec.Name = Strings.ResourceManager.GetString($"eventCategory-{ec.Key}") ?? ec.Name;
+                        }
+
+                        ec.Events.ForEach(e =>
+                        {
+                            e.EventCategory = ec;
+
+                            // Prevent crash on older events.json files
+                            if (string.IsNullOrWhiteSpace(e.Key))
+                            {
+                                e.Key = e.Name;
+                            }
+
+                            if (this.ModuleSettings.UseEventTranslation.Value)
+                            {
+                                e.Name = Strings.ResourceManager.GetString($"event-{e.SettingKey}") ?? e.Name;
+                            }
+                        });
+                    });
+
+                foreach (EventCategory ec in categories)
             {
                 await ec.LoadAsync();
+                }
+
+                lock (this._eventCategories)
+                {
+                    this._eventCategories = categories;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Failed loading events.");
+                throw ex;
+            }
+            finally
+            {
+                EventCategorySemaphore.Release();
+                Logger.Debug("Thread \"{0}\" released loading lock", threadName);
             }
         }
 
@@ -388,7 +454,7 @@
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents), Strings.SettingsWindow_ManageEvents_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(), Strings.SettingsWindow_ManageEvents_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
@@ -413,10 +479,13 @@
                 state.Update(gameTime);
             }
 
+            lock (this._eventCategories)
+            {
             this._eventCategories.ForEach(ec =>
             {
                 ec.Update(gameTime);
             });
+            }
         }
 
         private void CheckContainerSizeAndPosition()
@@ -509,6 +578,11 @@
         protected override void Unload()
         {
             base.Unload();
+
+            foreach (EventCategory ec in _eventCategories)
+            {
+                ec.Unload();
+            }
 
             if (this.Container != null)
             {

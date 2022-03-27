@@ -456,6 +456,12 @@
   <data name="eventCategory-worldBossesHardcore" xml:space="preserve">
     <value>Hardcore Welt-Bosse</value>
   </data>
+  <data name="EventSettingsView_ReloadEvents_Success" xml:space="preserve">
+    <value>Events wurden neu geladen!</value>
+  </data>
+  <data name="EventSettingsView_ReloadEvents_Title" xml:space="preserve">
+    <value>Events neu laden</value>
+  </data>
   <data name="EventSettingsView_ResetHiddenStates_Success" xml:space="preserve">
     <value>Verstecke Events erfolgreich zurückgesetzt!</value>
   </data>

@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views
+namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD;
     using Blish_HUD.Content;
@@ -20,15 +20,6 @@
         private static readonly Logger Logger = Logger.GetLogger<ManageEventsView>();
 
         public Panel Panel { get; private set; }
-
-        private IEnumerable<EventCategory> EventCategories { get; set; }
-        private List<SettingEntry<bool>> EventSettings { get; set; }
-
-        public ManageEventsView(IEnumerable<EventCategory> categories, List<SettingEntry<bool>> settings)
-        {
-            this.EventCategories = categories;
-            this.EventSettings = settings;
-        }
 
         private void UpdateToggleButton(GlowButton button)
         {
@@ -101,7 +92,7 @@
             allEvents.Select();
             menus.Add(nameof(allEvents), allEvents);
 
-            foreach (EventCategory category in this.EventCategories.GroupBy(ec => ec.Key).Select(ec => ec.First()))
+            foreach (EventCategory category in EventTableModule.ModuleInstance.EventCategories.GroupBy(ec => ec.Key).Select(ec => ec.First()))
             {
                 menus.Add(category.Key, eventCategories.AddMenuItem(category.Name));
             }
@@ -110,7 +101,7 @@
             {
                 MenuItem menuItem = s as MenuItem;
 
-                EventCategory category = this.EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
+                EventCategory category = EventTableModule.ModuleInstance.EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
 
                 eventPanel.FilterChildren<EventDetailsButton>(detailsButton =>
                 {
@@ -185,7 +176,7 @@
                 });
             };
 
-            foreach (EventCategory category in this.EventCategories)
+            foreach (EventCategory category in EventTableModule.ModuleInstance.EventCategories)
             {
                 IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
                 foreach (Event e in events)
@@ -196,7 +187,7 @@
                     }
 
                     // Check with .ToLower() because settings define is case insensitive
-                    IEnumerable<SettingEntry<bool>> settings = this.EventSettings.FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.SettingKey.ToLowerInvariant());
+                    IEnumerable<SettingEntry<bool>> settings = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.SettingKey.ToLowerInvariant());
 
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;
