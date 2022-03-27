@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -146,7 +146,7 @@ namespace Estreya.BlishHUD.EventTable
 
         public HiddenState HiddenState { get; private set; }
         public WorldbossState WorldbossState { get; private set; }
-        public MapchestState MapchestState { get; private set;}
+        public MapchestState MapchestState { get; private set; }
 
         public EventFileState EventFileState { get; private set; }
 
@@ -181,8 +181,8 @@ namespace Estreya.BlishHUD.EventTable
             await this.LoadEvents();
 
             lock (this._eventCategories)
-                    {
-            this.ModuleSettings.InitializeEventSettings(this._eventCategories);
+            {
+                this.ModuleSettings.InitializeEventSettings(this._eventCategories);
             }
 
             await this.InitializeStates(false);
@@ -289,8 +289,8 @@ namespace Estreya.BlishHUD.EventTable
                     });
 
                 foreach (EventCategory ec in categories)
-            {
-                await ec.LoadAsync();
+                {
+                    await ec.LoadAsync();
                 }
 
                 lock (this._eventCategories)
@@ -314,27 +314,30 @@ namespace Estreya.BlishHUD.EventTable
         {
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
+            var hideEventAction = (string apiCode) =>
+            {
+                if (this.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Hide)
+                {
+                    lock (this._eventCategories)
+                    {
+                        List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
+                        events.ForEach(ev => ev.Finish());
+                    }
+                }
+            };
+
             if (!beforeFileLoaded)
             {
                 this.HiddenState = new HiddenState(eventsDirectory);
                 this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
                 this.WorldbossState.WorldbossCompleted += (s, e) =>
                 {
-                    if (this.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Hide)
-                    {
-                        List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
-                        events.ForEach(ev => ev.Finish());
-
-                    }
+                    hideEventAction.Invoke(e);
                 };
                 this.MapchestState = new MapchestState(this.Gw2ApiManager);
                 this.MapchestState.MapchestCompleted += (s, e) =>
                 {
-                    if (this.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Hide)
-                    {
-                        List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == e).ToList();
-                        events.ForEach(ev => ev.Finish());
-                    }
+                    hideEventAction.Invoke(e);
                 };
             }
             else
@@ -480,10 +483,10 @@ namespace Estreya.BlishHUD.EventTable
 
             lock (this._eventCategories)
             {
-            this._eventCategories.ForEach(ec =>
-            {
-                ec.Update(gameTime);
-            });
+                this._eventCategories.ForEach(ec =>
+                {
+                    ec.Update(gameTime);
+                });
             }
         }
 
