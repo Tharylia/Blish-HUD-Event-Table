@@ -30,6 +30,7 @@
         [JsonIgnore]
         private List<Event> _fillerEvents = new List<Event>();
 
+        [JsonIgnore]
         public List<Event> Events
         {
             get => this._originalEvents.Concat(this._fillerEvents).ToList();

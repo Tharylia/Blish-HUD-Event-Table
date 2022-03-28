@@ -12,6 +12,17 @@
 
     public static class SpriteBatchUtil
     {
+        public static Texture2D TempTexture;
+
+        static SpriteBatchUtil()
+        {
+            if (TempTexture == null)
+            {
+                TempTexture = new Texture2D(GameService.Graphics.GraphicsDevice, 1, 1);
+                TempTexture.SetData(new[] { Color.White });
+            }
+        }
+
         public static void DrawOnCtrl(this SpriteBatch spriteBatch, Blish_HUD.Controls.Control control, Texture2D texture, RectangleF destinationRectangle, Color tint)
         {
             DrawOnCtrl(spriteBatch, control, texture, destinationRectangle, tint, 0f);
@@ -97,6 +108,55 @@
             }
 
             spriteBatch.DrawString(font, text, vector2, color * scale);
+        }
+
+
+
+        public static void DrawRectangle(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
+        {
+            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+        }
+
+        public static void DrawLine(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
+        {
+            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+        }
+
+        public static void DrawLine(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
+        {
+            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+        }
+
+        public static void DrawCrossOut(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
+        {
+            Point2 topLeft = new Point2(coords.Left, coords.Top);
+            Point2 topRight = new Point2(coords.Right, coords.Top);
+            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom - 1.5f);
+            Point2 bottomRight = new Point2(coords.Right, coords.Bottom - 1.5f);
+
+            DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
+            DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);
+        }
+
+        public static void DrawAngledLine(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point2 start, Point2 end, Color color)
+        {
+            float length = Helpers.MathHelper.CalculeDistance(start, end);
+            RectangleF lineRectangle = new RectangleF(start.X, start.Y, length, 1);
+            float angle = Helpers.MathHelper.CalculeAngle(start, end);
+            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, color, angle);
+        }
+
+        public static void DrawRectangle(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color, int borderSize, Color borderColor)
+        {
+            DrawRectangle(spriteBatch, control, baseTexture, coords, color);
+
+            if (borderSize > 0 && borderColor != Microsoft.Xna.Framework.Color.Transparent)
+            {
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+            }
         }
 
     }

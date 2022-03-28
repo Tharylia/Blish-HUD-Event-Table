@@ -65,8 +65,8 @@
 
         protected override async Task<bool> InternalLoad(IProgress<string> progress)
         {
-            this.CurrentVersion = (await EventTableModule.ModuleInstance.EventFileState.GetExternalFile()).Version;
-            this.NewestVersion = (await EventTableModule.ModuleInstance.EventFileState.GetInternalFile()).Version;
+            this.CurrentVersion = (await EventTableModule.ModuleInstance.EventFileState.GetExternalFile())?.Version;
+            this.NewestVersion = (await EventTableModule.ModuleInstance.EventFileState.GetInternalFile())?.Version;
 
             return true;
         }

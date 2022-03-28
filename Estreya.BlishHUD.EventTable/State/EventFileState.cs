@@ -161,16 +161,16 @@
             }
         }
 
-        internal async Task ExportFile(string content)
+        internal async Task ExportFile(EventSettingsFile eventSettingsFile)
         {
             using StreamWriter writer = File.CreateText(this.FilePath);
-            await writer.WriteAsync(content);
+            await writer.WriteAsync(JsonConvert.SerializeObject(eventSettingsFile));
         }
 
         public async Task ExportFile()
         {
-            string json = await this.GetInternalFileContent();
-            await this.ExportFile(json);
+            EventSettingsFile eventSettingsFile = await this.GetInternalFile();
+            await this.ExportFile(eventSettingsFile);
         }
 
     }

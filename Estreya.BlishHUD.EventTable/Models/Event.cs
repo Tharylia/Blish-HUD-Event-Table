@@ -35,7 +35,7 @@
         [JsonProperty("name")]
         public string Name { get; set; }
 
-        [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "hh\\:mm" })]
+        [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
         [JsonProperty("convertOffset")]
         public bool ConvertOffset { get; set; } = true;
@@ -216,7 +216,7 @@
                 RectangleF eventTexturePosition = new RectangleF(x, y, width, EventTableModule.ModuleInstance.EventHeight);
                 bool drawBorder = !this.Filler && EventTableModule.ModuleInstance.ModuleSettings.DrawEventBorder.Value;
 
-                this.DrawRectangle(spriteBatch, control, baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
+                spriteBatch.DrawRectangle(control, baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
 
                 #endregion
 
@@ -282,7 +282,7 @@
                 {
                     if (this.IsCompleted())
                     {
-                        this.DrawCrossOut(spriteBatch, control, baseTexture, eventTexturePosition, Color.Red);
+                        spriteBatch.DrawCrossOut( control, baseTexture, eventTexturePosition, Color.Red);
                     }
                 }
                 #endregion
@@ -358,54 +358,6 @@
             }
 
             return font.MeasureString(text).Width + 10; // TODO: Why is +10 needed?
-        }
-
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
-        {
-            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
-
-            //spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
-        }
-
-        private void DrawLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
-        {
-            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
-        }
-
-        private void DrawCrossOut(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
-        {
-            Point2 topLeft = new Point2(coords.Left, coords.Top);
-            Point2 topRight = new Point2(coords.Right, coords.Top);
-            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom - 1.5f);
-            Point2 bottomRight = new Point2(coords.Right, coords.Bottom - 1.5f);
-
-            this.DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
-            this.DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);
-        }
-
-        private void DrawAngledLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point2 start, Point2 end, Color color)
-        {
-            float length = Helpers.MathHelper.CalculeDistance(start, end);
-            RectangleF lineRectangle = new RectangleF(start.X, start.Y, length, 1);
-            float angle = Helpers.MathHelper.CalculeAngle(start, end);
-            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, color, angle);
-        }
-
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color, int borderSize, Color borderColor)
-        {
-            this.DrawRectangle(spriteBatch, control, baseTexture, coords, color);
-
-            if (borderSize > 0 && borderColor != Microsoft.Xna.Framework.Color.Transparent)
-            {
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
-            }
         }
 
         public void CopyWaypoint()
