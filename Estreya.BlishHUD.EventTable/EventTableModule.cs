@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -302,6 +302,7 @@
 
                 lock (this._eventCategories)
                 {
+                    Logger.Debug("Overwrite current categories with newly loaded.");
                     this._eventCategories = categories;
                 }
             }

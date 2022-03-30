@@ -64,6 +64,7 @@
             };
             saveButton.Click += async (s, e) =>
             {
+                Logger.Debug("Save reordered categories.");
                 var orderedCategories = listView.Children.ToList().Select(child =>
                 {
                     return ((ListEntry<EventCategory>)child).Data;
@@ -86,9 +87,12 @@
                     currentCategories.Insert(newIndex, category);
                 }
 
+                Logger.Debug("Load current external file.");
                 EventSettingsFile eventSettingsFile = await EventTableModule.ModuleInstance.EventFileState.GetExternalFile();
                 eventSettingsFile.EventCategories = currentCategories;
+                Logger.Debug("Export updated file.");
                 await EventTableModule.ModuleInstance.EventFileState.ExportFile(eventSettingsFile);
+                Logger.Debug("Reload events.");
                 await EventTableModule.ModuleInstance.LoadEvents();
             };
 
@@ -101,6 +105,7 @@
             };
             resetButton.Click += (s, e) =>
             {
+                Logger.Debug("Reset current view");
                 this.DrawEntries(listView);
             };
 

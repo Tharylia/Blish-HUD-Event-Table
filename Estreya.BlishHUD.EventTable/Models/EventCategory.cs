@@ -258,12 +258,19 @@
 
         public Task LoadAsync()
         {
+            Logger.Debug("Load event category: {0}", this.Key);
+
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
+
+            Logger.Debug("Loaded event category: {0}", this.Key);
+
             return Task.CompletedTask;
         }
 
         public void Unload()
         {
+            Logger.Debug("Unload event category: {0}", this.Key);
+
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
 
             this.Events.ForEach(ev => ev.Unload());

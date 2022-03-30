@@ -652,6 +652,8 @@
 
         public void Unload()
         {
+            Logger.Debug("Unload event: {0}", this.Key);
+
             this._tooltip?.Dispose();
             this._tooltip = null;
 
