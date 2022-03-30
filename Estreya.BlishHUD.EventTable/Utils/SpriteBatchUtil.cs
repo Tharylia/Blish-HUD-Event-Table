@@ -12,16 +12,7 @@
 
     public static class SpriteBatchUtil
     {
-        public static Texture2D TempTexture;
-
-        static SpriteBatchUtil()
-        {
-            if (TempTexture == null)
-            {
-                TempTexture = new Texture2D(GameService.Graphics.GraphicsDevice, 1, 1);
-                TempTexture.SetData(new[] { Color.White });
-            }
-        }
+        public static Texture2D TempTexture { get; private set; }
 
         public static void DrawOnCtrl(this SpriteBatch spriteBatch, Blish_HUD.Controls.Control control, Texture2D texture, RectangleF destinationRectangle, Color tint)
         {
@@ -52,18 +43,16 @@
             text = wrap ? DrawUtil.WrapText(font, text, destinationRectangle.Width) : text;
             if (horizontalAlignment != 0 && (wrap || text.Contains("\n")))
             {
-                using (StringReader stringReader = new StringReader(text))
+                using StringReader stringReader = new StringReader(text);
+                for (int i = 0; destinationRectangle.Height - i > 0; i += font.LineHeight)
                 {
-                    for (int i = 0; destinationRectangle.Height - i > 0; i += font.LineHeight)
+                    string text2;
+                    if ((text2 = stringReader.ReadLine()) == null)
                     {
-                        string text2;
-                        if ((text2 = stringReader.ReadLine()) == null)
-                        {
-                            break;
-                        }
-
-                        spriteBatch.DrawStringOnCtrl(ctrl, text2, font, destinationRectangle.Add(0, i, 0, 0), color, wrap, stroke, strokeDistance, horizontalAlignment, verticalAlignment);
+                        break;
                     }
+
+                    spriteBatch.DrawStringOnCtrl(ctrl, text2, font, destinationRectangle.Add(0, i, 0, 0), color, wrap, stroke, strokeDistance, horizontalAlignment, verticalAlignment);
                 }
 
                 return;
@@ -159,5 +148,20 @@
             }
         }
 
+        public static void Load()
+        {
+            if (TempTexture == null)
+            {
+                using var ctx = GameService.Graphics.LendGraphicsDeviceContext(true);
+                TempTexture = new Texture2D(ctx.GraphicsDevice, 1, 1);
+                TempTexture.SetData(new[] { Color.White });
+            }
+        }
+
+        public static void Dispose()
+        {
+            TempTexture?.Dispose();
+            TempTexture = null;
+        }
     }
 }

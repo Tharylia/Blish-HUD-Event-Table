@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -12,6 +12,7 @@ namespace Estreya.BlishHUD.EventTable
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Container;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended.BitmapFonts;
@@ -181,6 +182,8 @@ namespace Estreya.BlishHUD.EventTable
 
         protected override async Task LoadAsync()
         {
+            SpriteBatchUtil.Load();
+
             await this.ModuleSettings.LoadAsync();
 
             await this.InitializeStates(true);
@@ -610,6 +613,8 @@ namespace Estreya.BlishHUD.EventTable
             Logger.Debug("Unloading states...");
             Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
             Logger.Debug("Finished unloading states.");
+
+            SpriteBatchUtil.Dispose();
         }
     }
 }

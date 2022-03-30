@@ -69,7 +69,7 @@
             await this.Save();
         }
 
-        protected abstract Task InternalUnload();
+        protected abstract void InternalUnload();
 
         protected abstract Task Initialize();
 
@@ -78,10 +78,10 @@
         protected abstract Task Save();
         protected abstract Task Load();
 
-
         public void Dispose()
         {
             this.Stop();
+            this.InternalUnload();
         }
     }
 }

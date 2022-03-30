@@ -97,7 +97,7 @@
             return Task.CompletedTask;
         }
 
-        protected override Task InternalUnload()
+        protected override void InternalUnload()
         {
             this.ApiManager.SubtokenUpdated -= this.ApiManager_SubtokenUpdated;
 
@@ -105,8 +105,6 @@
             {
                 this.completedMapchests.Clear();
             }
-
-            return Task.CompletedTask;
         }
 
         protected override void InternalUpdate(GameTime gameTime)

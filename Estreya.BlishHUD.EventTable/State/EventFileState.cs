@@ -51,7 +51,6 @@
 
         protected override Task InternalUnload()
         {
-            return Task.CompletedTask;
         }
 
         protected override void InternalUpdate(GameTime gameTime)
@@ -106,23 +105,21 @@
 
         private async Task<string> GetInternalFileContent()
         {
-            using StreamReader eventsReader = new StreamReader(this.ContentsManager.GetFileStream("events.json"));
-            string json = await eventsReader.ReadToEndAsync();
-            return json;
+            using Stream stream = this.ContentsManager.GetFileStream("events.json");
+            return await FileUtil.ReadStringAsync(stream);
         }
 
         private async Task<string> GetExternalFileContent()
         {
-            using StreamReader eventsReader = new StreamReader(this.FilePath);
-            string json = await eventsReader.ReadToEndAsync();
-            return json;
+            return await FileUtil.ReadStringAsync(this.FilePath);
         }
 
         public async Task<EventSettingsFile> GetInternalFile()
         {
             try
             {
-                return JsonConvert.DeserializeObject<EventSettingsFile>(await this.GetInternalFileContent());
+                string content = await this.GetInternalFileContent();
+                return JsonConvert.DeserializeObject<EventSettingsFile>(content);
             }
             catch (Exception ex)
             {
@@ -135,7 +132,8 @@
         {
             try
             {
-                return JsonConvert.DeserializeObject<EventSettingsFile>(await this.GetExternalFileContent());
+                string content = await this.GetExternalFileContent();
+                return JsonConvert.DeserializeObject<EventSettingsFile>(content);
             }
             catch (Exception ex)
             {
@@ -163,8 +161,8 @@
 
         internal async Task ExportFile(EventSettingsFile eventSettingsFile)
         {
-            using StreamWriter writer = File.CreateText(this.FilePath);
-            await writer.WriteAsync(JsonConvert.SerializeObject(eventSettingsFile));
+            string content = JsonConvert.SerializeObject(eventSettingsFile);
+            await FileUtil.WriteStringAsync(this.FilePath, content);
         }
 
         public async Task ExportFile()
@@ -172,6 +170,5 @@
             EventSettingsFile eventSettingsFile = await this.GetInternalFile();
             await this.ExportFile(eventSettingsFile);
         }
-
     }
 }
