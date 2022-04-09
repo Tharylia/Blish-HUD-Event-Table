@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Utils
+namespace Estreya.BlishHUD.EventTable.Utils
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -99,8 +99,6 @@
             spriteBatch.DrawString(font, text, vector2, color * scale);
         }
 
-
-
         public static void DrawRectangle(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
         {
             spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
@@ -146,22 +144,6 @@
                 DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
                 DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
             }
-        }
-
-        public static void Load()
-        {
-            if (TempTexture == null)
-            {
-                using var ctx = GameService.Graphics.LendGraphicsDeviceContext(true);
-                TempTexture = new Texture2D(ctx.GraphicsDevice, 1, 1);
-                TempTexture.SetData(new[] { Color.White });
-            }
-        }
-
-        public static void Dispose()
-        {
-            TempTexture?.Dispose();
-            TempTexture = null;
         }
     }
 }

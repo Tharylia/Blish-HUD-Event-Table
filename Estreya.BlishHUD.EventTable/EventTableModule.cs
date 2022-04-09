@@ -184,8 +184,7 @@ namespace Estreya.BlishHUD.EventTable
 
         protected override async Task LoadAsync()
         {
-            SpriteBatchUtil.Load();
-
+            Logger.Debug("Load module settings.");
             await this.ModuleSettings.LoadAsync();
 
             await this.InitializeStates(true);
