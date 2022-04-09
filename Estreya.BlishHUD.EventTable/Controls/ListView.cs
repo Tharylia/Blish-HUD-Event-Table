@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Controls;
+﻿namespace Estreya.BlishHUD.EventTable.Controls;
 
 using Blish_HUD;
 using Blish_HUD.Controls;
@@ -193,6 +193,6 @@ public class ListView<T> : FlowPanel
 
         RectangleF lineRectangle = new RectangleF(draggedOnEntry.Left, (addedLast ? draggedOnEntry.Bottom : draggedOnEntry.Top) - this.VerticalScrollOffset, draggedOnEntry.Width, 2);
 
-        spriteBatch.DrawLine(this, SpriteBatchUtil.TempTexture, lineRectangle, Color.White);
+        spriteBatch.DrawLine(this, ContentService.Textures.Pixel, lineRectangle, Color.White);
     }
 }

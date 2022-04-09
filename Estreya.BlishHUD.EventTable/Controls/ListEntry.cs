@@ -1,19 +1,16 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
-using Estreya.BlishHUD.EventTable.Extensions;
 using Estreya.BlishHUD.EventTable.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.BitmapFonts;
-using System.Diagnostics;
+using System;
 
 namespace Estreya.BlishHUD.EventTable.Controls
 {
     public class ListEntry<T> : Control
     {
-        private const int DRAG_DROP_WIDTH = 30;
-
         private bool _dragDrop = false;
 
         public bool DragDrop
@@ -23,10 +20,10 @@ namespace Estreya.BlishHUD.EventTable.Controls
         }
 
         private bool _dragging = false;
-        internal bool Dragging
+        public bool Dragging
         {
             get => this._dragging;
-            set => this.SetProperty(ref this._dragging, value, true);
+            internal set => this.SetProperty(ref this._dragging, value, true);
         }
 
         private string _text;
@@ -52,16 +49,108 @@ namespace Estreya.BlishHUD.EventTable.Controls
             set => this.SetProperty(ref this._textColor, value, true);
         }
 
-        private RectangleF TextBounds => new RectangleF(0, 0, this.DragDrop ? this.Size.X - DRAG_DROP_WIDTH : this.Size.X, this.Size.Y);
-        private RectangleF DragDropBounds => this.DragDrop ? new RectangleF(this.Size.X - DRAG_DROP_WIDTH, 0, DRAG_DROP_WIDTH, this.Size.Y) : RectangleF.Empty;
+        private Texture2D _icon;
+
+        public Texture2D Icon
+        {
+            get => this._icon;
+            set => this.SetProperty(ref this._icon, value, true);
+        }
+
+        private float _iconMinWidth = 32;
+        public float IconMinWidth
+        {
+            get => this._iconMinWidth;
+            set
+            {
+                if (value > this._iconMaxWidth)
+                {
+                    this._iconMaxWidth = value;
+                }
+
+                _ = this.SetProperty(ref this._iconMinWidth, value, true);
+            }
+        }
+
+        private float _iconMaxWidth = 32;
+        public float IconMaxWidth
+        {
+            get => this._iconMaxWidth;
+            set
+            {
+                if (value < this._iconMinWidth)
+                {
+                    this._iconMinWidth = value;
+                }
+
+                _ = this.SetProperty(ref this._iconMaxWidth, value, true);
+            }
+        }
+
+        private float _iconMinHeight = 32;
+        public float IconMinHeight
+        {
+            get => this._iconMinHeight;
+            set
+            {
+                if (value > this._iconMaxHeight)
+                {
+                    this._iconMaxHeight = value;
+                }
+
+                _ = this.SetProperty(ref this._iconMinHeight, value, true);
+            }
+        }
+
+        private float _iconMaxHeight = 32;
+        public float IconMaxHeight
+        {
+            get => this._iconMaxHeight;
+            set
+            {
+                if (value < this._iconMinHeight)
+                {
+                    this._iconMinHeight = value;
+                }
+
+                _ = this.SetProperty(ref this._iconMaxHeight, value, true);
+            }
+        }
+
+        private float IconWidth => this.Icon == null ? 0 : MathHelper.Clamp(this.Icon.Width, this.IconMinWidth, this.IconMaxWidth);
+        private float IconHeight => this.Icon == null ? 0 : MathHelper.Clamp(this.Icon.Height, this.IconMinHeight, this.IconMaxHeight);
+
+        private HorizontalAlignment _alignment = HorizontalAlignment.Center;
+        public HorizontalAlignment Alignment
+        {
+            get => this._alignment;
+            set => this.SetProperty(ref this._alignment, value, true);
+        }
+
+        private float IconRightPadding => 20;
+
+        private RectangleF IconBounds
+        {
+            get
+            {
+                var textWidth = this.Font.MeasureString(this.Text).Width;
+
+                return this.Alignment switch
+                {
+                    HorizontalAlignment.Left => new RectangleF(0, 0, this.IconWidth, this.IconHeight),
+                    HorizontalAlignment.Center => new RectangleF((this.Size.X / 2) - (textWidth / 2) - (this.IconWidth / 2) - (this.IconRightPadding/2), 0, this.IconWidth, this.IconHeight),
+                    HorizontalAlignment.Right => new RectangleF(this.Size.X - textWidth - this.IconWidth - this.IconRightPadding, 0, this.IconWidth, this.IconHeight),
+                    _ => throw new InvalidOperationException($"Alignment \"{this.Alignment}\" is not supported."),
+                };
+            }
+        }
+        private RectangleF TextBounds => new RectangleF(this.IconBounds.Right + IconRightPadding, 0, this.Size.X - this.IconBounds.Width, this.Size.Y);
 
         public T Data { get; set; }
 
         public ListEntry(string title)
         {
             this.Text = title;
-            //this.LeftMouseButtonPressed += this.ListEntry_LeftMouseButtonPressed;
-            //this.LeftMouseButtonReleased += this.ListEntry_LeftMouseButtonReleased;
         }
 
         public ListEntry(string title, BitmapFont font) : this(title)
@@ -69,47 +158,28 @@ namespace Estreya.BlishHUD.EventTable.Controls
             this.Font = font;
         }
 
-        private void ListEntry_LeftMouseButtonPressed(object sender, Blish_HUD.Input.MouseEventArgs e)
+        public override void RecalculateLayout()
         {
-            if (this.DragDrop)
-            {
-                this.Dragging = true;
-            }
+            base.RecalculateLayout();
 
-            Debug.WriteLine($"Left MB Pressed: {this.Text}");
-        }
+            int height = (int)Math.Max(this.IconBounds.Height, this.TextBounds.Height);
+            height = Math.Max(this.Size.Y, height);
 
-        private void ListEntry_LeftMouseButtonReleased(object sender, Blish_HUD.Input.MouseEventArgs e)
-        {
-            this.Dragging = false;
-
-            Debug.WriteLine($"Left MB Released: {this.Text}");
-        }
-
-        public void PaintDragging(Control ctrl, SpriteBatch spriteBatch)
-        {
-            if (this.Dragging)
-            {
-                if (!string.IsNullOrWhiteSpace(this.Text))
-                {
-            Debug.WriteLine($"Paint Drag: {this.Text}");
-                    spriteBatch.DrawStringOnCtrl(ctrl, this.Text, this.Font, new RectangleF(GameService.Input.Mouse.State.X, GameService.Input.Mouse.State.Y, this.TextBounds.Width, this.TextBounds.Height), this.TextColor);
-                }
-            }
+            this.Size = new Point(this.Size.X, height);
         }
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
         {
             //RectangleF textBounds = new RectangleF(bounds.X, bounds.Y, this.DragDrop ? bounds.Width - DRAG_DROP_WIDTH : bounds.Width, bounds.Height);
 
-            if (!string.IsNullOrWhiteSpace(this.Text))
+            if (this.Icon != null)
             {
-                spriteBatch.DrawStringOnCtrl(this, this.Text, this.Font, this.TextBounds, this.TextColor, false, HorizontalAlignment.Center);
+                spriteBatch.DrawOnCtrl(this, this.Icon, this.IconBounds);
             }
 
-            if (this.DragDrop)
+            if (!string.IsNullOrWhiteSpace(this.Text))
             {
-                spriteBatch.DrawOnCtrl(this, EventTableModule.ModuleInstance.ContentsManager.GetIcon(@"images\bars.png", false), this.DragDropBounds, Color.Transparent);
+                spriteBatch.DrawStringOnCtrl(this, this.Text, this.Font, this.TextBounds, this.TextColor, false);
             }
         }
     }
