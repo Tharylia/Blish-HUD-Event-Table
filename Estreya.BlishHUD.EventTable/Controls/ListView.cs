@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Controls;
+namespace Estreya.BlishHUD.EventTable.Controls;
 
 using Blish_HUD;
 using Blish_HUD.Controls;
@@ -15,6 +15,7 @@ public class ListView<T> : FlowPanel
         this.FlowDirection = ControlFlowDirection.SingleTopToBottom;
         this.HeightSizingMode = SizingMode.Fill;
         this.WidthSizingMode = SizingMode.Fill;
+        this.CanScroll = true;
 
         GameService.Input.Mouse.LeftMouseButtonReleased += this.Mouse_LeftMouseButtonReleased;
     }
@@ -118,7 +119,7 @@ public class ListView<T> : FlowPanel
 
     private int GetDragIndex(ListEntry<T> entry)
     {
-        bool upperHalf = this.RelativeMousePosition.Y < entry.Location.Y + (entry.Size.Y / 2);
+        bool upperHalf = this.RelativeMousePosition.Y + this.VerticalScrollOffset < entry.Location.Y + (entry.Size.Y / 2);
 
         int draggedOnIndex = this.Children.ToList().IndexOf(entry);
 
@@ -141,11 +142,11 @@ public class ListView<T> : FlowPanel
         {
             bool hovered = true;
 
-            hovered &= this.RelativeMousePosition.X >= child.Left;
-            hovered &= this.RelativeMousePosition.X < child.Right;
+            hovered &= this.RelativeMousePosition.X + this.HorizontalScrollOffset >= child.Left;
+            hovered &= this.RelativeMousePosition.X + this.HorizontalScrollOffset < child.Right;
 
-            hovered &= this.RelativeMousePosition.Y >= child.Top;
-            hovered &= this.RelativeMousePosition.Y < child.Bottom;
+            hovered &= this.RelativeMousePosition.Y + this.VerticalScrollOffset >= child.Top;
+            hovered &= this.RelativeMousePosition.Y + this.VerticalScrollOffset < child.Bottom;
 
             return hovered;
         }).ToList();
@@ -190,7 +191,7 @@ public class ListView<T> : FlowPanel
 
         ListEntry<T> draggedOnEntry = this.Children[addedLast ?  draggedOnIndex - 1 : draggedOnIndex] as ListEntry<T>;
 
-        RectangleF lineRectangle = new RectangleF(draggedOnEntry.Left, addedLast ? draggedOnEntry.Bottom : draggedOnEntry.Top, draggedOnEntry.Width, 2);
+        RectangleF lineRectangle = new RectangleF(draggedOnEntry.Left, (addedLast ? draggedOnEntry.Bottom : draggedOnEntry.Top) - this.VerticalScrollOffset, draggedOnEntry.Width, 2);
 
         spriteBatch.DrawLine(this, SpriteBatchUtil.TempTexture, lineRectangle, Color.White);
     }
