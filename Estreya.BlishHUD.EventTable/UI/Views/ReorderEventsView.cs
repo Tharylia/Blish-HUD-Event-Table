@@ -94,6 +94,7 @@
                 await EventTableModule.ModuleInstance.EventFileState.ExportFile(eventSettingsFile);
                 Logger.Debug("Reload events.");
                 await EventTableModule.ModuleInstance.LoadEvents();
+                Controls.ScreenNotification.ShowNotification("Successful reordered categories!");
             };
 
             StandardButton resetButton = new StandardButton()
@@ -117,6 +118,8 @@
         {
             listView.ClearChildren();
 
+            //Random random = new Random();
+
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories.GroupBy(ec => ec.Key).Select(g => g.First()))
             {
                 ListEntry<EventCategory> entry = new(eventCategory.Name)
@@ -125,9 +128,18 @@
                     Width = listView.Width - 20,
                     DragDrop = true,
                     TextColor = Color.White,
-                    Data = eventCategory
+                    Data = eventCategory,
+                    Alignment = HorizontalAlignment.Center,
                     //BackgroundColor = new Color(random.Next(0, 256), random.Next(0, 256), random.Next(0, 256))
                 };
+
+                if (eventCategory.Icon != null)
+                {
+                    GameService.Graphics.QueueMainThreadRender(graphicsDevice =>
+                    {
+                        entry.Icon = EventTableModule.ModuleInstance.IconState.GetIcon(eventCategory.Icon);
+                    });
+                }
             }
         }
     }

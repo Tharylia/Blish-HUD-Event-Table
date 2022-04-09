@@ -1,6 +1,7 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
+    using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Newtonsoft.Json;
@@ -19,8 +20,13 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         [JsonProperty("key")]
         public string Key { get; set; }
+
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("icon")]
+        public string Icon { get; set; }
+
         [JsonProperty("showCombined")]
         public bool ShowCombined { get; set; }
 
@@ -29,6 +35,9 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         [JsonIgnore]
         private List<Event> _fillerEvents = new List<Event>();
+
+        [JsonIgnore]
+        private AsyncLock _eventLock = new AsyncLock();
 
         [JsonIgnore]
         public List<Event> Events
