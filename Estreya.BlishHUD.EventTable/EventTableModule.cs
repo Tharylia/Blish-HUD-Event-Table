@@ -158,6 +158,7 @@ namespace Estreya.BlishHUD.EventTable
         public MapchestState MapchestState { get; private set; }
 
         public EventFileState EventFileState { get; private set; }
+        public IconState IconState { get; private set; }
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -355,8 +356,8 @@ namespace Estreya.BlishHUD.EventTable
             else
             {
                 this.EventFileState = new EventFileState(this.ContentsManager, eventsDirectory, "events.json");
+                this.IconState = new IconState(this.ContentsManager, eventsDirectory);
             }
-
 
             lock (this.States)
             {
@@ -369,6 +370,7 @@ namespace Estreya.BlishHUD.EventTable
                 else
                 {
                     this.States.Add(this.EventFileState);
+                    this.States.Add(this.IconState);
                 }
             }
 
@@ -462,7 +464,7 @@ namespace Estreya.BlishHUD.EventTable
 
             //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
 
-            Texture2D windowBackground = this.ContentsManager.GetIcon(@"images\502049.png", false);
+            Texture2D windowBackground = this.IconState.GetIcon(@"images\502049.png", false);
 
             Rectangle settingsWindowSize = new Rectangle(35, 26, 1100, 714);
             int contentRegionPaddingY = settingsWindowSize.Y - 15;
@@ -473,17 +475,18 @@ namespace Estreya.BlishHUD.EventTable
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Title = Strings.SettingsWindow_Title,
-                Emblem = this.ContentsManager.GetIcon(@"images\event_boss.png"),
+                Emblem = this.IconState.GetIcon(@"images\event_boss.png"),
                 Subtitle = Strings.SettingsWindow_Subtitle,
                 SavesPosition = true,
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(), Strings.SettingsWindow_ManageEvents_Title));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ReorderEventsView(), "Reorder"));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(), Strings.SettingsWindow_ManageEvents_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\bars.png"), () => new UI.Views.ReorderEventsView(), "Reorder"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
+
 
             this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
 

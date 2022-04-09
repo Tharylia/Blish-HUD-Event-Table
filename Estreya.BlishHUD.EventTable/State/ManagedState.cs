@@ -12,7 +12,6 @@
 
         public bool Running { get; private set; } = false;
 
-
         protected ManagedState(int saveInterval = 60000)
         {
             this.SaveInternal = saveInterval;

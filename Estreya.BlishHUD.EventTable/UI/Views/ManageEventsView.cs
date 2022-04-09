@@ -27,7 +27,7 @@
         {
             GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
             {
-                button.Icon = button.Checked ? EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\minus.png") : EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\plus.png"); // TODO: Own icon
+                button.Icon = button.Checked ? EventTableModule.ModuleInstance.IconState.GetIcon("images\\minus.png") : EventTableModule.ModuleInstance.IconState.GetIcon("images\\plus.png"); // TODO: Own icon
             });
         }
 
@@ -209,7 +209,7 @@
 
                     GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
                     {
-                        button.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon(e.Icon);
+                        button.Icon = EventTableModule.ModuleInstance.IconState.GetIcon(e.Icon);
                     });
 
                     if (!string.IsNullOrWhiteSpace(e.Waypoint))
@@ -223,7 +223,7 @@
                         GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
                         {
                             waypointButton.Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Waypoint_Title, Strings.ManageEventsView_Waypoint_Description, icon: "images\\waypoint.png"));
-                            waypointButton.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\waypoint.png");
+                            waypointButton.Icon = EventTableModule.ModuleInstance.IconState.GetIcon("images\\waypoint.png");
                         });
 
                         waypointButton.Click += (s, eventArgs) =>
@@ -243,7 +243,7 @@
                         GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
                         {
                             wikiButton.Tooltip = new Tooltip(new TooltipView(Strings.ManageEventsView_Wiki_Title, Strings.ManageEventsView_Wiki_Description, icon: "images\\wiki.png"));
-                            wikiButton.Icon = EventTableModule.ModuleInstance.ContentsManager.GetIcon("images\\wiki.png");
+                            wikiButton.Icon = EventTableModule.ModuleInstance.IconState.GetIcon("images\\wiki.png");
                         });
 
                         wikiButton.Click += (s, eventArgs) =>
