@@ -49,7 +49,7 @@
             this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
         }
 
-        protected override Task InternalUnload()
+        protected override void InternalUnload()
         {
         }
 

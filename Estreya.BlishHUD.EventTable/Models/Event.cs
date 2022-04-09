@@ -15,6 +15,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Threading.Tasks;
 
     [Serializable]
     public class Event
@@ -394,7 +395,7 @@
             TimeSpan offset = this.Offset;
             if (this.ConvertOffset && addTimezoneOffset)
             {
-                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now));
+                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(EventTableModule.ModuleInstance.DateTimeNow));
             }
 
             DateTime eventStart = zero.Add(offset);
@@ -413,14 +414,7 @@
                     startOccurences.Add(eventStart);
                 }
 
-                if (this.Repeat.TotalMinutes == 0)
-                {
-                    eventStart = eventStart.Add(TimeSpan.FromDays(1));
-                }
-                else
-                {
-                    eventStart = eventStart.Add(this.Repeat);
-                }
+                eventStart = this.Repeat.TotalMinutes == 0 ? eventStart.Add(TimeSpan.FromDays(1)) : eventStart.Add(this.Repeat);
             }
 
             return startOccurences;
@@ -527,7 +521,6 @@
                 double xEnd = xStart + this.Duration * pixelPerMinute;
                 return e.Position.X > xStart && e.Position.X < xEnd;
             });
-
 
             if (!this.Tooltip.Visible)
             {
@@ -648,6 +641,27 @@
             {
                 this.Occurences.AddRange(occurences);
             }
+        }
+
+        public Task LoadAsync()
+        {
+            // Prevent crash on older events.json files
+            if (string.IsNullOrWhiteSpace(this.Key))
+            {
+                this.Key = this.Name;
+            }
+
+            if (EventTableModule.ModuleInstance.ModuleSettings.UseEventTranslation.Value)
+            {
+                this.Name = Strings.ResourceManager.GetString($"event-{this.SettingKey}") ?? this.Name;
+            }
+
+            if (string.IsNullOrWhiteSpace(this.Icon))
+            {
+                this.Icon = this.EventCategory.Icon;
+            }
+
+            return Task.CompletedTask;
         }
 
         public void Unload()

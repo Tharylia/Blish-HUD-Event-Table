@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Estreya.BlishHUD.EventTable.Utils;
@@ -256,15 +256,36 @@
             return disabled;
         }
 
-        public Task LoadAsync()
+        public async Task LoadAsync()
         {
             Logger.Debug("Load event category: {0}", this.Key);
 
+            lock (this._originalEvents)
+            {
+                foreach (Event ev in this._originalEvents)
+                {
+                    ev.EventCategory = this;
+                }
+            }
+
+            if (EventTableModule.ModuleInstance.ModuleSettings.UseEventTranslation.Value)
+            {
+                this.Name = Strings.ResourceManager.GetString($"eventCategory-{this.Key}") ?? this.Name;
+            }
+
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
 
-            Logger.Debug("Loaded event category: {0}", this.Key);
+            using (await this._eventLock.LockAsync())
+            {
+                var eventLoadTasks = this.Events.Select(ev =>
+                {
+                    return ev.LoadAsync();
+                });
 
-            return Task.CompletedTask;
+                await Task.WhenAll(eventLoadTasks);
+            }
+
+            Logger.Debug("Loaded event category: {0}", this.Key);
         }
 
         public void Unload()

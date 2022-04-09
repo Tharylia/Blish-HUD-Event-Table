@@ -133,7 +133,7 @@
                         continue;
                     }
 
-                    _ = ev.Draw(spriteBatch, bounds, this, SpriteBatchUtil.TempTexture, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
+                    _ = ev.Draw(spriteBatch, bounds, this, ContentService.Textures.Pixel, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
                 }
 
                 if (categoryHasEvents)
@@ -145,7 +145,7 @@
             this.Size = new Point(bounds.Width, y);
 
             float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
-            spriteBatch.DrawLine(this, SpriteBatchUtil.TempTexture, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
+            spriteBatch.DrawLine(this, ContentService.Textures.Pixel, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
 
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
@@ -198,14 +198,7 @@
         {
             bool buildFromBottom = EventTableModule.ModuleInstance.ModuleSettings.BuildDirection.Value == BuildDirection.Bottom;
 
-            if (buildFromBottom)
-            {
-                this.Location = new Point(x, y - this.Height);
-            }
-            else
-            {
-                this.Location = new Point(x, y);
-            }
+            this.Location = buildFromBottom ? new Point(x, y - this.Height) : new Point(x, y);
         }
 
         public void UpdateSize(int width, int height, bool overrideHeight = false)
@@ -246,6 +239,5 @@
             this.UpdateBackgroundColor();
             return Task.CompletedTask;
         }
-
     }
 }

@@ -136,19 +136,10 @@ namespace Estreya.BlishHUD.EventTable
         {
             get
             {
-                lock (this._eventCategories)
-                {
                     return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
                 }
             }
-            internal set
-            {
-                lock (this._eventCategories)
-                {
-                    this._eventCategories = value;
-                }
-            }
-        }
+        #region States
 
         private readonly AsyncLock _stateLock = new AsyncLock();
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
@@ -156,9 +147,9 @@ namespace Estreya.BlishHUD.EventTable
         public HiddenState HiddenState { get; private set; }
         public WorldbossState WorldbossState { get; private set; }
         public MapchestState MapchestState { get; private set; }
-
         public EventFileState EventFileState { get; private set; }
         public IconState IconState { get; private set; }
+        #endregion
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -275,34 +266,19 @@ namespace Estreya.BlishHUD.EventTable
 
                 Logger.Info($"Loaded {eventCategoryCount} Categories with {eventCount} Events.");
 
-                categories.ForEach(ec =>
+                /*
+                foreach (EventCategory ec in categories)
                     {
-                        if (this.ModuleSettings.UseEventTranslation.Value)
-                        {
-                            ec.Name = Strings.ResourceManager.GetString($"eventCategory-{ec.Key}") ?? ec.Name;
+                    await ec.LoadAsync();
                         }
+                */
 
-                        ec.Events.ForEach(e =>
+                var eventCategoryLoadTasks = categories.Select(ec =>
                         {
-                            e.EventCategory = ec;
-
-                            // Prevent crash on older events.json files
-                            if (string.IsNullOrWhiteSpace(e.Key))
-                            {
-                                e.Key = e.Name;
-                            }
-
-                            if (this.ModuleSettings.UseEventTranslation.Value)
-                            {
-                                e.Name = Strings.ResourceManager.GetString($"event-{e.SettingKey}") ?? e.Name;
-                            }
-                        });
+                    return ec.LoadAsync();
                     });
 
-                foreach (EventCategory ec in categories)
-                {
-                    await ec.LoadAsync();
-                }
+                await Task.WhenAll(eventCategoryLoadTasks);
 
                 lock (this._eventCategories)
                 {
