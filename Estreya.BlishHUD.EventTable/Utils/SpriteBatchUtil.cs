@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Utils
+﻿namespace Estreya.BlishHUD.EventTable.Utils
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -12,7 +12,12 @@ namespace Estreya.BlishHUD.EventTable.Utils
 
     public static class SpriteBatchUtil
     {
-        public static Texture2D TempTexture { get; private set; }
+        private static readonly Logger Logger = Logger.GetLogger(typeof(SpriteBatchUtil));
+
+        public static void DrawOnCtrl(this SpriteBatch spriteBatch, Blish_HUD.Controls.Control control, Texture2D texture, RectangleF destinationRectangle)
+        {
+            DrawOnCtrl(spriteBatch, control, texture, destinationRectangle, Color.White * control.AbsoluteOpacity(), 0f);
+        }
 
         public static void DrawOnCtrl(this SpriteBatch spriteBatch, Blish_HUD.Controls.Control control, Texture2D texture, RectangleF destinationRectangle, Color tint)
         {
