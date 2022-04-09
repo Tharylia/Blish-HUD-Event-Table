@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -65,8 +65,8 @@ namespace Estreya.BlishHUD.EventTable
         }
 
         internal int EventHeight => this.ModuleSettings?.EventHeight?.Value ?? 30;
-        internal DateTime DateTimeNow => DateTime.Now;
 
+        internal DateTime DateTimeNow => DateTime.Now;
 
         private TimeSpan _eventTimeSpan = TimeSpan.Zero;
 
@@ -136,9 +136,9 @@ namespace Estreya.BlishHUD.EventTable
         {
             get
             {
-                    return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
-                }
+                return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
             }
+        }
         #region States
 
         private readonly AsyncLock _stateLock = new AsyncLock();
@@ -178,8 +178,10 @@ namespace Estreya.BlishHUD.EventTable
             Logger.Debug("Load module settings.");
             await this.ModuleSettings.LoadAsync();
 
+            Logger.Debug("Initialize states (before event file loading)");
             await this.InitializeStates(true);
 
+            Logger.Debug("Load events.");
             await this.LoadEvents();
 
             lock (this._eventCategories)
@@ -187,6 +189,7 @@ namespace Estreya.BlishHUD.EventTable
                 this.ModuleSettings.InitializeEventSettings(this._eventCategories);
             }
 
+            Logger.Debug("Initialize states (after event file loading)");
             await this.InitializeStates(false);
 
             await this.Container.LoadAsync();
@@ -268,15 +271,15 @@ namespace Estreya.BlishHUD.EventTable
 
                 /*
                 foreach (EventCategory ec in categories)
-                    {
+                {
                     await ec.LoadAsync();
-                        }
+                }
                 */
 
                 var eventCategoryLoadTasks = categories.Select(ec =>
-                        {
+                {
                     return ec.LoadAsync();
-                    });
+                });
 
                 await Task.WhenAll(eventCategoryLoadTasks);
 
@@ -353,10 +356,10 @@ namespace Estreya.BlishHUD.EventTable
             {
                 try
                 {
-            foreach (ManagedState state in this.States)
-            {
+                    foreach (ManagedState state in this.States)
+                    {
                         Logger.Debug("Starting managed state: {0}", state.GetType().Name);
-                await state.Start();
+                        await state.Start();
                     }
                 }
                 catch (Exception ex)
@@ -439,6 +442,8 @@ namespace Estreya.BlishHUD.EventTable
 
             //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
 
+            Logger.Debug("Start building settings window.");
+
             Texture2D windowBackground = this.IconState.GetIcon(@"images\502049.png", false);
 
             Rectangle settingsWindowSize = new Rectangle(35, 26, 1100, 714);
@@ -462,6 +467,7 @@ namespace Estreya.BlishHUD.EventTable
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
 
+            Logger.Debug("Finished building settings window.");
 
             this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
 
@@ -480,9 +486,9 @@ namespace Estreya.BlishHUD.EventTable
 
             using (_stateLock.Lock())
             {
-            foreach (ManagedState state in this.States)
-            {
-                state.Update(gameTime);
+                foreach (ManagedState state in this.States)
+                {
+                    state.Update(gameTime);
                 }
             }
 
@@ -584,31 +590,52 @@ namespace Estreya.BlishHUD.EventTable
         /// <inheritdoc />
         protected override void Unload()
         {
+            Logger.Debug("Unload module.");
+
+            Logger.Debug("Unload base.");
+
             base.Unload();
+
+            Logger.Debug("Unload event categories.");
 
             foreach (EventCategory ec in _eventCategories)
             {
                 ec.Unload();
             }
 
+            Logger.Debug("Unloaded event categories.");
+
+            Logger.Debug("Unload event container.");
+
             if (this.Container != null)
             {
                 this.Container.Dispose();
             }
+
+            Logger.Debug("Unloaded event container.");
+
+            Logger.Debug("Unload settings window.");
 
             if (this.SettingsWindow != null)
             {
                 this.SettingsWindow.Hide();
             }
 
+            Logger.Debug("Unloaded settings window.");
+
+            Logger.Debug("Unload corner icon.");
+
             this.HandleCornerIcon(false);
+
+            Logger.Debug("Unloaded corner icon.");
 
             Logger.Debug("Unloading states...");
             using (this._stateLock.Lock())
             {
-            Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
+                Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
             }
             Logger.Debug("Finished unloading states."); ;
         }
     }
 }
+
