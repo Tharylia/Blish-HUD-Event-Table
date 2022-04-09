@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -150,6 +150,7 @@
             }
         }
 
+        private readonly AsyncLock _stateLock = new AsyncLock();
         internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
 
         public HiddenState HiddenState { get; private set; }
@@ -371,9 +372,20 @@
                 }
             }
 
+            using (await _stateLock.LockAsync())
+            {
+                try
+                {
             foreach (ManagedState state in this.States)
             {
+                        Logger.Debug("Starting managed state: {0}", state.GetType().Name);
                 await state.Start();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Failed starting states.");
+                }
             }
         }
 
@@ -488,9 +500,12 @@
 
             this.CheckContainerSizeAndPosition();
 
+            using (_stateLock.Lock())
+            {
             foreach (ManagedState state in this.States)
             {
                 state.Update(gameTime);
+                }
             }
 
             lock (this._eventCategories)
@@ -611,10 +626,11 @@
             this.HandleCornerIcon(false);
 
             Logger.Debug("Unloading states...");
+            using (this._stateLock.Lock())
+            {
             Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
-            Logger.Debug("Finished unloading states.");
-
-            SpriteBatchUtil.Dispose();
+            }
+            Logger.Debug("Finished unloading states."); ;
         }
     }
 }
