@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -130,7 +130,7 @@ namespace Estreya.BlishHUD.EventTable
             }
         }
 
-        private SemaphoreSlim EventCategorySemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _eventCategorySemaphore = new SemaphoreSlim(1, 1);
 
         private List<EventCategory> _eventCategories = new List<EventCategory>();
 
@@ -144,7 +144,7 @@ namespace Estreya.BlishHUD.EventTable
         #region States
 
         private readonly AsyncLock _stateLock = new AsyncLock();
-        internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
+        private Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
 
         public HiddenState HiddenState { get; private set; }
         public WorldbossState WorldbossState { get; private set; }
@@ -235,7 +235,7 @@ namespace Estreya.BlishHUD.EventTable
             string threadName = $"{Thread.CurrentThread.ManagedThreadId}";
             Logger.Debug("Try loading events from thread: {0}", threadName);
 
-            await EventCategorySemaphore.WaitAsync();
+            await _eventCategorySemaphore.WaitAsync();
 
             Logger.Debug("Thread \"{0}\" started loading", threadName);
 
@@ -298,7 +298,7 @@ namespace Estreya.BlishHUD.EventTable
             }
             finally
             {
-                EventCategorySemaphore.Release();
+                _eventCategorySemaphore.Release();
                 Logger.Debug("Thread \"{0}\" released loading lock", threadName);
             }
         }
@@ -632,10 +632,12 @@ namespace Estreya.BlishHUD.EventTable
             Logger.Debug("Unloaded corner icon.");
 
             Logger.Debug("Unloading states...");
+
             using (this._stateLock.Lock())
             {
                 Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
             }
+
             Logger.Debug("Finished unloading states."); ;
         }
     }

@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -392,7 +392,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             TimeSpan offset = this.Offset;
             if (this.ConvertOffset && addTimezoneOffset)
             {
-                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(EventTableModule.ModuleInstance.DateTimeNow));
+                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(now));
             }
 
             DateTime eventStart = zero.Add(offset);
@@ -584,7 +584,7 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         public void FinishCategory()
         {
-            this.EventCategory.Finish();
+            this.EventCategory?.Finish();
         }
 
         public void Disable()
