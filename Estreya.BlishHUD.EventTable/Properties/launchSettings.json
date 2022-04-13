@@ -6,12 +6,12 @@
     "BlishHUD Debug": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\domin\\Downloads\\Blish_HUD_0.10.0-ci.163\\Blish HUD.exe",
-      "commandLineArgs": "--debug --module \"C:\\Workspaces\\Visual Studio\\Estreya Blish HUD Event Table\\Estreya.BlishHUD.EventTable\\bin\\Debug\\net472\\Estreya.BlishHUD.EventTable.bhm\""
+      "commandLineArgs": "--debug --module \"C:\\Workspaces\\Visual Studio\\Estreya Blish HUD Event Table\\Estreya.BlishHUD.EventTable\\bin\\Debug\\net472\\Estreya.BlishHUD.EventTable.bhm\" --settings \"C:\\Workspaces\\Visual Studio\\Estreya Blish HUD Event Table\\Estreya.BlishHUD.EventTable\\bin\\settings\""
     },
     "BlishHUD Debug PS": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\domin\\Downloads\\Blish_HUD_0.10.0-ci.163\\Blish HUD.exe",
-      "commandLineArgs": "--debug --module \"C:\\Workspaces\\Visual Studio\\Estreya Blish HUD Event Table\\Estreya.BlishHUD.EventTable\\bin\\Debug\\net472\\Estreya.BlishHUD.EventTable.bhm\" --process powershell --window ConsoleWindowClass"
+      "commandLineArgs": "--debug --module \"C:\\Workspaces\\Visual Studio\\Estreya Blish HUD Event Table\\Estreya.BlishHUD.EventTable\\bin\\Debug\\net472\\Estreya.BlishHUD.EventTable.bhm\" --settings \"C:\\Workspaces\\Visual Studio\\Estreya Blish HUD Event Table\\Estreya.BlishHUD.EventTable\\bin\\settings\" --process powershell --window ConsoleWindowClass"
     }
   }
 }
