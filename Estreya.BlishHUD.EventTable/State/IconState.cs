@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.State;
+namespace Estreya.BlishHUD.EventTable.State;
 
 using Blish_HUD;
 using Blish_HUD.Content;
@@ -94,9 +94,10 @@ public class IconState : ManagedState
 
             foreach (string filePath in filePaths)
             {
-                if (currentLoadedTextures.Contains(filePath))
+                string sanitizedFileName = SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
+                if (currentLoadedTextures.Contains(sanitizedFileName))
                 {
-                    _ = currentLoadedTextures.Remove(filePath);
+                    _ = currentLoadedTextures.Remove(sanitizedFileName);
                 }
             }
 
@@ -186,7 +187,7 @@ public class IconState : ManagedState
             return null;
         }
 
-        string sanitizedIdentifier = SanitizeFileName(identifier);
+        string sanitizedIdentifier = SanitizeFileName(System.IO.Path.ChangeExtension(identifier, null));
 
         using (this._textureLock.Lock())
         {
