@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -546,6 +546,15 @@
   <data name="ManageEventsView_Wiki_Title" xml:space="preserve">
     <value>Wiki</value>
   </data>
+  <data name="ReorderEventsView_Reset" xml:space="preserve">
+    <value>Zurücksetzen</value>
+  </data>
+  <data name="ReorderEventsView_Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="ReorderEventsView_Save_Success" xml:space="preserve">
+    <value>Kategorien wurden erfolgreich sortiert!</value>
+  </data>
   <data name="SettingsView_OpenSettings" xml:space="preserve">
     <value>Einstellungen öffnen</value>
   </data>
@@ -560,6 +569,9 @@
   </data>
   <data name="SettingsWindow_ManageEvents_Title" xml:space="preserve">
     <value>Events verwalten</value>
+  </data>
+  <data name="SettingsWindow_ReorderSettings_Title" xml:space="preserve">
+    <value>Sortierung</value>
   </data>
   <data name="SettingsWindow_Subtitle" xml:space="preserve">
     <value>Einstellungen</value>

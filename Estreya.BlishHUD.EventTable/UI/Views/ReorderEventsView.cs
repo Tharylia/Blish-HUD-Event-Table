@@ -57,7 +57,7 @@
 
             StandardButton saveButton = new StandardButton()
             {
-                Text = "Save",
+                Text =  Strings.ReorderEventsView_Save,
                 Parent = buttons,
                 Right = buttons.Width,
                 Bottom = buttons.Height
@@ -94,12 +94,12 @@
                 await EventTableModule.ModuleInstance.EventFileState.ExportFile(eventSettingsFile);
                 Logger.Debug("Reload events.");
                 await EventTableModule.ModuleInstance.LoadEvents();
-                Controls.ScreenNotification.ShowNotification("Successful reordered categories!");
+                Controls.ScreenNotification.ShowNotification(Strings.ReorderEventsView_Save_Success);
             };
 
             StandardButton resetButton = new StandardButton()
             {
-                Text = "Reset",
+                Text = Strings.ReorderEventsView_Reset,
                 Parent = buttons,
                 Right = saveButton.Left,
                 Bottom = buttons.Height

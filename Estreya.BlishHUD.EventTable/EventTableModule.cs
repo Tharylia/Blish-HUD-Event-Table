@@ -464,7 +464,7 @@ namespace Estreya.BlishHUD.EventTable
             };
 
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(), Strings.SettingsWindow_ManageEvents_Title));
-            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\bars.png"), () => new UI.Views.ReorderEventsView(), "Reorder"));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\bars.png"), () => new UI.Views.ReorderEventsView(), Strings.SettingsWindow_ReorderSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
