@@ -15,6 +15,7 @@ public class IconState : ManagedState
 {
     private static readonly Logger Logger = Logger.GetLogger<IconState>();
     private const string FOLDER_NAME = "images";
+    private static TimeSpan _saveInterval = TimeSpan.FromMinutes(2);
 
     private readonly ContentsManager _contentsManager;
 
@@ -37,7 +38,7 @@ public class IconState : ManagedState
         }
     }
 
-    public IconState(ContentsManager contentsManager, string basePath) : base(60000)
+    public IconState(ContentsManager contentsManager, string basePath) : base((int)_saveInterval.TotalMilliseconds)
     {
         this._contentsManager = contentsManager;
         this._basePath = basePath;
