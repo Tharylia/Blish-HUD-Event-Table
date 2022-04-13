@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.State;
+﻿namespace Estreya.BlishHUD.EventTable.State;
 
 using Blish_HUD;
 using Blish_HUD.Content;
@@ -78,9 +78,11 @@ public class IconState : ManagedState
 
     protected override async Task Save()
     {
+        Logger.Debug("Save loaded textures to filesystem.");
+
         if (!Directory.Exists(this.Path))
         {
-            Directory.CreateDirectory(this.Path);
+            _ = Directory.CreateDirectory(this.Path);
         }
 
         using (await this._textureLock.LockAsync())
@@ -135,6 +137,8 @@ public class IconState : ManagedState
 
     private async Task LoadImages()
     {
+        Logger.Info("Load cached images from filesystem.");
+
         using (await this._textureLock.LockAsync())
         {
             this._loadedTextures.Clear();
