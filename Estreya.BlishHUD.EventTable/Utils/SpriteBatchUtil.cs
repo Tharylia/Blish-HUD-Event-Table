@@ -12,6 +12,13 @@
 
     public static class SpriteBatchUtil
     {
+        private static readonly Logger Logger = Logger.GetLogger(typeof(SpriteBatchUtil));
+
+        public static void DrawOnCtrl(this SpriteBatch spriteBatch, Blish_HUD.Controls.Control control, Texture2D texture, RectangleF destinationRectangle)
+        {
+            DrawOnCtrl(spriteBatch, control, texture, destinationRectangle, Color.White * control.AbsoluteOpacity(), 0f);
+        }
+
         public static void DrawOnCtrl(this SpriteBatch spriteBatch, Blish_HUD.Controls.Control control, Texture2D texture, RectangleF destinationRectangle, Color tint)
         {
             DrawOnCtrl(spriteBatch, control, texture, destinationRectangle, tint, 0f);
@@ -41,18 +48,16 @@
             text = wrap ? DrawUtil.WrapText(font, text, destinationRectangle.Width) : text;
             if (horizontalAlignment != 0 && (wrap || text.Contains("\n")))
             {
-                using (StringReader stringReader = new StringReader(text))
+                using StringReader stringReader = new StringReader(text);
+                for (int i = 0; destinationRectangle.Height - i > 0; i += font.LineHeight)
                 {
-                    for (int i = 0; destinationRectangle.Height - i > 0; i += font.LineHeight)
+                    string text2;
+                    if ((text2 = stringReader.ReadLine()) == null)
                     {
-                        string text2;
-                        if ((text2 = stringReader.ReadLine()) == null)
-                        {
-                            break;
-                        }
-
-                        spriteBatch.DrawStringOnCtrl(ctrl, text2, font, destinationRectangle.Add(0, i, 0, 0), color, wrap, stroke, strokeDistance, horizontalAlignment, verticalAlignment);
+                        break;
                     }
+
+                    spriteBatch.DrawStringOnCtrl(ctrl, text2, font, destinationRectangle.Add(0, i, 0, 0), color, wrap, stroke, strokeDistance, horizontalAlignment, verticalAlignment);
                 }
 
                 return;
@@ -99,5 +104,51 @@
             spriteBatch.DrawString(font, text, vector2, color * scale);
         }
 
+        public static void DrawRectangle(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
+        {
+            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+        }
+
+        public static void DrawLine(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
+        {
+            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+        }
+
+        public static void DrawLine(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
+        {
+            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
+        }
+
+        public static void DrawCrossOut(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
+        {
+            Point2 topLeft = new Point2(coords.Left, coords.Top);
+            Point2 topRight = new Point2(coords.Right, coords.Top);
+            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom - 1.5f);
+            Point2 bottomRight = new Point2(coords.Right, coords.Bottom - 1.5f);
+
+            DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
+            DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);
+        }
+
+        public static void DrawAngledLine(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point2 start, Point2 end, Color color)
+        {
+            float length = Helpers.MathHelper.CalculeDistance(start, end);
+            RectangleF lineRectangle = new RectangleF(start.X, start.Y, length, 1);
+            float angle = Helpers.MathHelper.CalculeAngle(start, end);
+            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, color, angle);
+        }
+
+        public static void DrawRectangle(this SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color, int borderSize, Color borderColor)
+        {
+            DrawRectangle(spriteBatch, control, baseTexture, coords, color);
+
+            if (borderSize > 0 && borderColor != Microsoft.Xna.Framework.Color.Transparent)
+            {
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
+                DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
+            }
+        }
     }
 }

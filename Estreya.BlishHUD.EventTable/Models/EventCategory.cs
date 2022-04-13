@@ -1,6 +1,7 @@
 ﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
+    using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Newtonsoft.Json;
@@ -19,8 +20,13 @@
 
         [JsonProperty("key")]
         public string Key { get; set; }
+
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("icon")]
+        public string Icon { get; set; }
+
         [JsonProperty("showCombined")]
         public bool ShowCombined { get; set; }
 
@@ -30,6 +36,10 @@
         [JsonIgnore]
         private List<Event> _fillerEvents = new List<Event>();
 
+        [JsonIgnore]
+        private AsyncLock _eventLock = new AsyncLock();
+
+        [JsonIgnore]
         public List<Event> Events
         {
             get => this._originalEvents.Concat(this._fillerEvents).ToList();
@@ -255,14 +265,42 @@
             return disabled;
         }
 
-        public Task LoadAsync()
+        public async Task LoadAsync()
         {
+            Logger.Debug("Load event category: {0}", this.Key);
+
+            lock (this._originalEvents)
+            {
+                foreach (Event ev in this._originalEvents)
+                {
+                    ev.EventCategory = this;
+                }
+            }
+
+            if (EventTableModule.ModuleInstance.ModuleSettings.UseEventTranslation.Value)
+            {
+                this.Name = Strings.ResourceManager.GetString($"eventCategory-{this.Key}") ?? this.Name;
+            }
+
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
-            return Task.CompletedTask;
+
+            using (await this._eventLock.LockAsync())
+            {
+                var eventLoadTasks = this.Events.Select(ev =>
+                {
+                    return ev.LoadAsync();
+                });
+
+                await Task.WhenAll(eventLoadTasks);
+            }
+
+            Logger.Debug("Loaded event category: {0}", this.Key);
         }
 
         public void Unload()
         {
+            Logger.Debug("Unload event category: {0}", this.Key);
+
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
 
             this.Events.ForEach(ev => ev.Unload());

@@ -12,6 +12,7 @@
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Container;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended.BitmapFonts;
@@ -30,6 +31,8 @@
         private static readonly Logger Logger = Logger.GetLogger<EventTableModule>();
 
         internal static EventTableModule ModuleInstance;
+
+        public bool IsPrerelease => !string.IsNullOrWhiteSpace(this.Version?.PreRelease);
 
         private EventTableContainer Container { get; set; }
 
@@ -64,8 +67,8 @@
         }
 
         internal int EventHeight => this.ModuleSettings?.EventHeight?.Value ?? 30;
-        internal DateTime DateTimeNow => DateTime.Now;
 
+        internal DateTime DateTimeNow => DateTime.Now;
 
         private TimeSpan _eventTimeSpan = TimeSpan.Zero;
 
@@ -127,28 +130,28 @@
             }
         }
 
-        private SemaphoreSlim EventCategorySemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _eventCategorySemaphore = new SemaphoreSlim(1, 1);
 
         private List<EventCategory> _eventCategories = new List<EventCategory>();
 
-        internal List<EventCategory> EventCategories
+        public List<EventCategory> EventCategories
         {
             get
             {
-                lock (this._eventCategories)
-                {
-                    return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
-                }
+                return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
             }
         }
+        #region States
 
-        internal Collection<ManagedState> States { get; private set; } = new Collection<ManagedState>();
+        private readonly AsyncLock _stateLock = new AsyncLock();
+        private Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
 
         public HiddenState HiddenState { get; private set; }
         public WorldbossState WorldbossState { get; private set; }
         public MapchestState MapchestState { get; private set; }
-
         public EventFileState EventFileState { get; private set; }
+        public IconState IconState { get; private set; }
+        #endregion
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -174,10 +177,13 @@
 
         protected override async Task LoadAsync()
         {
+            Logger.Debug("Load module settings.");
             await this.ModuleSettings.LoadAsync();
 
+            Logger.Debug("Initialize states (before event file loading)");
             await this.InitializeStates(true);
 
+            Logger.Debug("Load events.");
             await this.LoadEvents();
 
             lock (this._eventCategories)
@@ -185,6 +191,7 @@
                 this.ModuleSettings.InitializeEventSettings(this._eventCategories);
             }
 
+            Logger.Debug("Initialize states (after event file loading)");
             await this.InitializeStates(false);
 
             await this.Container.LoadAsync();
@@ -228,7 +235,7 @@
             string threadName = $"{Thread.CurrentThread.ManagedThreadId}";
             Logger.Debug("Try loading events from thread: {0}", threadName);
 
-            await EventCategorySemaphore.WaitAsync();
+            await _eventCategorySemaphore.WaitAsync();
 
             Logger.Debug("Thread \"{0}\" started loading", threadName);
 
@@ -264,37 +271,23 @@
 
                 Logger.Info($"Loaded {eventCategoryCount} Categories with {eventCount} Events.");
 
-                categories.ForEach(ec =>
-                    {
-                        if (this.ModuleSettings.UseEventTranslation.Value)
-                        {
-                            ec.Name = Strings.ResourceManager.GetString($"eventCategory-{ec.Key}") ?? ec.Name;
-                        }
-
-                        ec.Events.ForEach(e =>
-                        {
-                            e.EventCategory = ec;
-
-                            // Prevent crash on older events.json files
-                            if (string.IsNullOrWhiteSpace(e.Key))
-                            {
-                                e.Key = e.Name;
-                            }
-
-                            if (this.ModuleSettings.UseEventTranslation.Value)
-                            {
-                                e.Name = Strings.ResourceManager.GetString($"event-{e.SettingKey}") ?? e.Name;
-                            }
-                        });
-                    });
-
+                /*
                 foreach (EventCategory ec in categories)
                 {
                     await ec.LoadAsync();
                 }
+                */
+
+                var eventCategoryLoadTasks = categories.Select(ec =>
+                {
+                    return ec.LoadAsync();
+                });
+
+                await Task.WhenAll(eventCategoryLoadTasks);
 
                 lock (this._eventCategories)
                 {
+                    Logger.Debug("Overwrite current categories with newly loaded.");
                     this._eventCategories = categories;
                 }
             }
@@ -305,7 +298,7 @@
             }
             finally
             {
-                EventCategorySemaphore.Release();
+                _eventCategorySemaphore.Release();
                 Logger.Debug("Thread \"{0}\" released loading lock", threadName);
             }
         }
@@ -343,8 +336,8 @@
             else
             {
                 this.EventFileState = new EventFileState(this.ContentsManager, eventsDirectory, "events.json");
+                this.IconState = new IconState(this.ContentsManager, eventsDirectory);
             }
-
 
             lock (this.States)
             {
@@ -357,12 +350,24 @@
                 else
                 {
                     this.States.Add(this.EventFileState);
+                    this.States.Add(this.IconState);
                 }
             }
 
-            foreach (ManagedState state in this.States)
+            using (await _stateLock.LockAsync())
             {
-                await state.Start();
+                try
+                {
+                    foreach (ManagedState state in this.States)
+                    {
+                        Logger.Debug("Starting managed state: {0}", state.GetType().Name);
+                        await state.Start();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Failed starting states.");
+                }
             }
         }
 
@@ -439,7 +444,9 @@
 
             //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
 
-            Texture2D windowBackground = this.ContentsManager.GetIcon(@"images\502049.png", false);
+            Logger.Debug("Start building settings window.");
+
+            Texture2D windowBackground = this.IconState.GetIcon(@"images\502049.png", false);
 
             Rectangle settingsWindowSize = new Rectangle(35, 26, 1100, 714);
             int contentRegionPaddingY = settingsWindowSize.Y - 15;
@@ -450,16 +457,19 @@
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Title = Strings.SettingsWindow_Title,
-                Emblem = this.ContentsManager.GetIcon(@"images\event_boss.png"),
+                Emblem = this.IconState.GetIcon(@"images\event_boss.png"),
                 Subtitle = Strings.SettingsWindow_Subtitle,
                 SavesPosition = true,
                 Id = $"{nameof(EventTableModule)}_6bd04be4-dc19-4914-a2c3-8160ce76818b"
             };
 
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(), Strings.SettingsWindow_ManageEvents_Title));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
-            this.SettingsWindow.Tabs.Add(new Tab(this.ContentsManager.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\event_boss_grey.png"), () => new UI.Views.ManageEventsView(), Strings.SettingsWindow_ManageEvents_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\bars.png"), () => new UI.Views.ReorderEventsView(), Strings.SettingsWindow_ReorderSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
+
+            Logger.Debug("Finished building settings window.");
 
             this.HandleCornerIcon(this.ModuleSettings.RegisterCornerIcon.Value);
 
@@ -476,9 +486,12 @@
 
             this.CheckContainerSizeAndPosition();
 
-            foreach (ManagedState state in this.States)
+            using (_stateLock.Lock())
             {
-                state.Update(gameTime);
+                foreach (ManagedState state in this.States)
+                {
+                    state.Update(gameTime);
+                }
             }
 
             lock (this._eventCategories)
@@ -579,28 +592,54 @@
         /// <inheritdoc />
         protected override void Unload()
         {
+            Logger.Debug("Unload module.");
+
+            Logger.Debug("Unload base.");
+
             base.Unload();
+
+            Logger.Debug("Unload event categories.");
 
             foreach (EventCategory ec in _eventCategories)
             {
                 ec.Unload();
             }
 
+            Logger.Debug("Unloaded event categories.");
+
+            Logger.Debug("Unload event container.");
+
             if (this.Container != null)
             {
                 this.Container.Dispose();
             }
+
+            Logger.Debug("Unloaded event container.");
+
+            Logger.Debug("Unload settings window.");
 
             if (this.SettingsWindow != null)
             {
                 this.SettingsWindow.Hide();
             }
 
+            Logger.Debug("Unloaded settings window.");
+
+            Logger.Debug("Unload corner icon.");
+
             this.HandleCornerIcon(false);
 
+            Logger.Debug("Unloaded corner icon.");
+
             Logger.Debug("Unloading states...");
-            Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
-            Logger.Debug("Finished unloading states.");
+
+            using (this._stateLock.Lock())
+            {
+                Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
+            }
+
+            Logger.Debug("Finished unloading states."); ;
         }
     }
 }
+

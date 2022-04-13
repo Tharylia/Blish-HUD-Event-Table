@@ -15,6 +15,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Threading.Tasks;
 
     [Serializable]
     public class Event
@@ -35,16 +36,13 @@
         [JsonProperty("name")]
         public string Name { get; set; }
 
-        [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "hh\\:mm" })]
+        [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
         [JsonProperty("convertOffset")]
         public bool ConvertOffset { get; set; } = true;
 
         [JsonProperty("repeat"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Repeat { get; set; }
-
-        [JsonProperty("diffculty")]
-        public EventDifficulty Difficulty { get; set; }
 
         [JsonProperty("location")]
         public string Location { get; set; }
@@ -216,7 +214,7 @@
                 RectangleF eventTexturePosition = new RectangleF(x, y, width, EventTableModule.ModuleInstance.EventHeight);
                 bool drawBorder = !this.Filler && EventTableModule.ModuleInstance.ModuleSettings.DrawEventBorder.Value;
 
-                this.DrawRectangle(spriteBatch, control, baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
+                spriteBatch.DrawRectangle(control, baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
 
                 #endregion
 
@@ -282,7 +280,7 @@
                 {
                     if (this.IsCompleted())
                     {
-                        this.DrawCrossOut(spriteBatch, control, baseTexture, eventTexturePosition, Color.Red);
+                        spriteBatch.DrawCrossOut( control, baseTexture, eventTexturePosition, Color.Red);
                     }
                 }
                 #endregion
@@ -360,54 +358,6 @@
             return font.MeasureString(text).Width + 10; // TODO: Why is +10 needed?
         }
 
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
-        {
-            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
-
-            //spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
-        }
-
-        private void DrawLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Rectangle coords, Color color)
-        {
-            spriteBatch.DrawOnCtrl(control, baseTexture, coords, color);
-        }
-
-        private void DrawCrossOut(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color)
-        {
-            Point2 topLeft = new Point2(coords.Left, coords.Top);
-            Point2 topRight = new Point2(coords.Right, coords.Top);
-            Point2 bottomLeft = new Point2(coords.Left, coords.Bottom - 1.5f);
-            Point2 bottomRight = new Point2(coords.Right, coords.Bottom - 1.5f);
-
-            this.DrawAngledLine(spriteBatch, control, baseTexture, topLeft, bottomRight, color);
-            this.DrawAngledLine(spriteBatch, control, baseTexture, bottomLeft, topRight, color);
-        }
-
-        private void DrawAngledLine(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, Point2 start, Point2 end, Color color)
-        {
-            float length = Helpers.MathHelper.CalculeDistance(start, end);
-            RectangleF lineRectangle = new RectangleF(start.X, start.Y, length, 1);
-            float angle = Helpers.MathHelper.CalculeAngle(start, end);
-            spriteBatch.DrawOnCtrl(control, baseTexture, lineRectangle, color, angle);
-        }
-
-        private void DrawRectangle(SpriteBatch spriteBatch, Control control, Texture2D baseTexture, RectangleF coords, Color color, int borderSize, Color borderColor)
-        {
-            this.DrawRectangle(spriteBatch, control, baseTexture, coords, color);
-
-            if (borderSize > 0 && borderColor != Microsoft.Xna.Framework.Color.Transparent)
-            {
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                this.DrawRectangle(spriteBatch, control, baseTexture, new RectangleF(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, coords.Width - borderSize, borderSize), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Right - borderSize, coords.Top, borderSize, coords.Height), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Bottom - borderSize, coords.Width, borderSize), borderColor);
-                //spriteBatch.DrawOnCtrl(control, baseTexture, new Rectangle(coords.Left, coords.Top, borderSize, coords.Height), borderColor);
-            }
-        }
-
         public void CopyWaypoint()
         {
             if (!string.IsNullOrWhiteSpace(this.Waypoint))
@@ -442,7 +392,7 @@
             TimeSpan offset = this.Offset;
             if (this.ConvertOffset && addTimezoneOffset)
             {
-                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now));
+                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(now));
             }
 
             DateTime eventStart = zero.Add(offset);
@@ -461,14 +411,7 @@
                     startOccurences.Add(eventStart);
                 }
 
-                if (this.Repeat.TotalMinutes == 0)
-                {
-                    eventStart = eventStart.Add(TimeSpan.FromDays(1));
-                }
-                else
-                {
-                    eventStart = eventStart.Add(this.Repeat);
-                }
+                eventStart = this.Repeat.TotalMinutes == 0 ? eventStart.Add(TimeSpan.FromDays(1)) : eventStart.Add(this.Repeat);
             }
 
             return startOccurences;
@@ -576,7 +519,6 @@
                 return e.Position.X > xStart && e.Position.X < xEnd;
             });
 
-
             if (!this.Tooltip.Visible)
             {
                 Debug.WriteLine($"Show Tooltip for Event: {this.Name} | {e.Position}");
@@ -642,7 +584,7 @@
 
         public void FinishCategory()
         {
-            this.EventCategory.Finish();
+            this.EventCategory?.Finish();
         }
 
         public void Disable()
@@ -698,8 +640,31 @@
             }
         }
 
+        public Task LoadAsync()
+        {
+            // Prevent crash on older events.json files
+            if (string.IsNullOrWhiteSpace(this.Key))
+            {
+                this.Key = this.Name;
+            }
+
+            if (EventTableModule.ModuleInstance.ModuleSettings.UseEventTranslation.Value)
+            {
+                this.Name = Strings.ResourceManager.GetString($"event-{this.SettingKey}") ?? this.Name;
+            }
+
+            if (string.IsNullOrWhiteSpace(this.Icon))
+            {
+                this.Icon = this.EventCategory.Icon;
+            }
+
+            return Task.CompletedTask;
+        }
+
         public void Unload()
         {
+            Logger.Debug("Unload event: {0}", this.Key);
+
             this._tooltip?.Dispose();
             this._tooltip = null;
 

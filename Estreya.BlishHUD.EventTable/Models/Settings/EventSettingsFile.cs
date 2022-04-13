@@ -6,7 +6,7 @@
     public class EventSettingsFile
     {
         [JsonProperty("version"), JsonConverter(typeof(Json.SemanticVersionConverter))]
-        public SemanticVersioning.Version Version { get; set; } = new SemanticVersioning.Version(0, 0, 0);
+        public SemVer.Version Version { get; set; } = new SemVer.Version(0, 0, 0);
 
         [JsonProperty("eventCategories")]
         public List<EventCategory> EventCategories { get; set; }

@@ -53,8 +53,6 @@
 
         private Tween CurrentVisibilityAnimation { get; set; }
 
-        private Texture2D Texture { get; set; }
-
         public EventTableContainer()
         {
             this.LeftMouseButtonPressed += this.EventTableContainer_Click;
@@ -116,8 +114,6 @@
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
 
-            this.InitializeBaseTexture(spriteBatch.GraphicsDevice);
-
             List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories; // Already checks for IsDisabled()
 
             int y = 0;
@@ -137,7 +133,7 @@
                         continue;
                     }
 
-                    _ = ev.Draw(spriteBatch, bounds, this, this.Texture, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
+                    _ = ev.Draw(spriteBatch, bounds, this, ContentService.Textures.Pixel, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
                 }
 
                 if (categoryHasEvents)
@@ -149,7 +145,7 @@
             this.Size = new Point(bounds.Width, y);
 
             float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
-            this.DrawLine(spriteBatch, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
+            spriteBatch.DrawLine(this, ContentService.Textures.Pixel, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
 
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
@@ -202,14 +198,7 @@
         {
             bool buildFromBottom = EventTableModule.ModuleInstance.ModuleSettings.BuildDirection.Value == BuildDirection.Bottom;
 
-            if (buildFromBottom)
-            {
-                this.Location = new Point(x, y - this.Height);
-            }
-            else
-            {
-                this.Location = new Point(x, y);
-            }
+            this.Location = buildFromBottom ? new Point(x, y - this.Height) : new Point(x, y);
         }
 
         public void UpdateSize(int width, int height, bool overrideHeight = false)
@@ -227,31 +216,9 @@
             base.UpdateContainer(gameTime);
         }
 
-        private void InitializeBaseTexture(GraphicsDevice graphicsDevice)
-        {
-            if (this.Texture == null)
-            {
-                this.Texture = new Texture2D(graphicsDevice, 1, 1);
-                this.Texture.SetData(new[] { Color.White });
-            }
-        }
-
-        private void DrawLine(SpriteBatch spriteBatch, RectangleF coords, Color color)
-        {
-            this.InitializeBaseTexture(spriteBatch.GraphicsDevice);
-
-            spriteBatch.DrawOnCtrl(this, this.Texture, coords, color);
-        }
-
         protected override void DisposeControl()
         {
             this.Hide();
-
-            if (this.Texture != null)
-            {
-                this.Texture.Dispose();
-                this.Texture = null;
-            }
 
             base.DisposeControl();
         }
@@ -272,6 +239,5 @@
             this.UpdateBackgroundColor();
             return Task.CompletedTask;
         }
-
     }
 }

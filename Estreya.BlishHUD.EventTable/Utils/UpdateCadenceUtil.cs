@@ -8,7 +8,6 @@
 
     public static class UpdateCadenceUtil
     {
-
         private static readonly Logger Logger = Logger.GetLogger(typeof(UpdateCadenceUtil));
 
         private static readonly HashSet<IntPtr> _asyncStateMonitor = new HashSet<IntPtr>();
@@ -51,6 +50,5 @@
                 lastCheck = 0;
             }
         }
-
     }
 }

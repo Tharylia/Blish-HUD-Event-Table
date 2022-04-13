@@ -3,21 +3,21 @@
     using Newtonsoft.Json;
     using System;
 
-    public class SemanticVersionConverter : Newtonsoft.Json.JsonConverter<SemanticVersioning.Version>
+    public class SemanticVersionConverter : Newtonsoft.Json.JsonConverter<SemVer.Version>
     {
-        public override SemanticVersioning.Version ReadJson(JsonReader reader, Type objectType, SemanticVersioning.Version existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override SemVer.Version ReadJson(JsonReader reader, Type objectType, SemVer.Version existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            if (objectType != typeof(SemanticVersioning.Version))
+            if (objectType != typeof(SemVer.Version))
             {
-                return new SemanticVersioning.Version(0, 0, 0);
+                return new SemVer.Version(0, 0, 0);
             }
 
             string value = (string)reader.Value;
 
-            return SemanticVersioning.Version.Parse(value);
+            return new SemVer.Version(value);
         }
 
-        public override void WriteJson(JsonWriter writer, SemanticVersioning.Version value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, SemVer.Version value, JsonSerializer serializer)
         {
             writer.WriteValue(value.ToString());
         }

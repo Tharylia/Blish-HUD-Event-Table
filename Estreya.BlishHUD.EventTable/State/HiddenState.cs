@@ -2,6 +2,7 @@
 {
     using Blish_HUD;
     using Estreya.BlishHUD.EventTable.Helpers;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using System;
     using System.Collections.Generic;
@@ -182,9 +183,8 @@
             this.dirty = false;
         }
 
-        protected override Task InternalUnload()
+        protected override void InternalUnload()
         {
-            return Task.CompletedTask;
         }
     }
 }

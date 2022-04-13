@@ -142,16 +142,16 @@
     <value>Stürme des Winters</value>
   </data>
   <data name="event-canthaDayNight-dawn" xml:space="preserve">
-    <value>Morgengrauen</value>
+    <value>Cantha: Morgengrauen</value>
   </data>
   <data name="event-canthaDayNight-day" xml:space="preserve">
-    <value>Tag</value>
+    <value>Cantha: Tag</value>
   </data>
   <data name="event-canthaDayNight-dusk" xml:space="preserve">
-    <value>Dämmerung</value>
+    <value>Cantha: Dämmerung</value>
   </data>
   <data name="event-canthaDayNight-night" xml:space="preserve">
-    <value>Nacht</value>
+    <value>Cantha: Nacht</value>
   </data>
   <data name="event-crystalOasis-casinoBlitz" xml:space="preserve">
     <value>Casino Blitz</value>
@@ -546,6 +546,15 @@
   <data name="ManageEventsView_Wiki_Title" xml:space="preserve">
     <value>Wiki</value>
   </data>
+  <data name="ReorderEventsView_Reset" xml:space="preserve">
+    <value>Zurücksetzen</value>
+  </data>
+  <data name="ReorderEventsView_Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="ReorderEventsView_Save_Success" xml:space="preserve">
+    <value>Kategorien wurden erfolgreich sortiert!</value>
+  </data>
   <data name="SettingsView_OpenSettings" xml:space="preserve">
     <value>Einstellungen öffnen</value>
   </data>
@@ -560,6 +569,9 @@
   </data>
   <data name="SettingsWindow_ManageEvents_Title" xml:space="preserve">
     <value>Events verwalten</value>
+  </data>
+  <data name="SettingsWindow_ReorderSettings_Title" xml:space="preserve">
+    <value>Sortierung</value>
   </data>
   <data name="SettingsWindow_Subtitle" xml:space="preserve">
     <value>Einstellungen</value>

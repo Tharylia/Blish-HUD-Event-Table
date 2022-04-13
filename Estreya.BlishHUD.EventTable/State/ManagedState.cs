@@ -1,17 +1,21 @@
 ﻿namespace Estreya.BlishHUD.EventTable.State
 {
+    using Blish_HUD;
     using Microsoft.Xna.Framework;
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public abstract class ManagedState : IDisposable
     {
+        private static readonly Logger Logger = Logger.GetLogger<ManagedState>();
+
+        private SemaphoreSlim _saveSemaphore = new SemaphoreSlim(1, 1);
         private int SaveInternal { get; set; }
 
         private TimeSpan TimeSinceSave { get; set; } = TimeSpan.Zero;
 
         public bool Running { get; private set; } = false;
-
 
         protected ManagedState(int saveInterval = 60000)
         {
@@ -52,11 +56,27 @@
 
             if (this.TimeSinceSave.TotalMilliseconds >= this.SaveInternal)
             {
-                Task.Run(async () =>
+                // Prevent multiple threads running Save() at the same time.
+                if (_saveSemaphore.CurrentCount > 0)
                 {
-                    await this.Save();
-                    this.TimeSinceSave = TimeSpan.Zero;
-                });
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _saveSemaphore.WaitAsync();
+                            await this.Save();
+                            this.TimeSinceSave = TimeSpan.Zero;
+                        }
+                        finally
+                        {
+                            _saveSemaphore.Release();
+                        }
+                    });
+                }
+                else
+                {
+                    Logger.Debug("Another thread is already running Save()");
+                }
             }
 
             this.InternalUpdate(gameTime);
@@ -69,7 +89,7 @@
             await this.Save();
         }
 
-        protected abstract Task InternalUnload();
+        protected abstract void InternalUnload();
 
         protected abstract Task Initialize();
 
@@ -78,10 +98,10 @@
         protected abstract Task Save();
         protected abstract Task Load();
 
-
         public void Dispose()
         {
             this.Stop();
+            this.InternalUnload();
         }
     }
 }

@@ -133,7 +133,7 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dawn ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cantha: Dawn ähnelt.
         /// </summary>
         internal static string event_canthaDayNight_dawn {
             get {
@@ -142,7 +142,7 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Day ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cantha: Day ähnelt.
         /// </summary>
         internal static string event_canthaDayNight_day {
             get {
@@ -151,7 +151,7 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dusk ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cantha: Dusk ähnelt.
         /// </summary>
         internal static string event_canthaDayNight_dusk {
             get {
@@ -160,7 +160,7 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Night ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cantha: Night ähnelt.
         /// </summary>
         internal static string event_canthaDayNight_night {
             get {
@@ -1348,6 +1348,33 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reset ähnelt.
+        /// </summary>
+        internal static string ReorderEventsView_Reset {
+            get {
+                return ResourceManager.GetString("ReorderEventsView_Reset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Save ähnelt.
+        /// </summary>
+        internal static string ReorderEventsView_Save {
+            get {
+                return ResourceManager.GetString("ReorderEventsView_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Successful reordered categories! ähnelt.
+        /// </summary>
+        internal static string ReorderEventsView_Save_Success {
+            get {
+                return ResourceManager.GetString("ReorderEventsView_Save_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Whether the event table should automatically update the exported event file to the newest version. ähnelt.
         /// </summary>
         internal static string Setting_AutomaticallyUpdateEventFile_Description {
@@ -1947,6 +1974,15 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         internal static string SettingsWindow_ManageEvents_Title {
             get {
                 return ResourceManager.GetString("SettingsWindow_ManageEvents_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reorder ähnelt.
+        /// </summary>
+        internal static string SettingsWindow_ReorderSettings_Title {
+            get {
+                return ResourceManager.GetString("SettingsWindow_ReorderSettings_Title", resourceCulture);
             }
         }
         
