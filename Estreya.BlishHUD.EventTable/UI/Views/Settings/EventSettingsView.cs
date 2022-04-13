@@ -1,15 +1,15 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
+namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
     using Estreya.BlishHUD.EventTable.Resources;
-    using SemanticVersioning;
+    using SemVer;
     using System;
     using System.Threading.Tasks;
 
     public class EventSettingsView : BaseSettingsView
     {
-        private SemanticVersioning.Version CurrentVersion = null;
-        private SemanticVersioning.Version NewestVersion = null;
+        private SemVer.Version CurrentVersion = null;
+        private SemVer.Version NewestVersion = null;
         public EventSettingsView(ModuleSettings settings) : base(settings)
         {
         }

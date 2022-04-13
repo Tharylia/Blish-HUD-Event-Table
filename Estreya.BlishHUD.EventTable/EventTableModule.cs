@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -31,6 +31,8 @@
         private static readonly Logger Logger = Logger.GetLogger<EventTableModule>();
 
         internal static EventTableModule ModuleInstance;
+
+        public bool IsPrerelease => !string.IsNullOrWhiteSpace(this.Version?.PreRelease);
 
         private EventTableContainer Container { get; set; }
 
