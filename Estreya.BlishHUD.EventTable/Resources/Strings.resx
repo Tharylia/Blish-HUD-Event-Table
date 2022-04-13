@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -142,16 +142,16 @@
     <value>Storms of Winter</value>
   </data>
   <data name="event-canthaDayNight-dawn" xml:space="preserve">
-    <value>Dawn</value>
+    <value>Cantha: Dawn</value>
   </data>
   <data name="event-canthaDayNight-day" xml:space="preserve">
-    <value>Day</value>
+    <value>Cantha: Day</value>
   </data>
   <data name="event-canthaDayNight-dusk" xml:space="preserve">
-    <value>Dusk</value>
+    <value>Cantha: Dusk</value>
   </data>
   <data name="event-canthaDayNight-night" xml:space="preserve">
-    <value>Night</value>
+    <value>Cantha: Night</value>
   </data>
   <data name="event-crystalOasis-casinoBlitz" xml:space="preserve">
     <value>Casino Blitz</value>

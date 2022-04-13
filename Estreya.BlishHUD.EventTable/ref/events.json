@@ -1487,7 +1487,7 @@
       "events": [
         {
           "key": "dawn",
-          "name": "Dawn",
+          "name": "Cantha: Dawn",
           "offset": "00:35",
           "repeat": "02:00",
           "difficulty": "none",
@@ -1500,7 +1500,7 @@
         },
         {
           "key": "day",
-          "name": "Day",
+          "name": "Cantha: Day",
           "offset": "00:40",
           "repeat": "02:00",
           "difficulty": "none",
@@ -1513,7 +1513,7 @@
         },
         {
           "key": "dusk",
-          "name": "Dusk",
+          "name": "Cantha: Dusk",
           "offset": "01:35",
           "repeat": "02:00",
           "difficulty": "none",
@@ -1526,7 +1526,7 @@
         },
         {
           "key": "night",
-          "name": "Night",
+          "name": "Cantha: Night",
           "offset": "01:40",
           "repeat": "02:00",
           "difficulty": "none",
