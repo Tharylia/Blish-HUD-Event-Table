@@ -205,7 +205,17 @@
                 Enabled = !disabledCallback?.Invoke() ?? true,
             };
 
-            button.Click += (s, e) => Task.Run(action.Invoke);
+            button.Click += (s, e) => Task.Run(async () =>
+            {
+                try
+                {
+                    await action.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    this.ShowError(ex.Message);
+                }
+            });
         }
 
         protected void RenderLabel(Panel parent, string title, string value)

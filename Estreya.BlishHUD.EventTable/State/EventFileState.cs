@@ -161,7 +161,7 @@
 
         internal async Task ExportFile(EventSettingsFile eventSettingsFile)
         {
-            string content = JsonConvert.SerializeObject(eventSettingsFile);
+            string content = JsonConvert.SerializeObject(eventSettingsFile, Formatting.Indented);
             await FileUtil.WriteStringAsync(this.FilePath, content);
         }
 

@@ -115,4 +115,13 @@ public static class FileUtil
 
         await WriteStringAsync(path, stringData);
     }
+
+    public static string CreateTempFile(string extension)
+    {
+        string initialTempFileName = Path.GetTempFileName();
+        string tempFileNameWithExtension = Path.ChangeExtension(initialTempFileName, extension);
+        File.Move(initialTempFileName, tempFileNameWithExtension);
+
+        return tempFileNameWithExtension;
+    }
 }

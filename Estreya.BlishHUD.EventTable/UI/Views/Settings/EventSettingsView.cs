@@ -1,9 +1,13 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Resources;
+    using Estreya.BlishHUD.EventTable.Utils;
+    using Newtonsoft.Json;
     using SemVer;
     using System;
+    using System.IO;
     using System.Threading.Tasks;
 
     public class EventSettingsView : BaseSettingsView
@@ -47,6 +51,26 @@ namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 
             this.RenderLabel(parent, Strings.EventSettingsView_CurrentVersion_Title, this.CurrentVersion?.ToString() ?? Strings.EventSettingsView_CurrentVersion_Unknown);
             this.RenderLabel(parent, Strings.EventSettingsView_NewestVersion_Title, this.NewestVersion?.ToString() ?? Strings.EventSettingsView_NewestVersion_Unknown);
+
+            this.RenderButton(parent, "Diff in VS Code", async () =>
+            {
+                string filePath1 = FileUtil.CreateTempFile("json");
+
+                var eventSettingsFile1 = await EventTableModule.ModuleInstance.EventFileState.GetExternalFile();
+
+                await FileUtil.WriteStringAsync(filePath1, JsonConvert.SerializeObject(eventSettingsFile1, Formatting.Indented));
+
+                string filePath2 = FileUtil.CreateTempFile("json");
+
+                var eventSettingsFile2 = await EventTableModule.ModuleInstance.EventFileState.GetInternalFile();
+
+                await FileUtil.WriteStringAsync(filePath2, JsonConvert.SerializeObject(eventSettingsFile2, Formatting.Indented));
+
+                await VSCodeHelper.Diff(filePath1, filePath2);
+
+                File.Delete(filePath1);
+                File.Delete(filePath2);
+            });
 
             this.RenderEmptyLine(parent);
 
