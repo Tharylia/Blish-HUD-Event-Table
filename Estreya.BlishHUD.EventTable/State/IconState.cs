@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.State;
+﻿namespace Estreya.BlishHUD.EventTable.State;
 
 using Blish_HUD;
 using Blish_HUD.Content;
@@ -262,5 +262,12 @@ public class IconState : ManagedState
         {
             return this.GetIcon(identifier, checkRenderAPI);
         });
+    }
+
+    public override Task Clear()
+    {
+        // Clearing loaded icons only makes problems.
+
+        return Task.CompletedTask;
     }
 }

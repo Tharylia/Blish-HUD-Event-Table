@@ -110,7 +110,7 @@
             }
         }
 
-        public void Clear()
+        public override Task Clear()
         {
             lock (this.Instances)
             {
@@ -119,6 +119,8 @@
                 this.Instances.Clear();
                 this.dirty = true;
             }
+
+            return Task.CompletedTask;
         }
 
         public bool IsHidden(string name)
@@ -185,6 +187,8 @@
 
         protected override void InternalUnload()
         {
+            AsyncHelper.RunSync(this.Save);
+            AsyncHelper.RunSync(this.Clear);
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     using Blish_HUD;
     using Blish_HUD.Modules.Managers;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Utils;
     using Gw2Sharp.WebApi.Exceptions;
     using Microsoft.Xna.Framework;
@@ -54,7 +55,7 @@
 
                 if (this.ApiManager.HasPermissions(new[] { Gw2Sharp.WebApi.V2.Models.TokenPermission.Account, Gw2Sharp.WebApi.V2.Models.TokenPermission.Progression }))
                 {
-                    Gw2Sharp.WebApi.V2.IApiV2ObjectList<string> bosses = await this.ApiManager.Gw2ApiClient.V2.Account.WorldBosses.GetAsync();
+                    List<string> bosses = (await this.ApiManager.Gw2ApiClient.V2.Account.WorldBosses.GetAsync()).ToList();
                     lock (this.completedWorldbosses)
                     {
                         this.completedWorldbosses.AddRange(bosses);
@@ -101,10 +102,7 @@
         {
             this.ApiManager.SubtokenUpdated -= this.ApiManager_SubtokenUpdated;
 
-            lock (this.completedWorldbosses)
-            {
-                this.completedWorldbosses.Clear();
-            }
+            AsyncHelper.RunSync(this.Clear);
         }
 
         protected override void InternalUpdate(GameTime gameTime)
@@ -119,6 +117,16 @@
 
         protected override Task Save()
         {
+            return Task.CompletedTask;
+        }
+
+        public override Task Clear()
+        {
+            lock (this.completedWorldbosses)
+            {
+                this.completedWorldbosses.Clear();
+            }
+
             return Task.CompletedTask;
         }
     }
