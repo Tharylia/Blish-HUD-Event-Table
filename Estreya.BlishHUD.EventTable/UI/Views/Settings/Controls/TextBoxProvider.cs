@@ -20,7 +20,7 @@
                 Width = width,
                 Location = new Point(x,y),
                 Text = settingEntry?.Value ?? string.Empty,
-                Enabled = !settingEntry.IsDisabled()
+                Enabled = !settingEntry?.IsDisabled() ?? true
             };
 
             if (settingEntry != null)

@@ -2,6 +2,7 @@
 {
     using Blish_HUD.Controls;
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
 
     public class GeneralSettingsView : BaseSettingsView
@@ -27,10 +28,30 @@
             this.RenderSetting(parent, this.ModuleSettings.CopyWaypointOnClick);
             this.RenderSetting(parent, this.ModuleSettings.ShowContextMenuOnClick);
             this.RenderSetting(parent, this.ModuleSettings.BuildDirection);
-#if DEBUG
-            this.RenderEmptyLine(parent);
-            this.RenderButton(parent, "Test Error", () => this.ShowError("New error" + new Random().Next()));
-#endif
+            if (EventTableModule.ModuleInstance.Debug)
+            {
+                this.RenderEmptyLine(parent);
+                this.RenderButton(parent, "Test Error", () => this.ShowError("New error" + new Random().Next()));
+                this.RenderTextbox(parent, "Finish Event", "Event.Key", val =>
+                 {
+                     EventTableModule.ModuleInstance.EventCategories.SelectMany(ec => ec.Events.Where(ev => ev.Key == val)).ToList().ForEach(ev => ev.Finish());
+                 });
+                this.RenderTextbox(parent, "Finish Category", "EventCategory.Key", val =>
+                {
+                    EventTableModule.ModuleInstance.EventCategories.Where(ec => ec.Key == val).ToList().ForEach(ev => ev.Finish());
+                });
+                this.RenderEmptyLine(parent);
+                this.RenderButton(parent, "Clear States", async () =>
+                {
+                    await EventTableModule.ModuleInstance.ClearStates();
+                    EventTable.Controls.ScreenNotification.ShowNotification("States cleared");
+                });
+                this.RenderButton(parent, "Reload States", async () =>
+                {
+                    await EventTableModule.ModuleInstance.ReloadStates();
+                    EventTable.Controls.ScreenNotification.ShowNotification("States reloaded");
+                });
+            }
         }
 
         protected override Task<bool> InternalLoad(IProgress<string> progress)

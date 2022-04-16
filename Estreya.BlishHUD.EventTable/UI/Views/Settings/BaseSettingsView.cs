@@ -162,6 +162,46 @@
             return panel;
         }
 
+        protected Panel RenderSetting<T>(Panel parent, SettingEntry<T> setting, Action<T> onChangeAction)
+        {
+            Panel panel = this.RenderSetting(parent, setting);
+
+            setting.SettingChanged += (s, e) =>
+            {
+                onChangeAction?.Invoke(e.NewValue);
+            };
+
+            return panel;
+        }
+
+        protected Panel RenderTextbox(Panel parent, string description, string placeholder, Action<string> onEnterAction)
+        {
+            Panel panel = this.GetPanel(parent);
+
+            Label label = this.GetLabel(panel, description);
+
+            try
+            {
+                Control ctrl = ControlProvider.Create<string>(BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
+                ctrl.Parent = panel;
+                ctrl.BasicTooltipText = description;
+
+                TextBox textBox = ctrl as TextBox;
+                textBox.PlaceholderText = placeholder;
+                textBox.EnterPressed += (s, e) =>
+                {
+                    onEnterAction?.Invoke(textBox.Text);
+                    textBox.Text = string.Empty;
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Type \"{typeof(string).FullName}\" could not be found in internal type lookup:");
+            }
+
+            return panel;
+        }
+
         protected Panel GetPanel(Container parent)
         {
             return new Panel
