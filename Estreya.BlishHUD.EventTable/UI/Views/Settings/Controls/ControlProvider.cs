@@ -47,7 +47,7 @@
 
             if (providers.Count == 0)
             {
-                if (settingEntry.SettingType.IsEnum)
+                if (settingEntry?.SettingType.IsEnum ?? false)
                 {
                     Register((ControlProvider<T>)Activator.CreateInstance(typeof(EnumProvider<>).MakeGenericType(typeof(T))));
                     return Create(settingEntry, validationFunction, width, heigth, x, y);
@@ -59,6 +59,29 @@
             }
 
             return (providers.First() as ControlProvider<T>).CreateControl(settingEntry, validationFunction, width, heigth, x, y);
+        }
+
+        public static Control Create<T>(int width, int heigth, int x, int y)
+        {
+            List<ControlProvider> providers = Provider.Where(p =>
+            {
+                return p is ControlProvider<T> provider && provider.Type == typeof(T);
+            }).ToList();
+
+            if (providers.Count == 0)
+            {
+                if (typeof(T).IsEnum)
+                {
+                    Register((ControlProvider<T>)Activator.CreateInstance(typeof(EnumProvider<>).MakeGenericType(typeof(T))));
+                    return Create<T>(width, heigth, x, y);
+                }
+                else
+                {
+                    throw new NotSupportedException($"Control Type \"{typeof(T)}\" is not supported.");
+                }
+            }
+
+            return (providers.First() as ControlProvider<T>).CreateControl(null,null, width, heigth, x, y);
         }
     }
 }

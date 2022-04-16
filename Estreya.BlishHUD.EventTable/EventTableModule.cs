@@ -356,17 +356,17 @@
 
             using (await _stateLock.LockAsync())
             {
-                try
-                {
                     foreach (ManagedState state in this.States)
                     {
                         Logger.Debug("Starting managed state: {0}", state.GetType().Name);
+                    try
+                    {
                         await state.Start();
                     }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, "Failed starting states.");
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "Failed starting state \"{0}\"", state.GetType().Name);
+                    }
                 }
             }
         }
@@ -638,7 +638,23 @@
                 Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
             }
 
-            Logger.Debug("Finished unloading states."); ;
+            Logger.Debug("Finished unloading states.");
+        }
+
+        internal async Task ReloadStates()
+        {
+            using (await this._stateLock.LockAsync())
+            {
+               await Task.WhenAll(this.States.Select(state => state.Reload()));
+            }
+        }
+
+        internal async Task ClearStates()
+        {
+            using (await this._stateLock.LockAsync())
+            {
+                await Task.WhenAll(this.States.Select(state => state.Clear()));
+            }
         }
     }
 }

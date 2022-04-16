@@ -88,6 +88,7 @@
         {
             await this.Save();
         }
+        public abstract Task Clear();
 
         protected abstract void InternalUnload();
 

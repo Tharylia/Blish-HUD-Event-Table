@@ -170,5 +170,15 @@
             EventSettingsFile eventSettingsFile = await this.GetInternalFile();
             await this.ExportFile(eventSettingsFile);
         }
+
+        public override Task Clear()
+        {
+            lock (_lockObject)
+            {
+                this._notified = false;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

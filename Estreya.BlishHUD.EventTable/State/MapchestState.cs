@@ -2,6 +2,7 @@
 {
     using Blish_HUD;
     using Blish_HUD.Modules.Managers;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Utils;
     using Gw2Sharp.WebApi.Exceptions;
     using Microsoft.Xna.Framework;
@@ -101,10 +102,7 @@
         {
             this.ApiManager.SubtokenUpdated -= this.ApiManager_SubtokenUpdated;
 
-            lock (this.completedMapchests)
-            {
-                this.completedMapchests.Clear();
-            }
+            AsyncHelper.RunSync(this.Clear);
         }
 
         protected override void InternalUpdate(GameTime gameTime)
@@ -119,6 +117,16 @@
 
         protected override Task Save()
         {
+            return Task.CompletedTask;
+        }
+
+        public override Task Clear()
+        {
+            lock (this.completedMapchests)
+            {
+                this.completedMapchests.Clear();
+            }
+
             return Task.CompletedTask;
         }
     }

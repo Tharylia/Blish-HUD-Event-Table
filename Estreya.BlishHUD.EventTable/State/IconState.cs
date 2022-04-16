@@ -135,17 +135,17 @@ public class IconState : ManagedState
         return System.Text.RegularExpressions.Regex.Replace(fileName, invalidRegStr, "_");
     }
 
-    private async Task LoadImages()
+    private Task LoadImages()
     {
         Logger.Info("Load cached images from filesystem.");
 
-        using (await this._textureLock.LockAsync())
+        using (this._textureLock.Lock())
         {
             this._loadedTextures.Clear();
 
             if (!Directory.Exists(this.Path))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             string[] filePaths = this.GetFiles();
@@ -154,15 +154,18 @@ public class IconState : ManagedState
             {
                 try
                 {
-                    using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                    Texture2D texture = TextureUtil.FromStreamPremultiplied(fileStream);
-                    if (texture == null)
+                    FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    AsyncTexture2D asyncTexture = new AsyncTexture2D(ContentService.Textures.Pixel);
+
+                    GameService.Graphics.QueueMainThreadRender(device =>
                     {
-                        continue;
-                    }
+                        Texture2D texture = TextureUtil.FromStreamPremultiplied(device, fileStream);
+                        fileStream.Dispose();
+                        asyncTexture.SwapTexture(texture);
+                    });
 
                     string fileName = SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
-                    this._loadedTextures.Add(fileName, texture);
+                    this.HandleAsyncTextureSwap(asyncTexture, fileName);
                 }
                 catch (Exception ex)
                 {
@@ -170,6 +173,21 @@ public class IconState : ManagedState
                 }
             }
         }
+
+        return Task.CompletedTask;
+    }
+
+    private void HandleAsyncTextureSwap(AsyncTexture2D asyncTexture2D, string identifier)
+    {
+        asyncTexture2D.TextureSwapped += (s, e) =>
+        {
+            using (this._textureLock.Lock())
+            {
+                this._loadedTextures[identifier] = e.NewValue;
+            }
+
+            Logger.Debug("Async texture \"{0}\" was swapped in cache.", identifier);
+        };
     }
 
     private string[] GetFiles()
@@ -209,15 +227,7 @@ public class IconState : ManagedState
                     try
                     {
                         AsyncTexture2D asyncTexture = GameService.Content.GetRenderServiceTexture(identifier);
-                        asyncTexture.TextureSwapped += (s, e) =>
-                        {
-                            using (this._textureLock.Lock())
-                            {
-                                this._loadedTextures[sanitizedIdentifier] = e.NewValue;
-                            }
-
-                            Logger.Debug("Async texture \"{0}\" was swapped in cache.", identifier);
-                        };
+                        this.HandleAsyncTextureSwap(asyncTexture, sanitizedIdentifier);
 
                         icon = asyncTexture;
                     }
@@ -252,5 +262,12 @@ public class IconState : ManagedState
         {
             return this.GetIcon(identifier, checkRenderAPI);
         });
+    }
+
+    public override Task Clear()
+    {
+        // Clearing loaded icons only makes problems.
+
+        return Task.CompletedTask;
     }
 }
