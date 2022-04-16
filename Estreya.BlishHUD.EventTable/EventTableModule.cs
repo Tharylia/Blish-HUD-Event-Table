@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -356,17 +356,17 @@
 
             using (await _stateLock.LockAsync())
             {
-                try
-                {
                     foreach (ManagedState state in this.States)
                     {
                         Logger.Debug("Starting managed state: {0}", state.GetType().Name);
+                    try
+                    {
                         await state.Start();
                     }
-                }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "Failed starting states.");
+                        Logger.Error(ex, "Failed starting state \"{0}\"", state.GetType().Name);
+                    }
                 }
             }
         }
