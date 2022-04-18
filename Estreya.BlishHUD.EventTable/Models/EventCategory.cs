@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Estreya.BlishHUD.EventTable.Resources;
@@ -269,18 +269,25 @@ namespace Estreya.BlishHUD.EventTable.Models
 
             //return modifiedEventStarts.OrderBy(mes => mes.Key).ToList();
         }
+        public void Hide()
+        {
+            DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            EventTableModule.ModuleInstance.EventState.Add(this.Key, until, EventState.EventStates.Hidden);
+        }
+
         public void Finish()
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            EventTableModule.ModuleInstance.HiddenState.Add(this.Key, until, true);
+            EventTableModule.ModuleInstance.EventState.Add(this.Key, until, EventState.EventStates.Completed);
         }
 
-        public bool IsDisabled()
+        public bool IsFinished()
         {
-            bool disabled = EventTableModule.ModuleInstance.HiddenState.IsHidden(this.Key);
+            var finished = EventTableModule.ModuleInstance.EventState.Contains(this.Key, EventState.EventStates.Completed);
 
-            return disabled;
+            return finished;
         }
 
         public async Task LoadAsync()
@@ -301,6 +308,8 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
 
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
+            EventTableModule.ModuleInstance.EventState.StateAdded += this.EventState_StateAdded;
+            EventTableModule.ModuleInstance.EventState.StateRemoved += this.EventState_StateRemoved;
 
             using (await this._eventLock.LockAsync())
             {
@@ -313,6 +322,22 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
 
             Logger.Debug("Loaded event category: {0}", this.Key);
+        }
+
+        private void EventState_StateRemoved(object sender, ValueEventArgs<string> e)
+        {
+            if (e.Value == this.Key)
+            {
+                this._isDisabled = null;
+            }
+        }
+
+        private void EventState_StateAdded(object sender, ValueEventArgs<EventState.VisibleStateInfo> e)
+        {
+            if (e.Value.Key == this.Key && e.Value.State == EventState.EventStates.Hidden)
+            {
+                this._isDisabled = null;
+            }
         }
 
         public void Unload()

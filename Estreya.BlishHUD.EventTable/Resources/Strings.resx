@@ -474,11 +474,11 @@
   <data name="EventSettingsView_ReloadEvents_Title" xml:space="preserve">
     <value>Reload Events</value>
   </data>
-  <data name="EventSettingsView_ResetHiddenStates_Success" xml:space="preserve">
-    <value>Hidden states cleared!</value>
+  <data name="EventSettingsView_ResetEventStates_Success" xml:space="preserve">
+    <value>Event states cleared!</value>
   </data>
-  <data name="EventSettingsView_ResetHiddenStates_Title" xml:space="preserve">
-    <value>Reset hidden states</value>
+  <data name="EventSettingsView_ResetEventStates_Title" xml:space="preserve">
+    <value>Reset event states</value>
   </data>
   <data name="EventSettingsView_UpdateEventFile_Success" xml:space="preserve">
     <value>Successfully updated!</value>

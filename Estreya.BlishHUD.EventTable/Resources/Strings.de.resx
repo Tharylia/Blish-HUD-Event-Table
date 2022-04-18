@@ -474,11 +474,11 @@
   <data name="EventSettingsView_ReloadEvents_Title" xml:space="preserve">
     <value>Events neu laden</value>
   </data>
-  <data name="EventSettingsView_ResetHiddenStates_Success" xml:space="preserve">
-    <value>Verstecke Events erfolgreich zurückgesetzt!</value>
+  <data name="EventSettingsView_ResetEventStates_Success" xml:space="preserve">
+    <value>Event-Zustände erfolgreich zurückgesetzt!</value>
   </data>
-  <data name="EventSettingsView_ResetHiddenStates_Title" xml:space="preserve">
-    <value>Versteckte Events zurücksetzen</value>
+  <data name="EventSettingsView_ResetEventStates_Title" xml:space="preserve">
+    <value>Event-Zustände zurücksetzen</value>
   </data>
   <data name="EventSettingsView_UpdateEventFile_Success" xml:space="preserve">
     <value>Erfolgreich aktualisiert!</value>

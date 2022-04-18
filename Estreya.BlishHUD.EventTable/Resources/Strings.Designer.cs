@@ -1231,20 +1231,20 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hidden states cleared! ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Event states cleared! ähnelt.
         /// </summary>
-        internal static string EventSettingsView_ResetHiddenStates_Success {
+        internal static string EventSettingsView_ResetEventStates_Success {
             get {
-                return ResourceManager.GetString("EventSettingsView_ResetHiddenStates_Success", resourceCulture);
+                return ResourceManager.GetString("EventSettingsView_ResetEventStates_Success", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Reset hidden states ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reset event states ähnelt.
         /// </summary>
-        internal static string EventSettingsView_ResetHiddenStates_Title {
+        internal static string EventSettingsView_ResetEventStates_Title {
             get {
-                return ResourceManager.GetString("EventSettingsView_ResetHiddenStates_Title", resourceCulture);
+                return ResourceManager.GetString("EventSettingsView_ResetEventStates_Title", resourceCulture);
             }
         }
         

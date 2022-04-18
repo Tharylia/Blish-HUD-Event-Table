@@ -130,19 +130,61 @@ namespace Estreya.BlishHUD.EventTable.Models
                     openWiki.Click += (s, e) => this.OpenWiki();
                     this._contextMenuStrip.AddMenuItem(openWiki);
 
+                    #region Hide
+                    Blish_HUD.Controls.ContextMenuStrip hideMenuStrip = new ContextMenuStrip();
+
                     ContextMenuStripItem hideCategory = new ContextMenuStripItem
                     {
-                        Text = Strings.Event_HideCategory
+                        Text = Strings.Event_HideCategory,
                     };
-                    hideCategory.Click += (s, e) => this.FinishCategory();
-                    this._contextMenuStrip.AddMenuItem(hideCategory);
+                    hideCategory.BasicTooltipText = "Hides the event category until reset.";
+                    hideCategory.Click += (s, e) => this.HideCategory();
+                    hideMenuStrip.AddMenuItem(hideCategory);
 
                     ContextMenuStripItem hideEvent = new ContextMenuStripItem
                     {
                         Text = Strings.Event_HideEvent
                     };
-                    hideEvent.Click += (s, e) => this.Finish();
-                    this._contextMenuStrip.AddMenuItem(hideEvent);
+                    hideEvent.BasicTooltipText = "Hides the event until reset.";
+                    hideEvent.Click += (s, e) => this.Hide();
+                    hideMenuStrip.AddMenuItem(hideEvent);
+
+                    ContextMenuStripItem hideItem = new ContextMenuStripItem
+                    {
+                        Text = "Hide",
+                        Submenu = hideMenuStrip
+                    };
+                    hideItem.BasicTooltipText = "Adds options for hiding events.";
+                    this._contextMenuStrip.AddMenuItem(hideItem);
+                    #endregion
+
+                    #region Finish
+                    Blish_HUD.Controls.ContextMenuStrip finishMenuStrip = new ContextMenuStrip();
+                    
+                    ContextMenuStripItem finishCategory = new ContextMenuStripItem
+                    {
+                        Text = "Finish Category"
+                    };
+                    finishCategory.BasicTooltipText = "Completes the event category until reset.";
+                    finishCategory.Click += (s, e) => this.FinishCategory();
+                    finishMenuStrip.AddMenuItem(finishCategory);
+
+                    ContextMenuStripItem finishEvent = new ContextMenuStripItem
+                    {
+                        Text = "Finish Event"
+                    };
+                    finishEvent.BasicTooltipText = "Completes the event until reset.";
+                    finishEvent.Click += (s, e) => this.Finish();
+                    finishMenuStrip.AddMenuItem(finishEvent);
+
+                    ContextMenuStripItem finishItem = new ContextMenuStripItem
+                    {
+                        Text = "Finish",
+                        Submenu = finishMenuStrip,
+                    };
+                    finishItem.BasicTooltipText = "Adds options for finishing events.";
+                    this._contextMenuStrip.AddMenuItem(finishItem);
+                    #endregion
 
                     ContextMenuStripItem disable = new ContextMenuStripItem
                     {
@@ -310,38 +352,15 @@ namespace Estreya.BlishHUD.EventTable.Models
 
                 #region Draw Cross out
 
-                if (EventTableModule.ModuleInstance.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
+                if ((this.EventCategory?.IsFinished() ?? false) || this.IsFinished())
                 {
-                    if (this.IsCompleted())
-                    {
-                        spriteBatch.DrawCrossOut( control, baseTexture, eventTexturePosition, Color.Red);
-                    }
+                    spriteBatch.DrawCrossOut(control, baseTexture, eventTexturePosition, Color.Red);
                 }
                 #endregion
 
             }
 
             return occurences.Any();
-        }
-
-        public bool IsCompleted()
-        {
-            bool completed = false;
-
-            switch (this.APICodeType)
-            {
-                case APICodeType.Worldboss:
-                    completed |= EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode);
-                    break;
-                case APICodeType.Mapchest:
-                    completed |= EventTableModule.ModuleInstance.MapchestState.IsCompleted(this.APICode);
-                    break;
-                default:
-                    Logger.Warn($"Unsupported api code type: {this.APICodeType}");
-                    break;
-            }
-
-            return completed;
         }
 
         private void UpdateTooltip(string description)
@@ -609,16 +628,16 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        public void Finish()
+        public void Hide()
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
             DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            EventTableModule.ModuleInstance.HiddenState.Add(this.SettingKey, until, true);
+            EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Hidden);
         }
 
-        public void FinishCategory()
+        private void HideCategory()
         {
-            this.EventCategory?.Finish();
+            this.EventCategory?.Hide();
         }
 
         public void Disable()
@@ -631,23 +650,30 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        public bool IsDisabled()
+        
+
+        public void Finish()
+        {
+            DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Completed);
+        }
+
+        private void FinishCategory()
+        {
+            this.EventCategory?.Finish();
+        }
+
+        public bool IsFinished()
         {
             if (this.Filler)
             {
                 return false;
             }
 
-            // Check with .ToLower() because settings define is case insensitive
-            IEnumerable<SettingEntry<bool>> eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
-            if (eventSetting.Any())
-            {
-                bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.HiddenState.IsHidden(this.SettingKey);
+            var finished = EventTableModule.ModuleInstance.EventState.Contains(this.SettingKey, EventState.EventStates.Completed);
 
-                return !enabled;
-            }
-
-            return false;
+            return finished;
         }
 
         private void UpdateEventOccurences(GameTime gameTime)
@@ -677,6 +703,8 @@ namespace Estreya.BlishHUD.EventTable.Models
         public Task LoadAsync()
         {
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
+            EventTableModule.ModuleInstance.EventState.StateAdded += this.EventState_StateAdded;
+            EventTableModule.ModuleInstance.EventState.StateRemoved += this.EventState_StateRemoved;
 
             // Prevent crash on older events.json files
             if (string.IsNullOrWhiteSpace(this.Key))
@@ -697,6 +725,22 @@ namespace Estreya.BlishHUD.EventTable.Models
             return Task.CompletedTask;
         }
 
+        private void EventState_StateRemoved(object sender, ValueEventArgs<string> e)
+        {
+            if (this.SettingKey == e.Value)
+            {
+                this._isDisabled = null;
+            }
+        }
+
+        private void EventState_StateAdded(object sender, ValueEventArgs<EventState.VisibleStateInfo> e)
+        {
+            if (this.SettingKey == e.Value.Key && e.Value.State == EventState.EventStates.Hidden)
+            {
+                this._isDisabled = null;
+            }
+        }
+
         private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
         {
             if (this.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant())
@@ -710,6 +754,8 @@ namespace Estreya.BlishHUD.EventTable.Models
             Logger.Debug("Unload event: {0}", this.Key);
 
             EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
+            EventTableModule.ModuleInstance.EventState.StateAdded -= this.EventState_StateAdded;
+            EventTableModule.ModuleInstance.EventState.StateRemoved -= this.EventState_StateRemoved;
 
             this._tooltip?.Dispose();
             this._tooltip = null;

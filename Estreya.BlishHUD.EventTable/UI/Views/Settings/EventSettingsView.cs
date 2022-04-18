@@ -74,10 +74,10 @@
 
             this.RenderEmptyLine(parent);
 
-            this.RenderButton(parent, Strings.EventSettingsView_ResetHiddenStates_Title, () =>
+            this.RenderButton(parent, Strings.EventSettingsView_ResetEventStates_Title, async () =>
             {
-                EventTableModule.ModuleInstance.HiddenState.Clear();
-                EventTable.Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_ResetHiddenStates_Success);
+                await EventTableModule.ModuleInstance.EventState.Clear();
+                EventTable.Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_ResetEventStates_Success);
             });
 
             this.RenderEmptyLine(parent);
