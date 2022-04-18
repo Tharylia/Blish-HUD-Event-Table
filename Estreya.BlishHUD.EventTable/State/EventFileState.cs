@@ -55,7 +55,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateAsyncWithCadence(this.CheckAndNotify, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+            UpdateUtil.UpdateAsync(this.CheckAndNotify, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
 
         protected override Task Load()

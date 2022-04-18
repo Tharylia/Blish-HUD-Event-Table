@@ -107,7 +107,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateAsyncWithCadence(this.UpdatedCompletedMapchests, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+            UpdateUtil.UpdateAsync(this.UpdatedCompletedMapchests, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
 
         protected override async Task Load()

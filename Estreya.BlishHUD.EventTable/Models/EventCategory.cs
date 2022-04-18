@@ -354,7 +354,7 @@
         public void Update(GameTime gameTime)
         {
             this.Events.ForEach(ev => ev.Update(gameTime));
-            UpdateCadenceUtil.UpdateWithCadence(this.UpdateEventOccurences, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+            UpdateUtil.Update(this.UpdateEventOccurences, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
     }
 }
