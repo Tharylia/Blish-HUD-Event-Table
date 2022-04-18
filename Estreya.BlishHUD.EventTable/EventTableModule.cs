@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -134,13 +134,7 @@
 
         private List<EventCategory> _eventCategories = new List<EventCategory>();
 
-        public List<EventCategory> EventCategories
-        {
-            get
-            {
-                return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
-            }
-        }
+        public List<EventCategory> EventCategories => this._eventCategories.Where(ec => !ec.IsDisabled).ToList();
         #region States
 
         private readonly AsyncLock _stateLock = new AsyncLock();

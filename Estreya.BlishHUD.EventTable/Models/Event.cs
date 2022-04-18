@@ -1,10 +1,11 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Resources;
+    using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -173,6 +174,39 @@
                 }
 
                 return this._backgroundColor ?? Color.Transparent;
+            }
+        }
+
+        [JsonIgnore]
+        private bool? _isDisabled;
+
+        [JsonIgnore]
+        public bool IsDisabled
+        {
+            get
+            {
+                if (_isDisabled == null)
+                {
+                    if (this.Filler)
+                    {
+                        _isDisabled = false;
+                    }
+
+                    IEnumerable<SettingEntry<bool>> eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
+                    if (eventSetting.Any())
+                    {
+                        bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.EventState.Contains(this.SettingKey, EventState.EventStates.Hidden);
+
+                        _isDisabled = !enabled;
+                    }
+
+                    if (!_isDisabled.HasValue)
+                    {
+                        _isDisabled = false;
+                    }
+                }
+
+                return _isDisabled.Value;
             }
         }
 
@@ -447,7 +481,7 @@
 
         public bool IsHovered(DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute)
         {
-            if (this.IsDisabled())
+            if (this.IsDisabled)
             {
                 return false;
             }
@@ -642,6 +676,8 @@
 
         public Task LoadAsync()
         {
+            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
+
             // Prevent crash on older events.json files
             if (string.IsNullOrWhiteSpace(this.Key))
             {
@@ -661,9 +697,19 @@
             return Task.CompletedTask;
         }
 
+        private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
+        {
+            if (this.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant())
+            {
+                this._isDisabled = null;
+            }
+        }
+
         public void Unload()
         {
             Logger.Debug("Unload event: {0}", this.Key);
+
+            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
 
             this._tooltip?.Dispose();
             this._tooltip = null;

@@ -70,7 +70,7 @@
             Input.MouseEventArgs mouseEventArgs = new Input.MouseEventArgs(this.RelativeMousePosition, e.IsDoubleClick, e.EventType);
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
-                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled))
                 {
                     if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, this.RelativeMousePosition, this.PixelPerMinute))
                     {
@@ -93,7 +93,7 @@
 
             foreach (EventCategory eventCategory in EventTableModule.ModuleInstance.EventCategories)
             {
-                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled))
                 {
                     if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, this.RelativeMousePosition, this.PixelPerMinute))
                     {
@@ -125,7 +125,7 @@
             {
                 bool categoryHasEvents = false;
 
-                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled()))
+                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled))
                 {
                     categoryHasEvents = true;
                     if (!EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value && ev.Filler)

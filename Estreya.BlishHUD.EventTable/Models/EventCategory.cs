@@ -1,7 +1,8 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Estreya.BlishHUD.EventTable.Resources;
+    using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Newtonsoft.Json;
@@ -46,6 +47,23 @@
             set => this._originalEvents = value;
         }
 
+        [JsonIgnore]
+        private bool? _isDisabled;
+
+        [JsonIgnore]
+        public bool IsDisabled
+        {
+            get
+            {
+                if (_isDisabled == null)
+                {
+                    this._isDisabled = EventTableModule.ModuleInstance.EventState.Contains(this.Key, EventState.EventStates.Hidden);
+                }
+
+                return _isDisabled.Value;
+            }
+        }
+
         public EventCategory()
         {
             this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
@@ -67,7 +85,7 @@
             }
 
             //var activeEvents = this.Events.Where(e => eventSettings.Find(eventSetting => eventSetting.EntryKey == e.Name).Value).ToList();
-            List<Event> activeEvents = this._originalEvents.Where(e => !e.IsDisabled()).ToList();
+            List<Event> activeEvents = this._originalEvents.Where(e => !e.IsDisabled).ToList();
 
             List<KeyValuePair<DateTime, Event>> activeEventStarts = new List<KeyValuePair<DateTime, Event>>();
 
