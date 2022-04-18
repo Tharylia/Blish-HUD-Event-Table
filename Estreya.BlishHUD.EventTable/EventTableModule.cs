@@ -313,6 +313,8 @@ namespace Estreya.BlishHUD.EventTable
                 }
             };
 
+            using (await this._stateLock.LockAsync())
+            {
             if (!beforeFileLoaded)
             {
                 this.HiddenState = new HiddenState(eventsDirectory);
@@ -333,8 +335,6 @@ namespace Estreya.BlishHUD.EventTable
                 this.IconState = new IconState(this.ContentsManager, eventsDirectory);
             }
 
-            lock (this.States)
-            {
                 if (!beforeFileLoaded)
                 {
                     this.States.Add(this.HiddenState);
@@ -346,15 +346,13 @@ namespace Estreya.BlishHUD.EventTable
                     this.States.Add(this.EventFileState);
                     this.States.Add(this.IconState);
                 }
-            }
 
-            using (await _stateLock.LockAsync())
+                // Only start states not already running
+                foreach (ManagedState state in this.States.Where(state => !state.Running))
             {
-                    foreach (ManagedState state in this.States)
-                    {
-                        Logger.Debug("Starting managed state: {0}", state.GetType().Name);
                     try
                     {
+                        // Order is important
                         await state.Start();
                     }
                     catch (Exception ex)
@@ -629,7 +627,7 @@ namespace Estreya.BlishHUD.EventTable
 
             using (this._stateLock.Lock())
             {
-                Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
+                this.States.ToList().ForEach(state => state.Dispose());
             }
 
             Logger.Debug("Finished unloading states.");

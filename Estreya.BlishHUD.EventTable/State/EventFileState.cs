@@ -34,7 +34,7 @@
             this.FileName = fileName;
         }
 
-        public override async Task Reload()
+        public override async Task InternalReload()
         {
             await this.CheckAndNotify(null);
         }

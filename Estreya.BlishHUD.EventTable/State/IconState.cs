@@ -44,7 +44,7 @@ public class IconState : ManagedState
         this._basePath = basePath;
     }
 
-    public override async Task Reload()
+    public override async Task InternalReload()
     {
         await this.LoadImages();
     }

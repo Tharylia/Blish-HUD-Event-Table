@@ -36,7 +36,7 @@
             return this.completedMapchests.Contains(apiCode);
         }
 
-        public override async Task Reload()
+        public override async Task InternalReload()
         {
             await this.UpdatedCompletedMapchests(null);
         }

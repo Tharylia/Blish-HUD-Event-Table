@@ -36,7 +36,7 @@
             return this.completedWorldbosses.Contains(apiCode);
         }
 
-        public override async Task Reload()
+        public override async Task InternalReload()
         {
             await this.UpdateCompletedWorldbosses(null);
         }
