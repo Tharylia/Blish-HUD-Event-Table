@@ -6,12 +6,11 @@ namespace Estreya.BlishHUD.EventTable
     using Blish_HUD.Modules;
     using Blish_HUD.Modules.Managers;
     using Blish_HUD.Settings;
-    using Estreya.BlishHUD.EventTable.Extensions;
+    using Estreya.BlishHUD.EventTable.Controls;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Models.Settings;
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
-    using Estreya.BlishHUD.EventTable.UI.Container;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;

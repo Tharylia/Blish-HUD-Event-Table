@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Container
+﻿namespace Estreya.BlishHUD.EventTable.Controls
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -14,7 +14,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class EventTableContainer : Blish_HUD.Controls.Container
+    public class EventTableContainer : Container
     {
         private bool _currentVisibilityDirection = false;
 
