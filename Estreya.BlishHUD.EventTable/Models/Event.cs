@@ -631,7 +631,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         public void Hide()
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, System.DateTimeKind.Utc).AddDays(1);
             EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Hidden);
         }
 
@@ -655,7 +655,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         public void Finish()
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, System.DateTimeKind.Utc).AddDays(1);
             EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Completed);
         }
 
