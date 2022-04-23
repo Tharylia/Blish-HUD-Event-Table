@@ -12,29 +12,30 @@
 
     internal class IntTrackBarProvider : ControlProvider<int>
     {
-        internal override Control CreateControl(SettingEntry<int> settingEntry, Func<SettingEntry<int>, int, bool> validationFunction, int width, int heigth, int x, int y)
+        internal override Control CreateControl(BoxedValue<int> value, Func<bool> isEnabled, Func<int, bool> validationFunction, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
-            (int Min, int Max)? range = settingEntry?.GetRange() ?? null;
             TrackBar trackBar = new TrackBar()
             {
                 Width = width,
-                Location = new Point(x,y),
-                Enabled = !settingEntry.IsDisabled(),
-                MinValue = range.HasValue ? range.Value.Min : 0,
-                MaxValue = range.HasValue ? range.Value.Max : 100,
-                Value = settingEntry?.GetValue() ?? 50
+                Location = new Point(x, y),
+                Enabled = isEnabled?.Invoke() ?? true,
+                Value = value?.Value ?? 50
             };
 
-            if (settingEntry != null)
+            trackBar.MinValue = range.HasValue ? range.Value.Min : 0;
+            trackBar.MaxValue = range.HasValue ? range.Value.Max : 100;
+
+            if (value != null)
             {
-                trackBar.ValueChanged += (s, e) => {
-                    if (validationFunction?.Invoke(settingEntry, (int)e.Value) ?? false)
+                trackBar.ValueChanged += (s, e) =>
+                {
+                    if (validationFunction?.Invoke((int)e.Value) ?? true)
                     {
-                        settingEntry.Value = (int)e.Value;
+                        value.Value = (int)e.Value;
                     }
                     else
                     {
-                        trackBar.Value = settingEntry.Value;
+                        trackBar.Value = value.Value;
                     }
                 };
             }

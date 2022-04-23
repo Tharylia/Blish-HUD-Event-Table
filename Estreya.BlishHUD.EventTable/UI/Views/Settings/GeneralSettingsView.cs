@@ -11,7 +11,7 @@
         {
         }
 
-        protected override void InternalBuild(Panel parent)
+        protected override void BuildView(Panel parent)
         {
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabled);
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabledHotkey);

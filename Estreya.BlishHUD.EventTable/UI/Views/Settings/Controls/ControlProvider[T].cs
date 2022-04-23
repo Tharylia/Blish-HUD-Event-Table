@@ -8,16 +8,16 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public abstract class ControlProvider<T> : ControlProvider
+    public abstract class ControlProvider<TValue> : ControlProvider
     {
 
         public Type Type { get; }
 
         internal ControlProvider()
         {
-            this.Type = typeof(T);
+            this.Type = typeof(TValue);
         }
 
-        internal abstract Control CreateControl(SettingEntry<T> settingEntry, Func<SettingEntry<T>, T, bool> validationFunction, int width, int heigth, int x, int y);
+        internal abstract Control CreateControl(BoxedValue<TValue> value, Func<bool> isEnabled, Func<TValue, bool> validationFunction, (float Min, float Max)? range, int width, int heigth, int x, int y);
     }
 }

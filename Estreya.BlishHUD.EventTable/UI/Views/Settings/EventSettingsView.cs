@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
+namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
     using Estreya.BlishHUD.EventTable.Helpers;
@@ -18,7 +18,7 @@
         {
         }
 
-        protected override void InternalBuild(Panel parent)
+        protected override void BuildView(Panel parent)
         {
             this.RenderSetting(parent, this.ModuleSettings.EventHeight);
             this.RenderSetting(parent, this.ModuleSettings.EventFontSize);

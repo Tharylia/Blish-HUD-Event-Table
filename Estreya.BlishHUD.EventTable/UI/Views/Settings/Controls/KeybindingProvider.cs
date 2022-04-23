@@ -13,27 +13,29 @@
 
     internal class KeybindingProvider : ControlProvider<KeyBinding>
     {
-        internal override Control CreateControl(SettingEntry<KeyBinding> settingEntry, Func<SettingEntry<KeyBinding>, KeyBinding, bool> validationFunction, int width, int heigth, int x, int y)
+
+        internal override Control CreateControl(BoxedValue<KeyBinding> value, Func<bool> isEnabled, Func<KeyBinding, bool> validationFunction, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
-            EventTable.Controls.KeybindingAssigner keybindingAssigner = new EventTable.Controls.KeybindingAssigner(settingEntry.Value, false)
+            EventTable.Controls.KeybindingAssigner keybindingAssigner = new EventTable.Controls.KeybindingAssigner(value.Value, false)
             {
                 Width = width,
                 Location = new Point(x, y),
-                Enabled = !settingEntry.IsDisabled()
+                Enabled = isEnabled?.Invoke() ?? true
             };
 
-            if (settingEntry != null)
+            if (value != null)
             {
-                keybindingAssigner.BindingChanged += (s, e) => {
-                    if (validationFunction?.Invoke(settingEntry, keybindingAssigner.KeyBinding) ?? false)
-                    {
-                        settingEntry.Value = keybindingAssigner.KeyBinding;
-                    }
-                    else
-                    {
-                        keybindingAssigner.KeyBinding = settingEntry.Value;
-                    }
-                };
+                keybindingAssigner.BindingChanged += (s, e) =>
+            {
+                if (validationFunction?.Invoke(keybindingAssigner.KeyBinding) ?? true)
+                {
+                    value.Value = keybindingAssigner.KeyBinding;
+                }
+                else
+                {
+                    keybindingAssigner.KeyBinding = value.Value;
+                }
+            };
             }
 
             return keybindingAssigner;

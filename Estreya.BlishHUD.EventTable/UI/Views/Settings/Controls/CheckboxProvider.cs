@@ -12,22 +12,23 @@
 
     internal class CheckboxProvider : ControlProvider<bool>
     {
-        internal override Control CreateControl(SettingEntry<bool> settingEntry, Func<SettingEntry<bool>, bool, bool> validationFunction, int width, int heigth, int x, int y)
+        internal override Control CreateControl(BoxedValue<bool> value, Func<bool> isEnabled, Func<bool, bool> validationFunction, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
             Checkbox checkbox = new Checkbox()
             {
                 Width = width,
                 Location = new Point(x, y),
-                Checked = settingEntry?.Value ?? false,
-                Enabled = !settingEntry.IsDisabled()
+                Checked = value?.Value ?? false,
+                Enabled = isEnabled?.Invoke() ?? true
             };
 
-            if (settingEntry != null)
+            if (value != null)
             {
-                checkbox.CheckedChanged += (s, e) => {
-                    if (validationFunction?.Invoke(settingEntry, e.Checked) ?? false)
+                checkbox.CheckedChanged += (s, e) =>
+                {
+                    if (validationFunction?.Invoke(e.Checked) ?? true)
                     {
-                        settingEntry.Value = e.Checked;
+                        value.Value = e.Checked;
                     }
                     else
                     {

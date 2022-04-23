@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
+namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
     using System;
@@ -10,7 +10,7 @@
         {
         }
 
-        protected override void InternalBuild(Panel parent)
+        protected override void BuildView(Panel parent)
         {
             this.RenderSetting(parent, this.ModuleSettings.LocationX);
             this.RenderSetting(parent, this.ModuleSettings.LocationY);

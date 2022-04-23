@@ -41,7 +41,7 @@
                 return 0;
             }
 
-            (int Min, int Max)? range = GetRange(settingEntry);
+            (float Min, float Max)? range = GetRange(settingEntry);
 
             if (!range.HasValue)
             {
@@ -50,47 +50,37 @@
 
             if (settingEntry.Value > range.Value.Max)
             {
-                return range.Value.Max;
+                return (int)range.Value.Max;
             }
 
             if (settingEntry.Value < range.Value.Min)
             {
-                return range.Value.Min;
+                return (int)range.Value.Min;
             }
 
             return settingEntry.Value;
         }
 
-        public static (int Min, int Max)? GetRange(this SettingEntry<int> settingEntry)
+        public static (float Min, float Max)? GetRange<T>(this SettingEntry<T> settingEntry)
         {
             if (settingEntry == null)
             {
                 return null;
             }
 
-            List<IComplianceRequisite> crList = settingEntry.GetComplianceRequisite().Where(cr => cr is IntRangeRangeComplianceRequisite).ToList();
+            List<IComplianceRequisite> intRangeList = settingEntry.GetComplianceRequisite().Where(cr => cr is IntRangeRangeComplianceRequisite).ToList();
 
-            if (crList.Count > 0)
+            if (intRangeList.Count > 0)
             {
-                IntRangeRangeComplianceRequisite intRangeCr = (IntRangeRangeComplianceRequisite)crList[0];
+                IntRangeRangeComplianceRequisite intRangeCr = (IntRangeRangeComplianceRequisite)intRangeList[0];
                 return (intRangeCr.MinValue, intRangeCr.MaxValue);
             }
 
-            return null;
-        }
+            List<IComplianceRequisite> floatList = settingEntry.GetComplianceRequisite().Where(cr => cr is FloatRangeRangeComplianceRequisite).ToList();
 
-        public static (float Min, float Max)? GetRange(this SettingEntry<float> settingEntry)
-        {
-            if (settingEntry == null)
+            if (floatList.Count > 0)
             {
-                return null;
-            }
-
-            List<IComplianceRequisite> crList = settingEntry.GetComplianceRequisite().Where(cr => cr is FloatRangeRangeComplianceRequisite).ToList();
-
-            if (crList.Count > 0)
-            {
-                FloatRangeRangeComplianceRequisite floatRangeCr = (FloatRangeRangeComplianceRequisite)crList[0];
+                FloatRangeRangeComplianceRequisite floatRangeCr = (FloatRangeRangeComplianceRequisite)floatList[0];
                 return (floatRangeCr.MinValue, floatRangeCr.MaxValue);
             }
 

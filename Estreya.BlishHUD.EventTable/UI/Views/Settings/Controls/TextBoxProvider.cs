@@ -13,23 +13,35 @@
 
     internal class TextBoxProvider : ControlProvider<string>
     {
-        internal override Control CreateControl(SettingEntry<string> settingEntry, Func<SettingEntry<string>, string, bool> validationFunction, int width, int heigth, int x, int y)
+        internal override Control CreateControl(BoxedValue<string> value, Func<bool> isEnabled, Func<string, bool> validationFunction, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
             TextBox textBox = new TextBox()
             {
                 Width = width,
-                Location = new Point(x,y),
-                Text = settingEntry?.Value ?? string.Empty,
-                Enabled = !settingEntry?.IsDisabled() ?? true
+                Location = new Point(x, y),
+                Text = value?.Value ?? string.Empty,
+                Enabled = isEnabled?.Invoke() ?? true
             };
 
-            if (settingEntry != null)
+            if (value != null)
             {
-                textBox.TextChanged += (s, e) => {
+                textBox.TextChanged += (s, e) =>
+                {
                     ValueChangedEventArgs<string> eventArgs = (ValueChangedEventArgs<string>)e;
-                    if (validationFunction?.Invoke(settingEntry, eventArgs.NewValue) ?? false)
+
+                    bool rangeValid = true;
+
+                    if (range != null)
                     {
-                        settingEntry.Value = eventArgs.NewValue;
+                        if (eventArgs.NewValue.Length < range.Value.Min || eventArgs.NewValue.Length > range.Value.Max)
+                        {
+                            rangeValid = false;
+                        }
+                    }
+
+                    if (rangeValid && (validationFunction?.Invoke(eventArgs.NewValue) ?? true))
+                    {
+                        value.Value = eventArgs.NewValue;
                     }
                     else
                     {
