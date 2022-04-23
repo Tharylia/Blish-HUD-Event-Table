@@ -770,5 +770,41 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             UpdateUtil.Update(this.UpdateEventOccurences, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
+
+        public void Edit()
+        {
+            Task.Run(async () =>
+            {
+                Texture2D backgroundTexture = await EventTableModule.ModuleInstance.IconState.GetIconAsync("controls/window/502049", false);
+
+                Rectangle settingsWindowSize = new Rectangle(35, 50, 913, 691);
+                int contentRegionPaddingY = settingsWindowSize.Y - 15;
+                int contentRegionPaddingX = settingsWindowSize.X + 46;
+                Rectangle contentRegion = new Rectangle(contentRegionPaddingX, contentRegionPaddingY, settingsWindowSize.Width - 52, settingsWindowSize.Height - contentRegionPaddingY);
+
+
+                StandardWindow window = new StandardWindow(backgroundTexture, settingsWindowSize, contentRegion)
+                {
+                    Parent = GameService.Graphics.SpriteScreen,
+                    Title = "Edit",
+                    Emblem = await EventTableModule.ModuleInstance.IconState.GetIconAsync("156684", false),
+                    Subtitle = this.Name,
+                    SavesPosition = true,
+                    Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
+                };
+                var editView = new EditEventView(this.Clone());
+                editView.SavePressed += (s, e) =>
+                {
+                    // Save edited event
+                };
+
+                window.Show(editView);
+            });
+        }
+
+        public Event Clone()
+        {
+            return (Event)this.MemberwiseClone();
+        }
     }
 }
