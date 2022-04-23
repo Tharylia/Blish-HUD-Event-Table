@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
     using System;
@@ -15,8 +15,10 @@ namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
             this.RenderSetting(parent, this.ModuleSettings.LocationX);
             this.RenderSetting(parent, this.ModuleSettings.LocationY);
             this.RenderSetting(parent, this.ModuleSettings.Width);
+            this.RenderSetting(parent, this.ModuleSettings.EventHeight);
             this.RenderEmptyLine(parent);
             this.RenderSetting(parent, this.ModuleSettings.Opacity);
+            this.RenderSetting(parent, this.ModuleSettings.EventFontSize);
             this.RenderEmptyLine(parent);
             this.RenderSetting(parent, this.ModuleSettings.BackgroundColorOpacity);
             this.RenderColorSetting(parent, this.ModuleSettings.BackgroundColor);
