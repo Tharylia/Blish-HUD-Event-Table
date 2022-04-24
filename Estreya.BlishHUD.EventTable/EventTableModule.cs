@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -7,6 +7,7 @@ namespace Estreya.BlishHUD.EventTable
     using Blish_HUD.Modules.Managers;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Controls;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Models.Settings;
     using Estreya.BlishHUD.EventTable.Resources;
@@ -15,7 +16,6 @@ namespace Estreya.BlishHUD.EventTable
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended.BitmapFonts;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -162,9 +162,14 @@ namespace Estreya.BlishHUD.EventTable
             this.Container = new EventTableContainer()
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                BackgroundColor = Microsoft.Xna.Framework.Color.Transparent,
+                BackgroundColor = Color.Transparent,
                 Opacity = 0f,
                 Visible = false
+            };
+
+            GameService.Overlay.UserLocaleChanged += (s, e) =>
+            {
+                AsyncHelper.RunSync(this.LoadEvents);
             };
         }
 
@@ -228,7 +233,7 @@ namespace Estreya.BlishHUD.EventTable
             string threadName = $"{Thread.CurrentThread.ManagedThreadId}";
             Logger.Debug("Try loading events from thread: {0}", threadName);
 
-            await _eventCategorySemaphore.WaitAsync();
+            await this._eventCategorySemaphore.WaitAsync();
 
             Logger.Debug("Thread \"{0}\" started loading", threadName);
 
@@ -238,7 +243,7 @@ namespace Estreya.BlishHUD.EventTable
                 {
                     lock (this._eventCategories)
                     {
-                        foreach (EventCategory ec in _eventCategories)
+                        foreach (EventCategory ec in this._eventCategories)
                         {
                             ec.Unload();
                         }
@@ -264,14 +269,7 @@ namespace Estreya.BlishHUD.EventTable
 
                 Logger.Info($"Loaded {eventCategoryCount} Categories with {eventCount} Events.");
 
-                /*
-                foreach (EventCategory ec in categories)
-                {
-                    await ec.LoadAsync();
-                }
-                */
-
-                var eventCategoryLoadTasks = categories.Select(ec =>
+                IEnumerable<Task> eventCategoryLoadTasks = categories.Select(ec =>
                 {
                     return ec.LoadAsync();
                 });
@@ -291,7 +289,7 @@ namespace Estreya.BlishHUD.EventTable
             }
             finally
             {
-                _eventCategorySemaphore.Release();
+                this._eventCategorySemaphore.Release();
                 Logger.Debug("Thread \"{0}\" released loading lock", threadName);
             }
         }
@@ -301,10 +299,10 @@ namespace Estreya.BlishHUD.EventTable
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
             Action<string> completeEventAction = (string apiCode) =>
+            {
+                lock (this._eventCategories)
                 {
-                    lock (this._eventCategories)
-                    {
-                        List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
+                    List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
                     events.ForEach(ev =>
                     {
                         switch (this.ModuleSettings.EventCompletedAcion.Value)
@@ -318,32 +316,32 @@ namespace Estreya.BlishHUD.EventTable
                             default:
                                 Logger.Warn("Unsupported event completion action: {0}", this.ModuleSettings.EventCompletedAcion.Value);
                                 break;
-                    }
+                        }
                     });
                 }
             };
 
             using (await this._stateLock.LockAsync())
             {
-            if (!beforeFileLoaded)
-            {
-                this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
-                this.WorldbossState.WorldbossCompleted += (s, e) =>
+                if (!beforeFileLoaded)
                 {
+                    this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
+                    this.WorldbossState.WorldbossCompleted += (s, e) =>
+                    {
                         completeEventAction.Invoke(e);
-                };
-                this.MapchestState = new MapchestState(this.Gw2ApiManager);
-                this.MapchestState.MapchestCompleted += (s, e) =>
+                    };
+                    this.MapchestState = new MapchestState(this.Gw2ApiManager);
+                    this.MapchestState.MapchestCompleted += (s, e) =>
+                    {
+                        completeEventAction.Invoke(e);
+                    };
+                }
+                else
                 {
-                        completeEventAction.Invoke(e);
-                };
-            }
-            else
-            {
-                this.EventFileState = new EventFileState(this.ContentsManager, eventsDirectory, "events.json");
+                    this.EventFileState = new EventFileState(this.ContentsManager, eventsDirectory, "events.json");
                     this.EventState = new EventState(eventsDirectory);
-                this.IconState = new IconState(this.ContentsManager, eventsDirectory);
-            }
+                    this.IconState = new IconState(this.ContentsManager, eventsDirectory);
+                }
 
                 if (!beforeFileLoaded)
                 {
@@ -359,7 +357,7 @@ namespace Estreya.BlishHUD.EventTable
 
                 // Only start states not already running
                 foreach (ManagedState state in this.States.Where(state => !state.Running))
-            {
+                {
                     try
                     {
                         // Order is important
@@ -488,7 +486,7 @@ namespace Estreya.BlishHUD.EventTable
 
             this.CheckContainerSizeAndPosition();
 
-            using (_stateLock.Lock())
+            using (this._stateLock.Lock())
             {
                 foreach (ManagedState state in this.States)
                 {
@@ -602,7 +600,7 @@ namespace Estreya.BlishHUD.EventTable
 
             Logger.Debug("Unload event categories.");
 
-            foreach (EventCategory ec in _eventCategories)
+            foreach (EventCategory ec in this._eventCategories)
             {
                 ec.Unload();
             }
@@ -647,7 +645,7 @@ namespace Estreya.BlishHUD.EventTable
         {
             using (await this._stateLock.LockAsync())
             {
-               await Task.WhenAll(this.States.Select(state => state.Reload()));
+                await Task.WhenAll(this.States.Select(state => state.Reload()));
             }
         }
 

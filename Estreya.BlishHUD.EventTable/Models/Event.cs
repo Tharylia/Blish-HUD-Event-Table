@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -6,6 +6,7 @@ namespace Estreya.BlishHUD.EventTable.Models
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
+    using Estreya.BlishHUD.EventTable.UI.Views.Edit;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -14,8 +15,10 @@ namespace Estreya.BlishHUD.EventTable.Models
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     [Serializable]
@@ -26,6 +29,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         private readonly TimeSpan updateInterval = TimeSpan.FromMinutes(15);
         private double timeSinceUpdate = 0;
 
+        [Description("Specifies the key of the event. Should be unique for a event category. Avoid changing it, as it resets saved settings and states.")]
         [JsonProperty("key")]
         public string Key { get; set; }
 
@@ -39,6 +43,7 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
+
         [JsonProperty("convertOffset")]
         public bool ConvertOffset { get; set; } = true;
 
@@ -59,15 +64,31 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         [JsonProperty("icon")]
         public string Icon { get; set; }
+
+        [JsonIgnore]
+        private string _backgroundColorCode;
+
         [JsonProperty("color")]
-        public string BackgroundColorCode { get; set; }
+        public string BackgroundColorCode
+        {
+            get => this._backgroundColorCode; 
+            set
+            {
+                this._backgroundColorCode = value;
+                this._backgroundColor = null;
+            }
+        }
+
         [JsonProperty("apiType")]
         public APICodeType APICodeType { get; set; }
 
         [JsonProperty("api")]
         public string APICode { get; set; }
 
+        [JsonIgnore]
         internal bool Filler { get; set; }
+
+        [JsonIgnore]
         internal EventCategory EventCategory { get; set; }
 
         [JsonIgnore]
@@ -125,87 +146,87 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
 
-                    ContextMenuStripItem copyWaypoint = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_CopyWaypoint
-                    };
+            ContextMenuStripItem copyWaypoint = new ContextMenuStripItem
+            {
+                Text = Strings.Event_CopyWaypoint
+            };
             copyWaypoint.BasicTooltipText = "Copies the waypoint to the clipboard.";
-                    copyWaypoint.Click += (s, e) => this.CopyWaypoint();
+            copyWaypoint.Click += (s, e) => this.CopyWaypoint();
             contextMenuStrip.AddMenuItem(copyWaypoint);
 
-                    ContextMenuStripItem openWiki = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_OpenWiki
-                    };
+            ContextMenuStripItem openWiki = new ContextMenuStripItem
+            {
+                Text = Strings.Event_OpenWiki
+            };
             openWiki.BasicTooltipText = "Open the wiki in the default browser.";
-                    openWiki.Click += (s, e) => this.OpenWiki();
+            openWiki.Click += (s, e) => this.OpenWiki();
             contextMenuStrip.AddMenuItem(openWiki);
 
-                    #region Hide
-                    Blish_HUD.Controls.ContextMenuStrip hideMenuStrip = new ContextMenuStrip();
+            #region Hide
+            Blish_HUD.Controls.ContextMenuStrip hideMenuStrip = new ContextMenuStrip();
 
-                    ContextMenuStripItem hideCategory = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_HideCategory,
-                    };
-                    hideCategory.BasicTooltipText = "Hides the event category until reset.";
-                    hideCategory.Click += (s, e) => this.HideCategory();
-                    hideMenuStrip.AddMenuItem(hideCategory);
+            ContextMenuStripItem hideCategory = new ContextMenuStripItem
+            {
+                Text = Strings.Event_HideCategory,
+            };
+            hideCategory.BasicTooltipText = "Hides the event category until reset.";
+            hideCategory.Click += (s, e) => this.HideCategory();
+            hideMenuStrip.AddMenuItem(hideCategory);
 
-                    ContextMenuStripItem hideEvent = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_HideEvent
-                    };
-                    hideEvent.BasicTooltipText = "Hides the event until reset.";
-                    hideEvent.Click += (s, e) => this.Hide();
-                    hideMenuStrip.AddMenuItem(hideEvent);
+            ContextMenuStripItem hideEvent = new ContextMenuStripItem
+            {
+                Text = Strings.Event_HideEvent
+            };
+            hideEvent.BasicTooltipText = "Hides the event until reset.";
+            hideEvent.Click += (s, e) => this.Hide();
+            hideMenuStrip.AddMenuItem(hideEvent);
 
-                    ContextMenuStripItem hideItem = new ContextMenuStripItem
-                    {
-                        Text = "Hide",
+            ContextMenuStripItem hideItem = new ContextMenuStripItem
+            {
+                Text = "Hide",
                 Submenu = hideMenuStrip,
                 BasicTooltipText = "Adds options for hiding events."
-                    };
+            };
             contextMenuStrip.AddMenuItem(hideItem);
-                    #endregion
+            #endregion
 
-                    #region Finish
-                    Blish_HUD.Controls.ContextMenuStrip finishMenuStrip = new ContextMenuStrip();
-                    
-                    ContextMenuStripItem finishCategory = new ContextMenuStripItem
-                    {
+            #region Finish
+            Blish_HUD.Controls.ContextMenuStrip finishMenuStrip = new ContextMenuStrip();
+
+            ContextMenuStripItem finishCategory = new ContextMenuStripItem
+            {
                 Text = "Finish Category",
                 BasicTooltipText = "Completes the event category until reset."
-                    };
+            };
 
-                    finishCategory.Click += (s, e) => this.FinishCategory();
-                    finishMenuStrip.AddMenuItem(finishCategory);
+            finishCategory.Click += (s, e) => this.FinishCategory();
+            finishMenuStrip.AddMenuItem(finishCategory);
 
-                    ContextMenuStripItem finishEvent = new ContextMenuStripItem
-                    {
+            ContextMenuStripItem finishEvent = new ContextMenuStripItem
+            {
                 Text = "Finish Event",
                 BasicTooltipText = "Completes the event until reset."
-                    };
+            };
 
             finishEvent.LeftMouseButtonPressed += (s, e) => this.Finish();
-                    finishMenuStrip.AddMenuItem(finishEvent);
+            finishMenuStrip.AddMenuItem(finishEvent);
 
-                    ContextMenuStripItem finishItem = new ContextMenuStripItem
-                    {
-                        Text = "Finish",
-                        Submenu = finishMenuStrip,
+            ContextMenuStripItem finishItem = new ContextMenuStripItem
+            {
+                Text = "Finish",
+                Submenu = finishMenuStrip,
                 BasicTooltipText = "Adds options for finishing events."
-                    };
+            };
 
             contextMenuStrip.AddMenuItem(finishItem);
-                    #endregion
+            #endregion
 
-                    ContextMenuStripItem disable = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_Disable
-                    };
+            ContextMenuStripItem disable = new ContextMenuStripItem
+            {
+                Text = Strings.Event_Disable
+            };
             disable.BasicTooltipText = "Disables the event completely.";
-                    disable.Click += (s, e) => this.Disable();
+            disable.Click += (s, e) => this.Disable();
             contextMenuStrip.AddMenuItem(disable);
 
             return contextMenuStrip;
@@ -225,8 +246,8 @@ namespace Estreya.BlishHUD.EventTable.Models
                     {
                         try
                         {
-                        System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(this.BackgroundColorCode) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(this.BackgroundColorCode);
-                        this._backgroundColor = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
+                            System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(this.BackgroundColorCode) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(this.BackgroundColorCode);
+                            this._backgroundColor = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
                         }
                         catch (Exception ex)
                         {
@@ -248,11 +269,11 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             get
             {
-                if (_isDisabled == null)
+                if (this._isDisabled == null)
                 {
                     if (this.Filler)
                     {
-                        _isDisabled = false;
+                        this._isDisabled = false;
                     }
 
                     IEnumerable<SettingEntry<bool>> eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
@@ -260,16 +281,16 @@ namespace Estreya.BlishHUD.EventTable.Models
                     {
                         bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.EventState.Contains(this.SettingKey, EventState.EventStates.Hidden);
 
-                        _isDisabled = !enabled;
+                        this._isDisabled = !enabled;
                     }
 
-                    if (!_isDisabled.HasValue)
+                    if (!this._isDisabled.HasValue)
                     {
-                        _isDisabled = false;
+                        this._isDisabled = false;
                     }
                 }
 
-                return _isDisabled.Value;
+                return this._isDisabled.Value;
             }
         }
 
@@ -671,7 +692,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        
+
 
         public void Finish()
         {
@@ -692,7 +713,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                 return false;
             }
 
-            var finished = EventTableModule.ModuleInstance.EventState.Contains(this.SettingKey, EventState.EventStates.Completed);
+            bool finished = EventTableModule.ModuleInstance.EventState.Contains(this.SettingKey, EventState.EventStates.Completed);
 
             return finished;
         }
@@ -710,8 +731,8 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
 
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow;
-            DateTime min = now.AddDays(-4);
-            DateTime max = now.AddDays(4);
+            DateTime min = now.AddDays(-2);
+            DateTime max = now.AddDays(2);
 
             List<DateTime> occurences = this.GetStartOccurences(now, max, min);
 
