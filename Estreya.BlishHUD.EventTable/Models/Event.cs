@@ -210,8 +210,16 @@ namespace Estreya.BlishHUD.EventTable.Models
                 {
                     if (!this.Filler)
                     {
+                        try
+                        {
                         System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(this.BackgroundColorCode) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(this.BackgroundColorCode);
                         this._backgroundColor = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Failed generating background color:");
+                            this._backgroundColor = Color.Transparent;
+                        }
                     }
                 }
 
@@ -792,10 +800,34 @@ namespace Estreya.BlishHUD.EventTable.Models
                     SavesPosition = true,
                     Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
                 };
+
                 var editView = new EditEventView(this.Clone());
                 editView.SavePressed += (s, e) =>
                 {
+                    window.Hide();
                     // Save edited event
+
+                    lock (this)
+                    {
+                        this.Name = e.Value.Name;
+                        this.Offset = e.Value.Offset;
+                        this.Repeat = e.Value.Repeat;
+                        this.Location = e.Value.Location;
+                        this.Waypoint = e.Value.Waypoint;
+                        this.Wiki = e.Value.Wiki;
+                        this.Duration = e.Value.Duration;
+                        this.Icon = e.Value.Icon;
+                        this.BackgroundColorCode = e.Value.BackgroundColorCode;
+                        this.APICodeType = e.Value.APICodeType;
+                        this.APICode = e.Value.APICode;
+
+                        // Force update next tick
+                        this.timeSinceUpdate = updateInterval.TotalMilliseconds;
+                    }
+                };
+                editView.CancelPressed += (s, e) =>
+                {
+                    window.Hide();
                 };
 
                 window.Show(editView);
