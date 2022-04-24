@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls;
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Controls;
 
 using System;
 using System.Linq.Expressions;

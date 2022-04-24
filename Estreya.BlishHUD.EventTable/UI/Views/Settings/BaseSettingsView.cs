@@ -8,7 +8,7 @@
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Resources;
-    using Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls;
+    using Estreya.BlishHUD.EventTable.UI.Views.Controls;
     using Microsoft.Xna.Framework;
     using MonoGame.Extended.BitmapFonts;
     using System;
@@ -130,7 +130,7 @@
 
             try
             {
-                Control ctrl = ControlProvider<T>.CreateFromSetting(setting, this.HandleValidation, BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
+                Control ctrl = ControlHandler.CreateFromSetting(setting, this.HandleValidation, BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
                 ctrl.Parent = panel;
                 ctrl.BasicTooltipText = setting.Description;
             }

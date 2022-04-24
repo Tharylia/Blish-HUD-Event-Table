@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Controls
 {
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
@@ -10,18 +10,18 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class FloatTrackBarProvider : ControlProvider<float>
+    internal class IntTrackBarProvider : ControlProvider<int,int>
     {
-        internal override Control CreateControl(BoxedValue<float> value, Func<bool> isEnabled, Func<float, bool> validationFunction, (float Min, float Max)? range, int width, int heigth, int x, int y)
+        public override Control CreateControl(BoxedValue<int> value, Func<int, bool> isEnabled, Func<int, bool> isValid, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
             TrackBar trackBar = new TrackBar()
             {
                 Width = width,
                 Location = new Point(x, y),
-                Enabled = isEnabled?.Invoke() ?? true,
-                SmallStep = true,
                 Value = value?.Value ?? 50
             };
+
+            trackBar.Enabled = isEnabled?.Invoke((int)trackBar.Value) ?? true;
 
             trackBar.MinValue = range.HasValue ? range.Value.Min : 0;
             trackBar.MaxValue = range.HasValue ? range.Value.Max : 100;
@@ -30,9 +30,9 @@
             {
                 trackBar.ValueChanged += (s, e) =>
                 {
-                    if (validationFunction?.Invoke(e.Value) ?? true)
+                    if (isValid?.Invoke((int)e.Value) ?? true)
                     {
-                        value.Value = e.Value;
+                        value.Value = (int)e.Value;
                     }
                     else
                     {

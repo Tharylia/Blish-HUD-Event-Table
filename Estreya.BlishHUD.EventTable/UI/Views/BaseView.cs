@@ -3,9 +3,8 @@
 using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
-using Estreya.BlishHUD.EventTable.Models;
 using Estreya.BlishHUD.EventTable.Resources;
-using Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls;
+using Estreya.BlishHUD.EventTable.UI.Views.Controls;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended.BitmapFonts;
 using System;
@@ -13,9 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ControlProvider = Controls.ControlProvider;
 
 public abstract class BaseView : View
 {
@@ -103,7 +102,7 @@ public abstract class BaseView : View
             Size = bounds.Size,
             WidthSizingMode = SizingMode.Fill,
             HeightSizingMode = SizingMode.Fill,
-            AutoSizePadding = new Point(0, 15),
+            AutoSizePadding = new Point(15, 15),
             Parent = buildPanel
         };
 
@@ -129,30 +128,55 @@ public abstract class BaseView : View
         settingContainer.Show(new EmptySettingsLineView(25));
     }
 
-    protected Panel RenderProperty<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, string description = null, int width = -1)
+    protected Panel RenderPropertyWithValidation<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TProperty, (bool Valid, string Message)> validationFunction, string title = null, string description = null, int width = -1)
+    {
+        return this.RenderPropertyWithChangedTypeValidation<TObject, TProperty,TProperty>(parent, obj, expression, isEnabled, validationFunction, title, description, width);
+    }
+
+    protected Panel RenderProperty<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, string title = null, string description = null, int width = -1)
+    {
+        return this.RenderPropertyWithValidation<TObject, TProperty>(parent, obj, expression, isEnabled, null, title, description, width);
+    }
+
+    protected Panel RenderPropertyWithChangedTypeValidation<TObject, TProperty, TOverrideType>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TOverrideType, (bool Valid, string Message)> validationFunction, string title = null, string description = null, int width = -1)
     {
         Panel panel = this.GetPanel(parent);
 
-        if (description == null)
+        if (expression.Body is MemberExpression memberExpression)
         {
-            if (expression.Body is MemberExpression memberExpression)
+            PropertyInfo property = memberExpression.Member as PropertyInfo;
+
+            if (title == null)
             {
-                var property = memberExpression.Member as PropertyInfo;
-                description = property.Name;
+                title = property.Name;
+            }
+
+            if (description == null)
+            {
+                description = property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description ?? property.Name;
             }
         }
 
-        Label label = this.GetLabel(panel, description ?? string.Empty);
+        Label label = this.GetLabel(panel, title ?? string.Empty);
 
         try
         {
-            Control ctrl = ControlProvider.CreateFromProperty(obj, expression, isEnabled,width == -1 ? BINDING_WIDTH : width, -1, label.Right + CONTROL_X_SPACING, 0);
+            Control ctrl = ControlHandler.CreateFromPropertyWithChangedTypeValidation(obj, expression, isEnabled, (TOverrideType val) =>
+            {
+                (bool Valid, string Message) validationResult = validationFunction != null ? validationFunction.Invoke(val) : (true, null);
+                if (!validationResult.Valid)
+                {
+                    this.ShowError(validationResult.Message);
+                }
+
+                return validationResult.Valid;
+            }, width == -1 ? BINDING_WIDTH : width, -1, label.Right + CONTROL_X_SPACING, 0);
             ctrl.Parent = panel;
             ctrl.BasicTooltipText = description;
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, $"Type \"{typeof(TProperty).FullName}\" could not be found in internal type lookup:");
+            Logger.Error(ex, $"Type \"{typeof(TProperty).FullName}\" with override \"{typeof(TOverrideType).FullName}\" could not be found in internal type lookup:");
         }
 
         return panel;
@@ -166,7 +190,7 @@ public abstract class BaseView : View
 
         try
         {
-            TextBox textBox = (TextBox)ControlProvider.Create<string>(BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
+            TextBox textBox = (TextBox)ControlHandler.Create<string>(BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
             textBox.Parent = panel;
             textBox.BasicTooltipText = description;
             textBox.PlaceholderText = placeholder;
@@ -206,16 +230,16 @@ public abstract class BaseView : View
     }
 
 
-    protected void RenderButton(Panel parent, string text, Action action, Func<bool> disabledCallback = null)
+    protected StandardButton RenderButton(Panel parent, string text, Action action, Func<bool> disabledCallback = null)
     {
-        this.RenderButton(parent, text, () =>
+        return this.RenderButton(parent, text, () =>
         {
             action.Invoke();
             return Task.CompletedTask;
         }, disabledCallback);
     }
 
-    protected void RenderButton(Panel parent, string text, Func<Task> action, Func<bool> disabledCallback = null)
+    protected StandardButton RenderButton(Panel parent, string text, Func<Task> action, Func<bool> disabledCallback = null)
     {
         Panel panel = this.GetPanel(parent);
 
@@ -223,9 +247,16 @@ public abstract class BaseView : View
         {
             Parent = panel,
             Text = text,
-            Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width,
+            //Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width + 10,
             Enabled = !disabledCallback?.Invoke() ?? true,
         };
+
+        var measuredWidth = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width + 10;
+
+        if (button.Width < measuredWidth)
+        {
+            button.Width = measuredWidth;
+        }
 
         button.Click += (s, e) => Task.Run(async () =>
         {
@@ -238,6 +269,8 @@ public abstract class BaseView : View
                 this.ShowError(ex.Message);
             }
         });
+
+        return button;
     }
 
     protected void RenderLabel(Panel parent, string title, string value)

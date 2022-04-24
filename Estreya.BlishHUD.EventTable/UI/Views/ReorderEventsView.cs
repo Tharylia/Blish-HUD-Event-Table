@@ -94,7 +94,7 @@
                 await EventTableModule.ModuleInstance.EventFileState.ExportFile(eventSettingsFile);
                 Logger.Debug("Reload events.");
                 await EventTableModule.ModuleInstance.LoadEvents();
-                Controls.ScreenNotification.ShowNotification(Strings.ReorderEventsView_Save_Success);
+                EventTable.Controls.ScreenNotification.ShowNotification(Strings.ReorderEventsView_Save_Success);
             };
 
             StandardButton resetButton = new StandardButton()

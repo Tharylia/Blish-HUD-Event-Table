@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Controls
 {
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
@@ -10,16 +10,16 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class EnumProvider<T> : ControlProvider<T> where T : Enum
+    internal class EnumProvider<T> : ControlProvider<T,T> where T : Enum
     {
-        internal override Control CreateControl(BoxedValue<T> value, Func<bool> enabledFunction, Func<T, bool> validationFunction, (float Min, float Max)? range, int width, int heigth, int x, int y)
+        public override Control CreateControl(BoxedValue<T> value, Func<T, bool> isEnabled, Func<T, bool> isValid, (float Min, float Max)? range, int width, int height, int x, int y)
         {
             Dropdown dropdown = new Dropdown
             {
                 Width = width,
                 Location = new Point(x, y),
                 SelectedItem = value?.Value.ToString(),
-                Enabled = enabledFunction?.Invoke() ?? true
+                Enabled = isEnabled?.Invoke(value.Value) ?? true
             };
 
             foreach (string enumValue in Enum.GetNames(typeof(T)))
@@ -35,7 +35,7 @@
                     if (resetingValue) return;
 
                     var newValue = (T)Enum.Parse(typeof(T), e.CurrentValue);
-                    if (validationFunction?.Invoke(newValue) ?? true)
+                    if (isValid?.Invoke(newValue) ?? true)
                     {
                         value.Value = newValue;
                     }
