@@ -260,8 +260,8 @@
 
                     GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
                     {
-                        editButton.Tooltip = new Tooltip(new TooltipView("Edit", "Edit Description", icon: "images\\wiki.png"));
-                        editButton.Icon = EventTableModule.ModuleInstance.IconState.GetIcon("images\\wiki.png");
+                        editButton.Tooltip = new Tooltip(new TooltipView("Edit", "Edit Description", icon: "156684"));
+                        editButton.Icon = EventTableModule.ModuleInstance.IconState.GetIcon("156684", false);
                     });
 
                     editButton.Click += (s, eventArgs) => e.Edit();
