@@ -33,7 +33,7 @@
 
         public bool IsPrerelease => !string.IsNullOrWhiteSpace(this.Version?.PreRelease);
 
-        private EventTableContainer Container { get; set; }
+        private EventTableDrawer Drawer { get; set; }
 
         #region Service Managers
         internal SettingsManager SettingsManager => this.ModuleParameters.SettingsManager;
@@ -159,7 +159,7 @@
 
         protected override void Initialize()
         {
-            this.Container = new EventTableContainer()
+            this.Drawer = new EventTableDrawer()
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 BackgroundColor = Color.Transparent,
@@ -192,14 +192,14 @@
             Logger.Debug("Initialize states (after event file loading)");
             await this.InitializeStates(false);
 
-            await this.Container.LoadAsync();
+            await this.Drawer.LoadAsync();
 
             this.ModuleSettings.ModuleSettingsChanged += (sender, eventArgs) =>
             {
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                        this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
+                        this.Drawer.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
                         this.ToggleContainer(this.ModuleSettings.GlobalEnabled.Value);
@@ -215,7 +215,7 @@
                         break;
                     case nameof(this.ModuleSettings.BackgroundColor):
                     case nameof(this.ModuleSettings.BackgroundColorOpacity):
-                        this.Container.UpdateBackgroundColor();
+                        this.Drawer.UpdateBackgroundColor();
                         break;
                     default:
                         break;
@@ -418,16 +418,16 @@
 
         private void ToggleContainer(bool show)
         {
-            if (this.Container == null)
+            if (this.Drawer == null)
             {
                 return;
             }
 
             if (!this.ModuleSettings.GlobalEnabled.Value)
             {
-                if (this.Container.Visible)
+                if (this.Drawer.Visible)
                 {
-                    this.Container.Hide();
+                    this.Drawer.Hide();
                 }
 
                 return;
@@ -435,16 +435,16 @@
 
             if (show)
             {
-                if (!this.Container.Visible)
+                if (!this.Drawer.Visible)
                 {
-                    this.Container.Show();
+                    this.Drawer.Show();
                 }
             }
             else
             {
-                if (this.Container.Visible)
+                if (this.Drawer.Visible)
                 {
-                    this.Container.Hide();
+                    this.Drawer.Hide();
                 }
             }
         }
@@ -459,8 +459,8 @@
             // Base handler must be called
             base.OnModuleLoaded(e);
 
-            this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
-            this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
+            this.Drawer.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
+            this.Drawer.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
             //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
 
@@ -502,7 +502,7 @@
         protected override void Update(GameTime gameTime)
         {
             this.CheckMumble();
-            this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
+            this.Drawer.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
 
             this.CheckContainerSizeAndPosition();
 
@@ -530,9 +530,9 @@
             int maxResY = (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier);
 
             int minLocationX = 0;
-            int maxLocationX = maxResX - this.Container.Width;
-            int minLocationY = buildFromBottom ? this.Container.Height : 0;
-            int maxLocationY = buildFromBottom ? maxResY : maxResY - this.Container.Height;
+            int maxLocationX = maxResX - this.Drawer.Width;
+            int minLocationY = buildFromBottom ? this.Drawer.Height : 0;
+            int maxLocationY = buildFromBottom ? maxResY : maxResY - this.Drawer.Height;
             int minWidth = 0;
             int maxWidth = maxResX - this.ModuleSettings.LocationX.Value;
 
@@ -583,7 +583,7 @@
         {
             if (GameService.Gw2Mumble.IsAvailable)
             {
-                if (this.Container != null)
+                if (this.Drawer != null)
                 {
                     bool show = true;
 
@@ -636,9 +636,9 @@
 
             Logger.Debug("Unload event container.");
 
-            if (this.Container != null)
+            if (this.Drawer != null)
             {
-                this.Container.Dispose();
+                this.Drawer.Dispose();
             }
 
             Logger.Debug("Unloaded event container.");

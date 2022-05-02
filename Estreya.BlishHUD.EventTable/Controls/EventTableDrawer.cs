@@ -14,7 +14,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class EventTableContainer : Container
+    public class EventTableContainer : Control
     {
         private bool _currentVisibilityDirection = false;
 
@@ -72,7 +72,7 @@
             {
                 foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, this.RelativeMousePosition, this.PixelPerMinute))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.AbsoluteBounds, this.RelativeMousePosition, this.PixelPerMinute))
                     {
                         ev.HandleHover(sender, mouseEventArgs, this.PixelPerMinute);
                     }
@@ -95,7 +95,7 @@
             {
                 foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled))
                 {
-                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.ContentRegion, this.RelativeMousePosition, this.PixelPerMinute))
+                    if (ev.IsHovered(EventTableModule.ModuleInstance.EventTimeMin, this.AbsoluteBounds, this.RelativeMousePosition, this.PixelPerMinute))
                     {
                         ev.HandleClick(sender, e);
                         return;
@@ -109,7 +109,7 @@
             return CaptureType.DoNotBlock;
         }
 
-        public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
+        protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
         {
             spriteBatch.End();
             spriteBatch.Begin(this.SpriteBatchParameters);
@@ -211,14 +211,13 @@
             this.Size = new Point(width, !overrideHeight ? this.Size.Y : height);
         }
 
-        public override void UpdateContainer(GameTime gameTime)
-        {
-            base.UpdateContainer(gameTime);
-        }
-
         protected override void DisposeControl()
         {
             this.Hide();
+
+            this.LeftMouseButtonPressed -= this.EventTableContainer_Click;
+            this.RightMouseButtonPressed -= this.EventTableContainer_Click;
+            this.MouseMoved -= this.EventTableContainer_MouseMoved;
 
             base.DisposeControl();
         }
