@@ -35,6 +35,11 @@ public class EditEventView : BaseView
             Parent = parent
         };
 
+        // TODO: Remove when ready
+        this.RenderLabel(parentPanel, "THIS IS A WIP WINDOW.\nEXPECT BUGS!", null, Color.Red);
+        this.RenderEmptyLine(parentPanel);
+        this.RenderEmptyLine(parentPanel);
+
         StandardButton saveButton;
         StandardButton cancelButton;
 
@@ -67,7 +72,18 @@ public class EditEventView : BaseView
         this.RenderProperty(parentPanel, this.Event, ev => ev.Location, ev => true);
         this.RenderProperty(parentPanel, this.Event, ev => ev.Waypoint, ev => true);
         this.RenderProperty(parentPanel, this.Event, ev => ev.Wiki, ev => true, null, null, MathHelper.Clamp((int)GameService.Content.DefaultFont14.MeasureString(this.Event.Wiki).Width + 20, 0, parentPanel.Width));
-        this.RenderProperty(parentPanel, this.Event, ev => ev.Duration, ev => true);
+        this.RenderPropertyWithChangedTypeValidation(parentPanel, this.Event, ev => ev.Duration, ev => true, (string val) =>
+        {
+            try
+            {
+                _ = int.Parse(val);
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        });
         this.RenderProperty(parentPanel, this.Event, ev => ev.Icon, ev => true);
         this.RenderPropertyWithValidation(parentPanel, this.Event, ev => ev.BackgroundColorCode, ev => true, val =>
         {
@@ -99,9 +115,6 @@ public class EditEventView : BaseView
 
         saveButton = this.RenderButton(buttonPanel, "Save", () => this.SavePressed?.Invoke(this, new ValueEventArgs<Event>(this.Event)));
         cancelButton = this.RenderButton(buttonPanel, "Cancel", () => this.CancelPressed?.Invoke(this, EventArgs.Empty));
-
-
-
     }
 
     protected override Task<bool> InternalLoad(IProgress<string> progress)

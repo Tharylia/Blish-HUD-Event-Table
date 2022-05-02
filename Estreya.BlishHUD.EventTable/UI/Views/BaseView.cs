@@ -273,13 +273,23 @@ public abstract class BaseView : View
         return button;
     }
 
-    protected void RenderLabel(Panel parent, string title, string value)
+    protected void RenderLabel(Panel parent, string title, string value = null, Color? textColor = null)
     {
         Panel panel = this.GetPanel(parent);
 
         Label titleLabel = this.GetLabel(panel, title);
-        Label valueLabel = this.GetLabel(panel, value);
-        valueLabel.Left = titleLabel.Right + CONTROL_X_SPACING;
+        titleLabel.TextColor = textColor ?? titleLabel.TextColor;
+
+        if (value != null)
+        {
+            Label valueLabel = this.GetLabel(panel, value);
+            valueLabel.Left = titleLabel.Right + CONTROL_X_SPACING;
+            valueLabel.TextColor = textColor ?? valueLabel.TextColor;
+        }
+        else
+        {
+            titleLabel.AutoSizeWidth = true;
+        }
     }
 
     private void RegisterErrorPanel(Container parent)

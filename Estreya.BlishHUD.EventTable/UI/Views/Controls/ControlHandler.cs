@@ -17,6 +17,7 @@ public class ControlHandler
     {
         new TextBoxProvider(),
         new IntTrackBarProvider(),
+        new IntTextBoxProvider(),
         new FloatTrackBarProvider(),
         new CheckboxProvider(),
         new TimeSpanProvider(),
