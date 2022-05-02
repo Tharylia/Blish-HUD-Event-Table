@@ -128,7 +128,10 @@
 
                 Logger.Info($"Remove event states for \"{name}\".");
 
-                instancesToRemove.ForEach(instance => this.Instances.Remove(instance));
+                for (int i = instancesToRemove.Count - 1; i >= 0; i--)
+                {
+                    this.Instances.Remove(instancesToRemove[i]);
+                }
 
                 try
                 {
@@ -149,7 +152,11 @@
             {
                 Logger.Info($"Remove all event states.");
 
-                this.Instances.ForEach(state => this.Remove(state.Key));
+                for (int i = this.Instances.Count - 1; i >= 0; i--)
+                {
+                    this.Remove(this.Instances[i].Key);
+                }
+
                 this.dirty = true;
             }
 

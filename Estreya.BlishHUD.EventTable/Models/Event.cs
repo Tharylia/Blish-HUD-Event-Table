@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -28,6 +28,9 @@
 
         private readonly TimeSpan updateInterval = TimeSpan.FromMinutes(15);
         private double timeSinceUpdate = 0;
+        private bool _editing;
+
+        public event EventHandler Edited;
 
         [Description("Specifies the key of the event. Should be unique for a event category. Avoid changing it, as it resets saved settings and states.")]
         [JsonProperty("key")]
@@ -815,6 +818,13 @@
 
         public void Edit()
         {
+            lock (this)
+            {
+                if (this._editing) return;
+
+                this._editing = true;
+            }
+
             Task.Run(async () =>
             {
                 Texture2D backgroundTexture = await EventTableModule.ModuleInstance.IconState.GetIconAsync("controls/window/502049", false);
@@ -832,6 +842,7 @@
                     Emblem = await EventTableModule.ModuleInstance.IconState.GetIconAsync("156684", false),
                     Subtitle = this.Name,
                     SavesPosition = true,
+                    CanClose = false,
                     Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
                 };
 
@@ -839,6 +850,7 @@
                 editView.SavePressed += (s, e) =>
                 {
                     window.Hide();
+                    window.Dispose();
                     // Save edited event
 
                     lock (this)
@@ -855,13 +867,23 @@
                         this.APICodeType = e.Value.APICodeType;
                         this.APICode = e.Value.APICode;
 
-                        // Force update next tick
+                        // Force update next tick. Don't need to lock since this is locked already.
                         this.timeSinceUpdate = updateInterval.TotalMilliseconds;
+
+                        this._editing = false;
                     }
+
+                    this.Edited?.Invoke(this, EventArgs.Empty);
                 };
                 editView.CancelPressed += (s, e) =>
                 {
                     window.Hide();
+                    window.Dispose();
+
+                    lock (this)
+                    {
+                        this._editing = false;
+                    }
                 };
 
                 window.Show(editView);

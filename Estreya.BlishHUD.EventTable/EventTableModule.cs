@@ -276,6 +276,13 @@
 
                 await Task.WhenAll(eventCategoryLoadTasks);
 
+                categories.ForEach(ec => ec.Events.ForEach(ev =>
+                {
+                    if (ev.Filler) return;
+
+                    ev.Edited += this.EventEdited;
+                }));
+
                 lock (this._eventCategories)
                 {
                     Logger.Debug("Overwrite current categories with newly loaded.");
@@ -294,11 +301,24 @@
             }
         }
 
+        private void EventEdited(object sender, EventArgs e)
+        {
+            Event ev = sender as Event;
+            Logger.Debug($"Event \"{ev.Key}\" edited.");
+            lock (this._eventCategories)
+            {
+                EventSettingsFile eventSettingsFile = AsyncHelper.RunSync(this.EventFileState.GetExternalFile);
+                eventSettingsFile.EventCategories = this._eventCategories;
+                Logger.Debug("Export updated file.");
+                AsyncHelper.RunSync(() => this.EventFileState.ExportFile(eventSettingsFile));
+            }
+        }
+
         private async Task InitializeStates(bool beforeFileLoaded = false)
         {
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
-            Action<string> completeEventAction = (string apiCode) =>
+            void CompleteEventAction(string apiCode)
             {
                 lock (this._eventCategories)
                 {
@@ -319,7 +339,7 @@
                         }
                     });
                 }
-            };
+            }
 
             using (await this._stateLock.LockAsync())
             {
@@ -328,12 +348,12 @@
                     this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
                     this.WorldbossState.WorldbossCompleted += (s, e) =>
                     {
-                        completeEventAction.Invoke(e);
+                        CompleteEventAction(e);
                     };
                     this.MapchestState = new MapchestState(this.Gw2ApiManager);
                     this.MapchestState.MapchestCompleted += (s, e) =>
                     {
-                        completeEventAction.Invoke(e);
+                        CompleteEventAction(e);
                     };
                 }
                 else
@@ -602,6 +622,13 @@
 
             foreach (EventCategory ec in this._eventCategories)
             {
+                ec.Events.ForEach(ev =>
+                {
+                    if (ev.Filler) return;
+
+                    ev.Edited -= this.EventEdited;
+                });
+
                 ec.Unload();
             }
 
