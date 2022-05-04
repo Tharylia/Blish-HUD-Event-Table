@@ -29,6 +29,9 @@
     {
         private static readonly Logger Logger = Logger.GetLogger<EventTableModule>();
 
+        public const string WEBSITE_ROOT_URL = "https://blishhud.estreya.de";
+        public const string WEBSITE_MODULE_URL = $"{WEBSITE_ROOT_URL}/modules/event-table";
+
         internal static EventTableModule ModuleInstance;
 
         public bool IsPrerelease => !string.IsNullOrWhiteSpace(this.Version?.PreRelease);

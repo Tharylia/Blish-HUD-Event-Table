@@ -22,6 +22,8 @@
             this.RenderEmptyLine(parent);
             this.RenderSetting(parent, this.ModuleSettings.BackgroundColorOpacity);
             this.RenderColorSetting(parent, this.ModuleSettings.BackgroundColor);
+            this.RenderEmptyLine(parent);
+            this.RenderSetting(parent, this.ModuleSettings.RefreshRate);
         }
 
         protected override Task<bool> InternalLoad(IProgress<string> progress)

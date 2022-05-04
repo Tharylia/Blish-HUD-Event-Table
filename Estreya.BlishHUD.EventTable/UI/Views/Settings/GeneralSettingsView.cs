@@ -2,6 +2,7 @@
 {
     using Blish_HUD.Controls;
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -13,6 +14,9 @@
 
         protected override void BuildView(Panel parent)
         {
+            this.RenderButton(parent, "Open Website", () => Process.Start(EventTableModule.WEBSITE_MODULE_URL));
+            this.RenderEmptyLine(parent);
+
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabled);
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabledHotkey);
 #if DEBUG
