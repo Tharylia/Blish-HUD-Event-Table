@@ -252,6 +252,20 @@
                         };
                     }
 
+                    GlowButton editButton = new GlowButton()
+                    {
+                        Parent = button,
+                        ToggleGlow = false
+                    };
+
+                    GameService.Graphics.QueueMainThreadRender((graphicDevice) =>
+                    {
+                        editButton.Tooltip = new Tooltip(new TooltipView("Edit", "Edit Description", icon: "156684"));
+                        editButton.Icon = EventTableModule.ModuleInstance.IconState.GetIcon("156684", false);
+                    });
+
+                    editButton.Click += (s, eventArgs) => e.Edit();
+
                     GlowButton toggleButton = new GlowButton()
                     {
                         Parent = button,

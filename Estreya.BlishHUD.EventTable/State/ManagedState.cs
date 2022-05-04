@@ -1,6 +1,7 @@
 ﻿namespace Estreya.BlishHUD.EventTable.State
 {
     using Blish_HUD;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using Microsoft.Xna.Framework;
     using System;
     using System.Threading;
@@ -26,8 +27,11 @@
         {
             if (this.Running)
             {
+                Logger.Warn("Trying to start state \"{0}\" which is already running.", this.GetType().Name);
                 return;
             }
+
+            Logger.Debug("Starting managed state: {0}", this.GetType().Name);
 
             await this.Initialize();
             await this.Load();
@@ -39,8 +43,11 @@
         {
             if (!this.Running)
             {
+                Logger.Warn("Trying to stop state \"{0}\" which is not running.", this.GetType().Name);
                 return;
             }
+
+            Logger.Debug("Stopping managed state: {0}", this.GetType().Name);
 
             this.Running = false;
         }
@@ -82,12 +89,34 @@
             this.InternalUpdate(gameTime);
         }
 
-        public abstract Task Reload();
-
-        public async Task Unload()
+        public async Task Reload()
         {
+            if (!this.Running)
+            {
+                Logger.Warn("Trying to reload state \"{0}\" which is not running.", this.GetType().Name);
+                return;
+            }
+
+            Logger.Debug("Reloading state: {0}", this.GetType().Name);
+
+            await this.InternalReload();
+        }
+
+        public abstract Task InternalReload();
+
+        private async Task Unload()
+        {
+            if (!this.Running)
+            {
+                Logger.Warn("Trying to unload state \"{0}\" which is not running.", this.GetType().Name);
+                return;
+            }
+
+            Logger.Debug("Unloading state: {0}", this.GetType().Name);
+
             await this.Save();
         }
+
         public abstract Task Clear();
 
         protected abstract void InternalUnload();
@@ -101,8 +130,8 @@
 
         public void Dispose()
         {
+            AsyncHelper.RunSync(this.Unload);
             this.Stop();
-            this.InternalUnload();
         }
     }
 }

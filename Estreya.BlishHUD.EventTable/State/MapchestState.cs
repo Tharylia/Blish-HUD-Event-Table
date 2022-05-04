@@ -36,7 +36,7 @@
             return this.completedMapchests.Contains(apiCode);
         }
 
-        public override async Task Reload()
+        public override async Task InternalReload()
         {
             await this.UpdatedCompletedMapchests(null);
         }
@@ -107,7 +107,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateAsyncWithCadence(this.UpdatedCompletedMapchests, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+            UpdateUtil.UpdateAsync(this.UpdatedCompletedMapchests, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
 
         protected override async Task Load()

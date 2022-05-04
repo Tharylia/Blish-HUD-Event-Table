@@ -5,6 +5,8 @@
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Resources;
+    using Estreya.BlishHUD.EventTable.State;
+    using Estreya.BlishHUD.EventTable.UI.Views.Edit;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -13,8 +15,10 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     [Serializable]
@@ -24,7 +28,11 @@
 
         private readonly TimeSpan updateInterval = TimeSpan.FromMinutes(15);
         private double timeSinceUpdate = 0;
+        private bool _editing;
 
+        public event EventHandler Edited;
+
+        [Description("Specifies the key of the event. Should be unique for a event category. Avoid changing it, as it resets saved settings and states.")]
         [JsonProperty("key")]
         public string Key { get; set; }
 
@@ -38,6 +46,7 @@
 
         [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
+
         [JsonProperty("convertOffset")]
         public bool ConvertOffset { get; set; } = true;
 
@@ -58,15 +67,31 @@
 
         [JsonProperty("icon")]
         public string Icon { get; set; }
+
+        [JsonIgnore]
+        private string _backgroundColorCode;
+
         [JsonProperty("color")]
-        public string BackgroundColorCode { get; set; }
+        public string BackgroundColorCode
+        {
+            get => this._backgroundColorCode;
+            set
+            {
+                this._backgroundColorCode = value;
+                this._backgroundColor = null;
+            }
+        }
+
         [JsonProperty("apiType")]
         public APICodeType APICodeType { get; set; }
 
         [JsonProperty("api")]
         public string APICode { get; set; }
 
+        [JsonIgnore]
         internal bool Filler { get; set; }
+
+        [JsonIgnore]
         internal EventCategory EventCategory { get; set; }
 
         [JsonIgnore]
@@ -113,46 +138,114 @@
             {
                 if (this._contextMenuStrip == null)
                 {
-                    this._contextMenuStrip = new ContextMenuStrip();
-
-                    ContextMenuStripItem copyWaypoint = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_CopyWaypoint
-                    };
-                    copyWaypoint.Click += (s, e) => this.CopyWaypoint();
-                    this._contextMenuStrip.AddMenuItem(copyWaypoint);
-
-                    ContextMenuStripItem openWiki = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_OpenWiki
-                    };
-                    openWiki.Click += (s, e) => this.OpenWiki();
-                    this._contextMenuStrip.AddMenuItem(openWiki);
-
-                    ContextMenuStripItem hideCategory = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_HideCategory
-                    };
-                    hideCategory.Click += (s, e) => this.FinishCategory();
-                    this._contextMenuStrip.AddMenuItem(hideCategory);
-
-                    ContextMenuStripItem hideEvent = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_HideEvent
-                    };
-                    hideEvent.Click += (s, e) => this.Finish();
-                    this._contextMenuStrip.AddMenuItem(hideEvent);
-
-                    ContextMenuStripItem disable = new ContextMenuStripItem
-                    {
-                        Text = Strings.Event_Disable
-                    };
-                    disable.Click += (s, e) => this.Disable();
-                    this._contextMenuStrip.AddMenuItem(disable);
+                    this._contextMenuStrip = new ContextMenuStrip(GetContextMenu);
                 }
 
                 return this._contextMenuStrip;
             }
+        }
+
+        private IEnumerable<ContextMenuStripItem> GetContextMenu()
+        {
+            ContextMenuStripItem copyWaypoint = new ContextMenuStripItem
+            {
+                Text = Strings.Event_CopyWaypoint,
+                BasicTooltipText = "Copies the waypoint to the clipboard."
+            };
+            copyWaypoint.Click += (s, e) => this.CopyWaypoint();
+            yield return copyWaypoint;
+
+            ContextMenuStripItem openWiki = new ContextMenuStripItem
+            {
+                Text = Strings.Event_OpenWiki,
+                BasicTooltipText = "Open the wiki in the default browser."
+            };
+            openWiki.Click += (s, e) => this.OpenWiki();
+            yield return openWiki;
+
+            #region Hide
+            Blish_HUD.Controls.ContextMenuStrip hideMenuStrip = new ContextMenuStrip(() =>
+            {
+                List<ContextMenuStripItem> items = new List<ContextMenuStripItem>();
+
+                ContextMenuStripItem hideCategory = new ContextMenuStripItem
+                {
+                    Text = Strings.Event_HideCategory,
+                    BasicTooltipText = "Hides the event category until reset."
+                };
+                hideCategory.Click += (s, e) => this.HideCategory();
+                items.Add(hideCategory);
+
+                ContextMenuStripItem hideEvent = new ContextMenuStripItem
+                {
+                    Text = Strings.Event_HideEvent,
+                    BasicTooltipText = "Hides the event until reset."
+                };
+                hideEvent.Click += (s, e) => this.Hide();
+                items.Add(hideEvent);
+
+                return items;
+            });
+
+            ContextMenuStripItem hideItem = new ContextMenuStripItem
+            {
+                Text = "Hide",
+                Submenu = hideMenuStrip,
+                BasicTooltipText = "Adds options for hiding events."
+            };
+            yield return hideItem;
+            #endregion
+
+            #region Finish
+            Blish_HUD.Controls.ContextMenuStrip finishMenuStrip = new ContextMenuStrip(() =>
+            {
+                List<ContextMenuStripItem> items = new List<ContextMenuStripItem>();
+
+                ContextMenuStripItem finishCategory = new ContextMenuStripItem
+                {
+                    Text = "Finish Category",
+                    BasicTooltipText = "Completes the event category until reset."
+                };
+                finishCategory.Click += (s, e) => this.FinishCategory();
+                items.Add(finishCategory);
+
+                ContextMenuStripItem finishEvent = new ContextMenuStripItem
+                {
+                    Text = "Finish Event",
+                    BasicTooltipText = "Completes the event until reset."
+                };
+                finishEvent.LeftMouseButtonPressed += (s, e) => this.Finish();
+                items.Add(finishEvent);
+
+                return items;
+            });
+            ContextMenuStripItem finishItem = new ContextMenuStripItem
+            {
+                Text = "Finish",
+                Submenu = finishMenuStrip,
+                BasicTooltipText = "Adds options for finishing events."
+            };
+
+            yield return finishItem;
+            #endregion
+
+            ContextMenuStripItem edit = new ContextMenuStripItem
+            {
+                Text = "Edit",
+                BasicTooltipText = "Opens the edit window."
+            };
+            edit.Click += (s, e) => this.Edit();
+
+            yield return edit;
+
+            ContextMenuStripItem disable = new ContextMenuStripItem
+            {
+                Text = Strings.Event_Disable,
+                BasicTooltipText = "Disables the event completely."
+            };
+            disable.Click += (s, e) => this.Disable();
+
+            yield return disable;
         }
 
         [JsonIgnore]
@@ -167,12 +260,53 @@
                 {
                     if (!this.Filler)
                     {
-                        System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(this.BackgroundColorCode) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(this.BackgroundColorCode);
-                        this._backgroundColor = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
+                        try
+                        {
+                            System.Drawing.Color colorFromEvent = string.IsNullOrWhiteSpace(this.BackgroundColorCode) ? System.Drawing.Color.White : System.Drawing.ColorTranslator.FromHtml(this.BackgroundColorCode);
+                            this._backgroundColor = new Color(colorFromEvent.R, colorFromEvent.G, colorFromEvent.B);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Failed generating background color:");
+                            this._backgroundColor = Color.Transparent;
+                        }
                     }
                 }
 
                 return this._backgroundColor ?? Color.Transparent;
+            }
+        }
+
+        [JsonIgnore]
+        private bool? _isDisabled;
+
+        [JsonIgnore]
+        public bool IsDisabled
+        {
+            get
+            {
+                if (this._isDisabled == null)
+                {
+                    if (this.Filler)
+                    {
+                        this._isDisabled = false;
+                    }
+
+                    IEnumerable<SettingEntry<bool>> eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
+                    if (eventSetting.Any())
+                    {
+                        bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.EventState.Contains(this.SettingKey, EventState.EventStates.Hidden);
+
+                        this._isDisabled = !enabled;
+                    }
+
+                    if (!this._isDisabled.HasValue)
+                    {
+                        this._isDisabled = false;
+                    }
+                }
+
+                return this._isDisabled.Value;
             }
         }
 
@@ -276,38 +410,15 @@
 
                 #region Draw Cross out
 
-                if (EventTableModule.ModuleInstance.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Crossout && !this.Filler && !string.IsNullOrWhiteSpace(this.APICode))
+                if ((this.EventCategory?.IsFinished() ?? false) || this.IsFinished())
                 {
-                    if (this.IsCompleted())
-                    {
-                        spriteBatch.DrawCrossOut( control, baseTexture, eventTexturePosition, Color.Red);
-                    }
+                    spriteBatch.DrawCrossOut(control, baseTexture, eventTexturePosition, Color.Red);
                 }
                 #endregion
 
             }
 
             return occurences.Any();
-        }
-
-        public bool IsCompleted()
-        {
-            bool completed = false;
-
-            switch (this.APICodeType)
-            {
-                case APICodeType.Worldboss:
-                    completed |= EventTableModule.ModuleInstance.WorldbossState.IsCompleted(this.APICode);
-                    break;
-                case APICodeType.Mapchest:
-                    completed |= EventTableModule.ModuleInstance.MapchestState.IsCompleted(this.APICode);
-                    break;
-                default:
-                    Logger.Warn($"Unsupported api code type: {this.APICodeType}");
-                    break;
-            }
-
-            return completed;
         }
 
         private void UpdateTooltip(string description)
@@ -447,7 +558,7 @@
 
         public bool IsHovered(DateTime min, Rectangle bounds, Point relativeMousePosition, double pixelPerMinute)
         {
-            if (this.IsDisabled())
+            if (this.IsDisabled)
             {
                 return false;
             }
@@ -575,16 +686,16 @@
             }
         }
 
-        public void Finish()
+        public void Hide()
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
-            EventTableModule.ModuleInstance.HiddenState.Add(this.SettingKey, until, true);
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, System.DateTimeKind.Utc).AddDays(1);
+            EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Hidden);
         }
 
-        public void FinishCategory()
+        private void HideCategory()
         {
-            this.EventCategory?.Finish();
+            this.EventCategory?.Hide();
         }
 
         public void Disable()
@@ -597,23 +708,28 @@
             }
         }
 
-        public bool IsDisabled()
+        public void Finish()
+        {
+            DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, System.DateTimeKind.Utc).AddDays(1);
+            EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Completed);
+        }
+
+        private void FinishCategory()
+        {
+            this.EventCategory?.Finish();
+        }
+
+        public bool IsFinished()
         {
             if (this.Filler)
             {
                 return false;
             }
 
-            // Check with .ToLower() because settings define is case insensitive
-            IEnumerable<SettingEntry<bool>> eventSetting = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.Where(e => e.EntryKey.ToLowerInvariant() == this.SettingKey.ToLowerInvariant());
-            if (eventSetting.Any())
-            {
-                bool enabled = eventSetting.First().Value && !EventTableModule.ModuleInstance.HiddenState.IsHidden(this.SettingKey);
+            bool finished = EventTableModule.ModuleInstance.EventState.Contains(this.SettingKey, EventState.EventStates.Completed);
 
-                return !enabled;
-            }
-
-            return false;
+            return finished;
         }
 
         private void UpdateEventOccurences(GameTime gameTime)
@@ -629,8 +745,8 @@
             }
 
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow;
-            DateTime min = now.AddDays(-4);
-            DateTime max = now.AddDays(4);
+            DateTime min = now.AddDays(-2);
+            DateTime max = now.AddDays(2);
 
             List<DateTime> occurences = this.GetStartOccurences(now, max, min);
 
@@ -642,6 +758,10 @@
 
         public Task LoadAsync()
         {
+            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
+            EventTableModule.ModuleInstance.EventState.StateAdded += this.EventState_StateAdded;
+            EventTableModule.ModuleInstance.EventState.StateRemoved += this.EventState_StateRemoved;
+
             // Prevent crash on older events.json files
             if (string.IsNullOrWhiteSpace(this.Key))
             {
@@ -661,9 +781,37 @@
             return Task.CompletedTask;
         }
 
+        private void EventState_StateRemoved(object sender, ValueEventArgs<string> e)
+        {
+            if (this.SettingKey == e.Value)
+            {
+                this._isDisabled = null;
+            }
+        }
+
+        private void EventState_StateAdded(object sender, ValueEventArgs<EventState.VisibleStateInfo> e)
+        {
+            if (this.SettingKey == e.Value.Key && e.Value.State == EventState.EventStates.Hidden)
+            {
+                this._isDisabled = null;
+            }
+        }
+
+        private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
+        {
+            if (this.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant())
+            {
+                this._isDisabled = null;
+            }
+        }
+
         public void Unload()
         {
             Logger.Debug("Unload event: {0}", this.Key);
+
+            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
+            EventTableModule.ModuleInstance.EventState.StateAdded -= this.EventState_StateAdded;
+            EventTableModule.ModuleInstance.EventState.StateRemoved -= this.EventState_StateRemoved;
 
             this._tooltip?.Dispose();
             this._tooltip = null;
@@ -676,7 +824,85 @@
 
         public void Update(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateWithCadence(this.UpdateEventOccurences, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+            UpdateUtil.Update(this.UpdateEventOccurences, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+        }
+
+        public void Edit()
+        {
+            lock (this)
+            {
+                if (this._editing) return;
+
+                this._editing = true;
+            }
+
+            _ = Task.Run(async () =>
+            {
+                Texture2D backgroundTexture = await EventTableModule.ModuleInstance.IconState.GetIconAsync("controls/window/502049", false);
+
+                Rectangle settingsWindowSize = new Rectangle(35, 50, 913, 691);
+                int contentRegionPaddingY = settingsWindowSize.Y - 15;
+                int contentRegionPaddingX = settingsWindowSize.X + 46;
+                Rectangle contentRegion = new Rectangle(contentRegionPaddingX, contentRegionPaddingY, settingsWindowSize.Width - 52, settingsWindowSize.Height - contentRegionPaddingY);
+
+                StandardWindow window = new StandardWindow(backgroundTexture, settingsWindowSize, contentRegion)
+                {
+                    Parent = GameService.Graphics.SpriteScreen,
+                    Title = "Edit",
+                    Emblem = await EventTableModule.ModuleInstance.IconState.GetIconAsync("156684", false),
+                    Subtitle = this.Name,
+                    SavesPosition = true,
+                    CanClose = false,
+                    Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
+                };
+
+                var editView = new EditEventView(this.Clone());
+                editView.SavePressed += (s, e) =>
+                {
+                    window.Hide();
+                    window.Dispose();
+                    // Save edited event
+
+                    lock (this)
+                    {
+                        this.Name = e.Value.Name;
+                        this.Offset = e.Value.Offset;
+                        this.Repeat = e.Value.Repeat;
+                        this.Location = e.Value.Location;
+                        this.Waypoint = e.Value.Waypoint;
+                        this.Wiki = e.Value.Wiki;
+                        this.Duration = e.Value.Duration;
+                        this.Icon = e.Value.Icon;
+                        this.BackgroundColorCode = e.Value.BackgroundColorCode;
+                        this.APICodeType = e.Value.APICodeType;
+                        this.APICode = e.Value.APICode;
+
+                        // Force update next tick. Don't need to lock since this is locked already.
+                        this.timeSinceUpdate = updateInterval.TotalMilliseconds;
+
+                        this._editing = false;
+                    }
+
+                    this.Edited?.Invoke(this, EventArgs.Empty);
+                };
+                editView.CancelPressed += (s, e) =>
+                {
+                    window.Hide();
+                    window.Dispose();
+
+                    lock (this)
+                    {
+                        this._editing = false;
+                    }
+                };
+
+                window.Show(editView);
+            });
+        }
+
+        public Event Clone()
+        {
+            return (Event)this.MemberwiseClone();
         }
     }
 }

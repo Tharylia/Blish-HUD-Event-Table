@@ -2,6 +2,7 @@
 {
     using Blish_HUD.Controls;
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -11,8 +12,13 @@
         {
         }
 
-        protected override void InternalBuild(Panel parent)
+        protected override void BuildView(Panel parent)
         {
+#if DEBUG
+            this.RenderButton(parent, "Open Website", () => Process.Start(EventTableModule.WEBSITE_MODULE_URL));
+            this.RenderEmptyLine(parent);
+#endif
+
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabled);
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabledHotkey);
 #if DEBUG
@@ -34,11 +40,11 @@
                 this.RenderButton(parent, "Test Error", () => this.ShowError("New error" + new Random().Next()));
                 this.RenderTextbox(parent, "Finish Event", "Event.Key", val =>
                  {
-                     EventTableModule.ModuleInstance.EventCategories.SelectMany(ec => ec.Events.Where(ev => ev.Key == val)).ToList().ForEach(ev => ev.Finish());
+                     EventTableModule.ModuleInstance.EventCategories.SelectMany(ec => ec.Events.Where(ev => ev.Key == val)).ToList().ForEach(ev => ev.Hide());
                  });
                 this.RenderTextbox(parent, "Finish Category", "EventCategory.Key", val =>
                 {
-                    EventTableModule.ModuleInstance.EventCategories.Where(ec => ec.Key == val).ToList().ForEach(ev => ev.Finish());
+                    EventTableModule.ModuleInstance.EventCategories.Where(ec => ec.Key == val).ToList().ForEach(ev => ev.Hide());
                 });
                 this.RenderEmptyLine(parent);
                 this.RenderButton(parent, "Clear States", async () =>

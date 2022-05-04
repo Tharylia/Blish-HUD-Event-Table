@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Controls
 {
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
@@ -10,24 +10,25 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class CheckboxProvider : ControlProvider<bool>
+    internal class CheckboxProvider : ControlProvider<bool,bool>
     {
-        internal override Control CreateControl(SettingEntry<bool> settingEntry, Func<SettingEntry<bool>, bool, bool> validationFunction, int width, int heigth, int x, int y)
+        public override Control CreateControl(BoxedValue<bool> value, Func<bool, bool> isEnabled, Func<bool, bool> isValid, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
             Checkbox checkbox = new Checkbox()
             {
                 Width = width,
                 Location = new Point(x, y),
-                Checked = settingEntry?.Value ?? false,
-                Enabled = !settingEntry.IsDisabled()
+                Checked = value?.Value ?? false,
+                Enabled = isEnabled?.Invoke(value?.Value ?? false) ?? true
             };
 
-            if (settingEntry != null)
+            if (value != null)
             {
-                checkbox.CheckedChanged += (s, e) => {
-                    if (validationFunction?.Invoke(settingEntry, e.Checked) ?? false)
+                checkbox.CheckedChanged += (s, e) =>
+                {
+                    if (isValid?.Invoke(e.Checked) ?? true)
                     {
-                        settingEntry.Value = e.Checked;
+                        value.Value = e.Checked;
                     }
                     else
                     {

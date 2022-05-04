@@ -37,7 +37,8 @@ public static class VSCodeHelper
                 throw new FileNotFoundException("Could not find VS Code installation.");
             }
 
-            var vsCodeProcess = Process.Start($"{exePath}", $"--diff \"{filePath1}\" \"{filePath2}\"");
+            // --wait is important as vs code is started from a cmd window and exits before finishing
+            var vsCodeProcess = Process.Start($"{exePath}", $"--wait --diff \"{filePath1}\" \"{filePath2}\"");
 
             vsCodeProcess.WaitForExit();
         });

@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Controls
 {
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
@@ -10,34 +10,34 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class EnumProvider<T> : ControlProvider<T> where T : Enum
+    internal class EnumProvider<T> : ControlProvider<T,T> where T : Enum
     {
-        internal override Control CreateControl(SettingEntry<T> settingEntry, Func<SettingEntry<T>, T, bool> validationFunction, int width, int heigth, int x, int y)
+        public override Control CreateControl(BoxedValue<T> value, Func<T, bool> isEnabled, Func<T, bool> isValid, (float Min, float Max)? range, int width, int height, int x, int y)
         {
             Dropdown dropdown = new Dropdown
             {
                 Width = width,
                 Location = new Point(x, y),
-                SelectedItem = settingEntry?.Value.ToString(),
-                Enabled = !settingEntry.IsDisabled()
+                SelectedItem = value?.Value.ToString(),
+                Enabled = isEnabled?.Invoke(value.Value) ?? true
             };
 
-            foreach (string enumValue in Enum.GetNames(settingEntry.SettingType))
+            foreach (string enumValue in Enum.GetNames(typeof(T)))
             {
                 dropdown.Items.Add(enumValue);
             }
 
-            if (settingEntry != null)
+            if (value != null)
             {
                 bool resetingValue = false;
                 dropdown.ValueChanged += (s, e) =>
                 {
                     if (resetingValue) return;
 
-                    var newValue = (T)Enum.Parse(settingEntry.SettingType, e.CurrentValue);
-                    if (validationFunction?.Invoke(settingEntry, newValue) ?? false)
+                    var newValue = (T)Enum.Parse(typeof(T), e.CurrentValue);
+                    if (isValid?.Invoke(newValue) ?? true)
                     {
-                        settingEntry.Value = newValue;
+                        value.Value = newValue;
                     }
                     else
                     {

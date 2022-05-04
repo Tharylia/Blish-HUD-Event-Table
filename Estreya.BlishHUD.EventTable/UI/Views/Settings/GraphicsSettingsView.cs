@@ -10,16 +10,20 @@
         {
         }
 
-        protected override void InternalBuild(Panel parent)
+        protected override void BuildView(Panel parent)
         {
             this.RenderSetting(parent, this.ModuleSettings.LocationX);
             this.RenderSetting(parent, this.ModuleSettings.LocationY);
             this.RenderSetting(parent, this.ModuleSettings.Width);
+            this.RenderSetting(parent, this.ModuleSettings.EventHeight);
             this.RenderEmptyLine(parent);
             this.RenderSetting(parent, this.ModuleSettings.Opacity);
+            this.RenderSetting(parent, this.ModuleSettings.EventFontSize);
             this.RenderEmptyLine(parent);
             this.RenderSetting(parent, this.ModuleSettings.BackgroundColorOpacity);
             this.RenderColorSetting(parent, this.ModuleSettings.BackgroundColor);
+            this.RenderEmptyLine(parent);
+            this.RenderSetting(parent, this.ModuleSettings.RefreshRate);
         }
 
         protected override Task<bool> InternalLoad(IProgress<string> progress)

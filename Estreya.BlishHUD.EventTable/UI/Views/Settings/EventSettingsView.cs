@@ -18,10 +18,8 @@
         {
         }
 
-        protected override void InternalBuild(Panel parent)
+        protected override void BuildView(Panel parent)
         {
-            this.RenderSetting(parent, this.ModuleSettings.EventHeight);
-            this.RenderSetting(parent, this.ModuleSettings.EventFontSize);
             this.RenderSetting(parent, this.ModuleSettings.EventTimeSpan);
             this.RenderSetting(parent, this.ModuleSettings.EventHistorySplit);
             this.RenderSetting(parent, this.ModuleSettings.DrawEventBorder);
@@ -74,10 +72,10 @@
 
             this.RenderEmptyLine(parent);
 
-            this.RenderButton(parent, Strings.EventSettingsView_ResetHiddenStates_Title, () =>
+            this.RenderButton(parent, Strings.EventSettingsView_ResetEventStates_Title, async () =>
             {
-                EventTableModule.ModuleInstance.HiddenState.Clear();
-                EventTable.Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_ResetHiddenStates_Success);
+                await EventTableModule.ModuleInstance.EventState.Clear();
+                EventTable.Controls.ScreenNotification.ShowNotification(Strings.EventSettingsView_ResetEventStates_Success);
             });
 
             this.RenderEmptyLine(parent);

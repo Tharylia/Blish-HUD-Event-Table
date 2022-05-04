@@ -8,7 +8,7 @@
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Resources;
-    using Estreya.BlishHUD.EventTable.UI.Views.Settings.Controls;
+    using Estreya.BlishHUD.EventTable.UI.Views.Controls;
     using Microsoft.Xna.Framework;
     using MonoGame.Extended.BitmapFonts;
     using System;
@@ -17,7 +17,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public abstract class BaseSettingsView : View
+    public abstract class BaseSettingsView : BaseView
     {
         private const int LEFT_PADDING = 20;
         private const int CONTROL_X_SPACING = 20;
@@ -34,9 +34,6 @@
         private static string SelectedColorSetting { get; set; }
 
         private static ColorPicker ColorPicker { get; set; }
-        private Container BuildPanel { get; set; }
-        private Panel ErrorPanel { get; set; }
-        private CancellationTokenSource ErrorCancellationTokenSource = new CancellationTokenSource();
 
         public BaseSettingsView(ModuleSettings settings)
         {
@@ -102,9 +99,9 @@
             return await this.InternalLoad(progress);
         }
 
-        protected override void Build(Container buildPanel)
+        protected sealed override void InternalBuild(Panel parent)
         {
-            Rectangle bounds = buildPanel.ContentRegion;
+            Rectangle bounds = parent.ContentRegion;
 
             FlowPanel parentPanel = new FlowPanel()
             {
@@ -115,30 +112,13 @@
                 WidthSizingMode = SizingMode.Fill,
                 HeightSizingMode = SizingMode.Fill,
                 AutoSizePadding = new Point(0, 15),
-                Parent = buildPanel
-            };
-
-            this.BuildPanel = parentPanel;
-            this.RegisterErrorPanel(buildPanel);
-
-            this.InternalBuild(parentPanel);
-        }
-
-        protected abstract Task<bool> InternalLoad(IProgress<string> progress);
-
-        protected abstract void InternalBuild(Panel parent);
-
-        protected void RenderEmptyLine(Panel parent)
-        {
-            ViewContainer settingContainer = new ViewContainer()
-            {
-                WidthSizingMode = SizingMode.Fill,
-                HeightSizingMode = SizingMode.AutoSize,
                 Parent = parent
             };
 
-            settingContainer.Show(new EmptySettingsLineView(25));
+            this.BuildView(parentPanel);
         }
+
+        protected abstract void BuildView(Panel parent);
 
         protected Panel RenderSetting<T>(Panel parent, SettingEntry<T> setting)
         {
@@ -150,7 +130,7 @@
 
             try
             {
-                Control ctrl = ControlProvider<T>.Create(setting, this.HandleValidation, BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
+                Control ctrl = ControlHandler.CreateFromSetting(setting, this.HandleValidation, BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
                 ctrl.Parent = panel;
                 ctrl.BasicTooltipText = setting.Description;
             }
@@ -172,99 +152,6 @@
             };
 
             return panel;
-        }
-
-        protected Panel RenderTextbox(Panel parent, string description, string placeholder, Action<string> onEnterAction)
-        {
-            Panel panel = this.GetPanel(parent);
-
-            Label label = this.GetLabel(panel, description);
-
-            try
-            {
-                Control ctrl = ControlProvider.Create<string>(BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
-                ctrl.Parent = panel;
-                ctrl.BasicTooltipText = description;
-
-                TextBox textBox = ctrl as TextBox;
-                textBox.PlaceholderText = placeholder;
-                textBox.EnterPressed += (s, e) =>
-                {
-                    onEnterAction?.Invoke(textBox.Text);
-                    textBox.Text = string.Empty;
-                };
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, $"Type \"{typeof(string).FullName}\" could not be found in internal type lookup:");
-            }
-
-            return panel;
-        }
-
-        protected Panel GetPanel(Container parent)
-        {
-            return new Panel
-            {
-                HeightSizingMode = SizingMode.AutoSize,
-                WidthSizingMode = SizingMode.AutoSize,
-                Parent = parent
-            };
-        }
-
-        protected Label GetLabel(Panel parent, string text)
-        {
-            return new Label()
-            {
-                Parent = parent,
-                Text = text,
-                AutoSizeHeight = true,
-                Width = LABEL_WIDTH
-            };
-        }
-
-
-        protected void RenderButton(Panel parent, string text, Action action, Func<bool> disabledCallback = null)
-        {
-            this.RenderButton(parent, text, () =>
-            {
-                action.Invoke();
-                return Task.CompletedTask;
-            }, disabledCallback);
-        }
-
-        protected void RenderButton(Panel parent, string text, Func<Task> action, Func<bool> disabledCallback = null)
-        {
-            Panel panel = this.GetPanel(parent);
-
-            StandardButton button = new StandardButton()
-            {
-                Parent = panel,
-                Text = text,
-                Width = (int)EventTableModule.ModuleInstance.Font.MeasureString(text).Width,
-                Enabled = !disabledCallback?.Invoke() ?? true,
-            };
-
-            button.Click += (s, e) => Task.Run(async () =>
-            {
-                try
-                {
-                    await action.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    this.ShowError(ex.Message);
-                }
-            });
-        }
-
-        protected void RenderLabel(Panel parent, string title, string value)
-        {
-            Panel panel = this.GetPanel(parent);
-
-            Label titleLabel = this.GetLabel(panel, title);
-            Label valueLabel = this.GetLabel(panel, value);
-            valueLabel.Left = titleLabel.Right + CONTROL_X_SPACING;
         }
 
         protected void RenderColorSetting(Panel parent, SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> setting)
@@ -296,7 +183,6 @@
                 ColorPicker.Colors.Add(tempColor);
                 ColorPicker.Colors.Remove(tempColor);
 
-
                 ColorPickerPanel.Visible = !ColorPickerPanel.Visible;
                 SelectedColorSetting = setting.EntryKey;
             };
@@ -321,61 +207,6 @@
             };
         }
 
-        private void RegisterErrorPanel(Container parent)
-        {
-            Panel panel = this.GetPanel(parent);
-            panel.ZIndex = 1000;
-            panel.WidthSizingMode = SizingMode.Fill;
-            panel.Visible = false;
-
-            this.ErrorPanel = panel;
-        }
-
-        public async void ShowError(string message)
-        {
-            lock (this.ErrorPanel)
-            {
-                if (this.ErrorPanel.Visible)
-                {
-                    this.ErrorCancellationTokenSource.Cancel();
-                    this.ErrorCancellationTokenSource = new CancellationTokenSource();
-                }
-            }
-
-            this.ErrorPanel.ClearChildren();
-            BitmapFont font = GameService.Content.DefaultFont32;
-            message = DrawUtil.WrapText(font, message, this.ErrorPanel.Width * (3f / 4f));
-
-            Label label = this.GetLabel(this.ErrorPanel, message);
-            label.Width = this.ErrorPanel.Width;
-
-            label.Font = font;
-            label.HorizontalAlignment = HorizontalAlignment.Center;
-            label.TextColor = Color.Red;
-
-            this.ErrorPanel.Height = label.Height;
-            this.ErrorPanel.Bottom = this.BuildPanel.ContentRegion.Bottom;
-
-            lock (this.ErrorPanel)
-            {
-                this.ErrorPanel.Show();
-            }
-
-            try
-            {
-                await Task.Delay(5000, this.ErrorCancellationTokenSource.Token);
-            }
-            catch (TaskCanceledException)
-            {
-                Logger.Debug("Task was canceled to show new error:");
-            }
-
-            lock (this.ErrorPanel)
-            {
-                this.ErrorPanel.Hide();
-            }
-        }
-
         private bool HandleValidation<T>(SettingEntry<T> settingEntry, T value)
         {
             SettingValidationResult result = settingEntry.CheckValidation(value);
@@ -392,7 +223,6 @@
         protected override void Unload()
         {
             base.Unload();
-            this.ErrorPanel.Dispose();
         }
     }
 }

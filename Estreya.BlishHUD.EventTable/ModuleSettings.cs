@@ -3,6 +3,7 @@
     using Blish_HUD;
     using Blish_HUD.Input;
     using Blish_HUD.Settings;
+    using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Resources;
     using Newtonsoft.Json;
@@ -28,6 +29,7 @@
         public SettingEntry<bool> GlobalEnabled { get; private set; }
         public SettingEntry<KeyBinding> GlobalEnabledHotkey { get; private set; }
         public SettingEntry<bool> RegisterCornerIcon { get; private set; }
+        public SettingEntry<int> RefreshRate { get; private set; }
         public SettingEntry<bool> AutomaticallyUpdateEventFile { get; private set; }
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> BackgroundColor { get; private set; }
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
@@ -155,6 +157,10 @@
 
             this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => Strings.Setting_RegisterCornerIcon_Name, () => Strings.Setting_RegisterCornerIcon_Description);
             this.RegisterCornerIcon.SettingChanged += this.SettingChanged;
+
+            this.RefreshRate = this.GlobalSettings.DefineSetting(nameof(this.RefreshRate), 900, () => Strings.Setting_RefreshRate_Title, () => string.Format(Strings.Setting_RefreshRate_Description, this.RefreshRate.GetRange().Value.Min, this.RefreshRate.GetRange().Value.Max));
+            this.RefreshRate.SettingChanged += this.SettingChanged;
+            this.RefreshRate.SetRange(0, 900);
 
             this.AutomaticallyUpdateEventFile = this.GlobalSettings.DefineSetting(nameof(this.AutomaticallyUpdateEventFile), true, () => Strings.Setting_AutomaticallyUpdateEventFile_Name, () => Strings.Setting_AutomaticallyUpdateEventFile_Description);
             this.AutomaticallyUpdateEventFile.SettingChanged += this.SettingChanged;

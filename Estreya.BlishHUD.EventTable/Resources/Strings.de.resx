@@ -474,11 +474,11 @@
   <data name="EventSettingsView_ReloadEvents_Title" xml:space="preserve">
     <value>Events neu laden</value>
   </data>
-  <data name="EventSettingsView_ResetHiddenStates_Success" xml:space="preserve">
-    <value>Verstecke Events erfolgreich zurückgesetzt!</value>
+  <data name="EventSettingsView_ResetEventStates_Success" xml:space="preserve">
+    <value>Event-Zustände erfolgreich zurückgesetzt!</value>
   </data>
-  <data name="EventSettingsView_ResetHiddenStates_Title" xml:space="preserve">
-    <value>Versteckte Events zurücksetzen</value>
+  <data name="EventSettingsView_ResetEventStates_Title" xml:space="preserve">
+    <value>Event-Zustände zurücksetzen</value>
   </data>
   <data name="EventSettingsView_UpdateEventFile_Success" xml:space="preserve">
     <value>Erfolgreich aktualisiert!</value>
@@ -710,6 +710,12 @@
   </data>
   <data name="Setting_Opacity_Name" xml:space="preserve">
     <value>Deckkraft</value>
+  </data>
+  <data name="Setting_RefreshRate_Description" xml:space="preserve">
+    <value>Definiert die Rate, in welcher der Event Table den Bildschirm aktualisiert.\nMin: {0}ms\nMax: {1}ms</value>
+  </data>
+  <data name="Setting_RefreshRate_Title" xml:space="preserve">
+    <value>Aktualisierungsrate</value>
   </data>
   <data name="Setting_RegisterCornerIcon_Description" xml:space="preserve">
     <value>Gibt an, ob der Event Table ein Eck-Icon anzeigen soll um schnell auf die Einstellungen zugreifen zu können.</value>

@@ -36,7 +36,7 @@
             return this.completedWorldbosses.Contains(apiCode);
         }
 
-        public override async Task Reload()
+        public override async Task InternalReload()
         {
             await this.UpdateCompletedWorldbosses(null);
         }
@@ -107,7 +107,7 @@
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            UpdateCadenceUtil.UpdateAsyncWithCadence(this.UpdateCompletedWorldbosses, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+            UpdateUtil.UpdateAsync(this.UpdateCompletedWorldbosses, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
 
         protected override async Task Load()

@@ -44,7 +44,7 @@ public class IconState : ManagedState
         this._basePath = basePath;
     }
 
-    public override async Task Reload()
+    public override async Task InternalReload()
     {
         await this.LoadImages();
     }
@@ -113,7 +113,7 @@ public class IconState : ManagedState
                     Texture2D newTexture = this._loadedTextures[newTextureIdentifier];
                     if (newTexture == ContentService.Textures.Error)
                     {
-                        Logger.Warn("Texture \"{0}\" is erroneous. Skipping saving.", newTextureIdentifier);
+                        Logger.Warn("Texture \"{0}\" is errorneous. Skipping saving.", newTextureIdentifier);
                         continue;
                     }
 
@@ -155,6 +155,13 @@ public class IconState : ManagedState
                 try
                 {
                     FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+                    if (fileStream.Length == 0)
+                    {
+                        Logger.Warn("Image is empty: {0}", filePath);
+                        continue;
+                    }
+
                     AsyncTexture2D asyncTexture = new AsyncTexture2D(ContentService.Textures.Pixel);
 
                     GameService.Graphics.QueueMainThreadRender(device =>

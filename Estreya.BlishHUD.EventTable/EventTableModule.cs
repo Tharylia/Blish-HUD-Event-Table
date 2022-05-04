@@ -6,17 +6,16 @@
     using Blish_HUD.Modules;
     using Blish_HUD.Modules.Managers;
     using Blish_HUD.Settings;
-    using Estreya.BlishHUD.EventTable.Extensions;
+    using Estreya.BlishHUD.EventTable.Controls;
+    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Models.Settings;
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
-    using Estreya.BlishHUD.EventTable.UI.Container;
     using Estreya.BlishHUD.EventTable.Utils;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended.BitmapFonts;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -30,11 +29,14 @@
     {
         private static readonly Logger Logger = Logger.GetLogger<EventTableModule>();
 
+        public const string WEBSITE_ROOT_URL = "https://blishhud.estreya.de";
+        public const string WEBSITE_MODULE_URL = $"{WEBSITE_ROOT_URL}/modules/event-table";
+
         internal static EventTableModule ModuleInstance;
 
         public bool IsPrerelease => !string.IsNullOrWhiteSpace(this.Version?.PreRelease);
 
-        private EventTableContainer Container { get; set; }
+        private EventTableDrawer Drawer { get; set; }
 
         #region Service Managers
         internal SettingsManager SettingsManager => this.ModuleParameters.SettingsManager;
@@ -134,19 +136,13 @@
 
         private List<EventCategory> _eventCategories = new List<EventCategory>();
 
-        public List<EventCategory> EventCategories
-        {
-            get
-            {
-                return this._eventCategories.Where(ec => !ec.IsDisabled()).ToList();
-            }
-        }
+        public List<EventCategory> EventCategories => this._eventCategories.Where(ec => !ec.IsDisabled).ToList();
         #region States
 
         private readonly AsyncLock _stateLock = new AsyncLock();
         private Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
 
-        public HiddenState HiddenState { get; private set; }
+        public EventState EventState { get; private set; }
         public WorldbossState WorldbossState { get; private set; }
         public MapchestState MapchestState { get; private set; }
         public EventFileState EventFileState { get; private set; }
@@ -166,12 +162,17 @@
 
         protected override void Initialize()
         {
-            this.Container = new EventTableContainer()
+            this.Drawer = new EventTableDrawer()
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                BackgroundColor = Microsoft.Xna.Framework.Color.Transparent,
+                BackgroundColor = Color.Transparent,
                 Opacity = 0f,
                 Visible = false
+            };
+
+            GameService.Overlay.UserLocaleChanged += (s, e) =>
+            {
+                AsyncHelper.RunSync(this.LoadEvents);
             };
         }
 
@@ -194,14 +195,14 @@
             Logger.Debug("Initialize states (after event file loading)");
             await this.InitializeStates(false);
 
-            await this.Container.LoadAsync();
+            await this.Drawer.LoadAsync();
 
             this.ModuleSettings.ModuleSettingsChanged += (sender, eventArgs) =>
             {
                 switch (eventArgs.Name)
                 {
                     case nameof(this.ModuleSettings.Width):
-                        this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
+                        this.Drawer.UpdateSize(this.ModuleSettings.Width.Value, -1);
                         break;
                     case nameof(this.ModuleSettings.GlobalEnabled):
                         this.ToggleContainer(this.ModuleSettings.GlobalEnabled.Value);
@@ -217,7 +218,7 @@
                         break;
                     case nameof(this.ModuleSettings.BackgroundColor):
                     case nameof(this.ModuleSettings.BackgroundColorOpacity):
-                        this.Container.UpdateBackgroundColor();
+                        this.Drawer.UpdateBackgroundColor();
                         break;
                     default:
                         break;
@@ -235,7 +236,7 @@
             string threadName = $"{Thread.CurrentThread.ManagedThreadId}";
             Logger.Debug("Try loading events from thread: {0}", threadName);
 
-            await _eventCategorySemaphore.WaitAsync();
+            await this._eventCategorySemaphore.WaitAsync();
 
             Logger.Debug("Thread \"{0}\" started loading", threadName);
 
@@ -245,7 +246,7 @@
                 {
                     lock (this._eventCategories)
                     {
-                        foreach (EventCategory ec in _eventCategories)
+                        foreach (EventCategory ec in this._eventCategories)
                         {
                             ec.Unload();
                         }
@@ -271,19 +272,19 @@
 
                 Logger.Info($"Loaded {eventCategoryCount} Categories with {eventCount} Events.");
 
-                /*
-                foreach (EventCategory ec in categories)
-                {
-                    await ec.LoadAsync();
-                }
-                */
-
-                var eventCategoryLoadTasks = categories.Select(ec =>
+                IEnumerable<Task> eventCategoryLoadTasks = categories.Select(ec =>
                 {
                     return ec.LoadAsync();
                 });
 
                 await Task.WhenAll(eventCategoryLoadTasks);
+
+                categories.ForEach(ec => ec.Events.ForEach(ev =>
+                {
+                    if (ev.Filler) return;
+
+                    ev.Edited += this.EventEdited;
+                }));
 
                 lock (this._eventCategories)
                 {
@@ -298,8 +299,21 @@
             }
             finally
             {
-                _eventCategorySemaphore.Release();
+                this._eventCategorySemaphore.Release();
                 Logger.Debug("Thread \"{0}\" released loading lock", threadName);
+            }
+        }
+
+        private void EventEdited(object sender, EventArgs e)
+        {
+            Event ev = sender as Event;
+            Logger.Debug($"Event \"{ev.Key}\" edited.");
+            lock (this._eventCategories)
+            {
+                EventSettingsFile eventSettingsFile = AsyncHelper.RunSync(this.EventFileState.GetExternalFile);
+                eventSettingsFile.EventCategories = this._eventCategories;
+                Logger.Debug("Export updated file.");
+                AsyncHelper.RunSync(() => this.EventFileState.ExportFile(eventSettingsFile));
             }
         }
 
@@ -307,60 +321,69 @@
         {
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
-            var hideEventAction = (string apiCode) =>
+            void CompleteEventAction(string apiCode)
             {
-                if (this.ModuleSettings.EventCompletedAcion.Value == EventCompletedAction.Hide)
+                lock (this._eventCategories)
                 {
-                    lock (this._eventCategories)
+                    List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
+                    events.ForEach(ev =>
                     {
-                        List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
-                        events.ForEach(ev => ev.Finish());
-                    }
+                        switch (this.ModuleSettings.EventCompletedAcion.Value)
+                        {
+                            case EventCompletedAction.Crossout:
+                                ev.Finish();
+                                break;
+                            case EventCompletedAction.Hide:
+                                ev.Hide();
+                                break;
+                            default:
+                                Logger.Warn("Unsupported event completion action: {0}", this.ModuleSettings.EventCompletedAcion.Value);
+                                break;
+                        }
+                    });
                 }
-            };
-
-            if (!beforeFileLoaded)
-            {
-                this.HiddenState = new HiddenState(eventsDirectory);
-                this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
-                this.WorldbossState.WorldbossCompleted += (s, e) =>
-                {
-                    hideEventAction.Invoke(e);
-                };
-                this.MapchestState = new MapchestState(this.Gw2ApiManager);
-                this.MapchestState.MapchestCompleted += (s, e) =>
-                {
-                    hideEventAction.Invoke(e);
-                };
-            }
-            else
-            {
-                this.EventFileState = new EventFileState(this.ContentsManager, eventsDirectory, "events.json");
-                this.IconState = new IconState(this.ContentsManager, eventsDirectory);
             }
 
-            lock (this.States)
+            using (await this._stateLock.LockAsync())
             {
                 if (!beforeFileLoaded)
                 {
-                    this.States.Add(this.HiddenState);
+                    this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
+                    this.WorldbossState.WorldbossCompleted += (s, e) =>
+                    {
+                        CompleteEventAction(e);
+                    };
+                    this.MapchestState = new MapchestState(this.Gw2ApiManager);
+                    this.MapchestState.MapchestCompleted += (s, e) =>
+                    {
+                        CompleteEventAction(e);
+                    };
+                }
+                else
+                {
+                    this.EventFileState = new EventFileState(this.ContentsManager, eventsDirectory, "events.json");
+                    this.EventState = new EventState(eventsDirectory);
+                    this.IconState = new IconState(this.ContentsManager, eventsDirectory);
+                }
+
+                if (!beforeFileLoaded)
+                {
                     this.States.Add(this.WorldbossState);
                     this.States.Add(this.MapchestState);
                 }
                 else
                 {
                     this.States.Add(this.EventFileState);
+                    this.States.Add(this.EventState);
                     this.States.Add(this.IconState);
                 }
-            }
 
-            using (await _stateLock.LockAsync())
-            {
-                    foreach (ManagedState state in this.States)
-                    {
-                        Logger.Debug("Starting managed state: {0}", state.GetType().Name);
+                // Only start states not already running
+                foreach (ManagedState state in this.States.Where(state => !state.Running))
+                {
                     try
                     {
+                        // Order is important
                         await state.Start();
                     }
                     catch (Exception ex)
@@ -398,16 +421,16 @@
 
         private void ToggleContainer(bool show)
         {
-            if (this.Container == null)
+            if (this.Drawer == null)
             {
                 return;
             }
 
             if (!this.ModuleSettings.GlobalEnabled.Value)
             {
-                if (this.Container.Visible)
+                if (this.Drawer.Visible)
                 {
-                    this.Container.Hide();
+                    this.Drawer.Hide();
                 }
 
                 return;
@@ -415,16 +438,16 @@
 
             if (show)
             {
-                if (!this.Container.Visible)
+                if (!this.Drawer.Visible)
                 {
-                    this.Container.Show();
+                    this.Drawer.Show();
                 }
             }
             else
             {
-                if (this.Container.Visible)
+                if (this.Drawer.Visible)
                 {
-                    this.Container.Hide();
+                    this.Drawer.Hide();
                 }
             }
         }
@@ -439,8 +462,8 @@
             // Base handler must be called
             base.OnModuleLoaded(e);
 
-            this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
-            this.Container.UpdateSize(this.ModuleSettings.Width.Value, -1);
+            this.Drawer.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value);
+            this.Drawer.UpdateSize(this.ModuleSettings.Width.Value, -1);
 
             //this.ManageEventTab = GameService.Overlay.BlishHudWindow.AddTab("Event Table", this.ContentsManager.GetIcon(@"images\event_boss.png"), () => new UI.Views.ManageEventsView(this._eventCategories, this.ModuleSettings.AllEvents));
 
@@ -482,11 +505,11 @@
         protected override void Update(GameTime gameTime)
         {
             this.CheckMumble();
-            this.Container.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
+            this.Drawer.UpdatePosition(this.ModuleSettings.LocationX.Value, this.ModuleSettings.LocationY.Value); // Handle windows resize
 
             this.CheckContainerSizeAndPosition();
 
-            using (_stateLock.Lock())
+            using (this._stateLock.Lock())
             {
                 foreach (ManagedState state in this.States)
                 {
@@ -510,9 +533,9 @@
             int maxResY = (int)(GameService.Graphics.Resolution.Y / GameService.Graphics.UIScaleMultiplier);
 
             int minLocationX = 0;
-            int maxLocationX = maxResX - this.Container.Width;
-            int minLocationY = buildFromBottom ? this.Container.Height : 0;
-            int maxLocationY = buildFromBottom ? maxResY : maxResY - this.Container.Height;
+            int maxLocationX = maxResX - this.Drawer.Width;
+            int minLocationY = buildFromBottom ? this.Drawer.Height : 0;
+            int maxLocationY = buildFromBottom ? maxResY : maxResY - this.Drawer.Height;
             int minWidth = 0;
             int maxWidth = maxResX - this.ModuleSettings.LocationX.Value;
 
@@ -563,7 +586,7 @@
         {
             if (GameService.Gw2Mumble.IsAvailable)
             {
-                if (this.Container != null)
+                if (this.Drawer != null)
                 {
                     bool show = true;
 
@@ -600,8 +623,15 @@
 
             Logger.Debug("Unload event categories.");
 
-            foreach (EventCategory ec in _eventCategories)
+            foreach (EventCategory ec in this._eventCategories)
             {
+                ec.Events.ForEach(ev =>
+                {
+                    if (ev.Filler) return;
+
+                    ev.Edited -= this.EventEdited;
+                });
+
                 ec.Unload();
             }
 
@@ -609,9 +639,9 @@
 
             Logger.Debug("Unload event container.");
 
-            if (this.Container != null)
+            if (this.Drawer != null)
             {
-                this.Container.Dispose();
+                this.Drawer.Dispose();
             }
 
             Logger.Debug("Unloaded event container.");
@@ -635,7 +665,7 @@
 
             using (this._stateLock.Lock())
             {
-                Task.WaitAll(this.States.ToList().Select(state => state.Unload()).ToArray());
+                this.States.ToList().ForEach(state => state.Dispose());
             }
 
             Logger.Debug("Finished unloading states.");
@@ -645,7 +675,7 @@
         {
             using (await this._stateLock.LockAsync())
             {
-               await Task.WhenAll(this.States.Select(state => state.Reload()));
+                await Task.WhenAll(this.States.Select(state => state.Reload()));
             }
         }
 
