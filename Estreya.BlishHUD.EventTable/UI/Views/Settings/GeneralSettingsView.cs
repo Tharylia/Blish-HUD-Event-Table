@@ -14,8 +14,10 @@
 
         protected override void BuildView(Panel parent)
         {
+#if DEBUG
             this.RenderButton(parent, "Open Website", () => Process.Start(EventTableModule.WEBSITE_MODULE_URL));
             this.RenderEmptyLine(parent);
+#endif
 
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabled);
             this.RenderSetting(parent, this.ModuleSettings.GlobalEnabledHotkey);

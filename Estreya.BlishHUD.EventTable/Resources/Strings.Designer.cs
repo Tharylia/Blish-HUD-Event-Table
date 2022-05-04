@@ -1771,6 +1771,24 @@ namespace Estreya.BlishHUD.EventTable.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Defines the rate at which the event table is refreshing its drawings.\nMin: {0}ms\nMax: {1}ms ähnelt.
+        /// </summary>
+        internal static string Setting_RefreshRate_Description {
+            get {
+                return ResourceManager.GetString("Setting_RefreshRate_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Refresh Rate ähnelt.
+        /// </summary>
+        internal static string Setting_RefreshRate_Title {
+            get {
+                return ResourceManager.GetString("Setting_RefreshRate_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Whether the event table should add it&apos;s own corner icon to access settings. ähnelt.
         /// </summary>
         internal static string Setting_RegisterCornerIcon_Description {

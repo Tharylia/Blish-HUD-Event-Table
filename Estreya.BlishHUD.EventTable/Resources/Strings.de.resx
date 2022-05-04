@@ -711,6 +711,12 @@
   <data name="Setting_Opacity_Name" xml:space="preserve">
     <value>Deckkraft</value>
   </data>
+  <data name="Setting_RefreshRate_Description" xml:space="preserve">
+    <value>Definiert die Rate, in welcher der Event Table den Bildschirm aktualisiert.\nMin: {0}ms\nMax: {1}ms</value>
+  </data>
+  <data name="Setting_RefreshRate_Title" xml:space="preserve">
+    <value>Aktualisierungsrate</value>
+  </data>
   <data name="Setting_RegisterCornerIcon_Description" xml:space="preserve">
     <value>Gibt an, ob der Event Table ein Eck-Icon anzeigen soll um schnell auf die Einstellungen zugreifen zu können.</value>
   </data>

@@ -10,21 +10,22 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class IntTrackBarProvider : ControlProvider<int,int>
+    internal class IntTrackBarProvider : ControlProvider<int, int>
     {
         public override Control CreateControl(BoxedValue<int> value, Func<int, bool> isEnabled, Func<int, bool> isValid, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
             TrackBar trackBar = new TrackBar()
             {
                 Width = width,
-                Location = new Point(x, y),
-                Value = value?.Value ?? 50
+                Location = new Point(x, y)
             };
 
             trackBar.Enabled = isEnabled?.Invoke((int)trackBar.Value) ?? true;
 
             trackBar.MinValue = range.HasValue ? range.Value.Min : 0;
             trackBar.MaxValue = range.HasValue ? range.Value.Max : 100;
+
+            trackBar.Value = value?.Value ?? 50;
 
             if (value != null)
             {

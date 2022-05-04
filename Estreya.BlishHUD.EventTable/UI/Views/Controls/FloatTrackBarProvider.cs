@@ -18,14 +18,15 @@
             {
                 Width = width,
                 Location = new Point(x, y),
-                SmallStep = true,
-                Value = value?.Value ?? 50
+                SmallStep = true
             };
 
             trackBar.Enabled = isEnabled?.Invoke(trackBar.Value) ?? true;
 
             trackBar.MinValue = range.HasValue ? range.Value.Min : 0;
             trackBar.MaxValue = range.HasValue ? range.Value.Max : 100;
+
+            trackBar.Value = value?.Value ?? 50;
 
             if (value != null)
             {

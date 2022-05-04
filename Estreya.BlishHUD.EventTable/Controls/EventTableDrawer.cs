@@ -14,11 +14,16 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class EventTableContainer : Control
+    public class EventTableDrawer : Control
     {
         private bool _currentVisibilityDirection = false;
 
         private static bool CursorVisible => GameService.Input.Mouse.CursorIsVisible;
+
+        private TimeSpan _lastDraw = TimeSpan.Zero;
+
+        private RenderTarget2D _renderTarget;
+        private bool _renderTargetIsEmpty = true;
 
         public new bool Visible
         {
@@ -53,11 +58,13 @@
 
         private Tween CurrentVisibilityAnimation { get; set; }
 
-        public EventTableContainer()
+        public EventTableDrawer()
         {
             this.LeftMouseButtonPressed += this.EventTableContainer_Click;
             this.RightMouseButtonPressed += this.EventTableContainer_Click;
             this.MouseMoved += this.EventTableContainer_MouseMoved;
+
+            this.CreateRenderTarget();
         }
 
         private void EventTableContainer_MouseMoved(object sender, Blish_HUD.Input.MouseEventArgs e)
@@ -109,47 +116,92 @@
             return CaptureType.DoNotBlock;
         }
 
-        protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
+        private void CreateRenderTarget()
         {
-            spriteBatch.End();
-            spriteBatch.Begin(this.SpriteBatchParameters);
+            int width = (int)(this.Width * GameService.Graphics.UIScaleMultiplier);
+            int height = (int)(this.Height * GameService.Graphics.UIScaleMultiplier);
 
-            List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories; // Already checks for IsDisabled()
-
-            int y = 0;
-            DateTime now = EventTableModule.ModuleInstance.DateTimeNow;
-            DateTime min = EventTableModule.ModuleInstance.EventTimeMin;
-            DateTime max = EventTableModule.ModuleInstance.EventTimeMax;
-
-            foreach (EventCategory eventCategory in eventCategories)
+            if (this._renderTarget != null && (this._renderTarget.Width != width || this._renderTarget.Height != height))
             {
-                bool categoryHasEvents = false;
-
-                foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled))
-                {
-                    categoryHasEvents = true;
-                    if (!EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value && ev.Filler)
-                    {
-                        continue;
-                    }
-
-                    _ = ev.Draw(spriteBatch, bounds, this, ContentService.Textures.Pixel, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
-                }
-
-                if (categoryHasEvents)
-                {
-                    y += EventTableModule.ModuleInstance.EventHeight;
-                }
+                this._renderTarget.Dispose();
+                this._renderTarget = null;
             }
 
-            this.Size = new Point(bounds.Width, y);
+            if (this._renderTarget == null)
+            {
+                this._renderTarget = new RenderTarget2D(
+                GameService.Graphics.GraphicsDevice,
+                width,
+                height,
+                false,
+                GameService.Graphics.GraphicsDevice.PresentationParameters.BackBufferFormat,
+                DepthFormat.Depth24, 1, RenderTargetUsage.PreserveContents);
 
-            float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
-            spriteBatch.DrawLine(this, ContentService.Textures.Pixel, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
+                _renderTargetIsEmpty = true;
+            }
+        }
 
+        protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
+        {
+            spriteBatch.GraphicsDevice.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+            //spriteBatch.GraphicsDevice.Clear(Color.Transparent);
             spriteBatch.End();
-            spriteBatch.Begin(this.SpriteBatchParameters);
 
+            int refreshInterval = EventTableModule.ModuleInstance.ModuleSettings.RefreshRate.Value;
+
+            if (this._renderTargetIsEmpty || this._lastDraw.TotalMilliseconds > refreshInterval)
+            {
+                spriteBatch.GraphicsDevice.SetRenderTarget(this._renderTarget);
+
+                spriteBatch.Begin();
+                spriteBatch.GraphicsDevice.Clear(Color.Transparent); // Clear render target to transparent. Backgroundcolor is set on the control
+
+                List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories; // Already checks for IsDisabled()
+
+                int y = 0;
+                DateTime now = EventTableModule.ModuleInstance.DateTimeNow;
+                DateTime min = EventTableModule.ModuleInstance.EventTimeMin;
+                DateTime max = EventTableModule.ModuleInstance.EventTimeMax;
+
+                foreach (EventCategory eventCategory in eventCategories)
+                {
+                    bool categoryHasEvents = false;
+
+                    foreach (Event ev in eventCategory.Events.Where(ev => !ev.IsDisabled))
+                    {
+                        categoryHasEvents = true;
+                        if (!EventTableModule.ModuleInstance.ModuleSettings.UseFiller.Value && ev.Filler)
+                        {
+                            continue;
+                        }
+
+                        _ = ev.Draw(spriteBatch, bounds, this, ContentService.Textures.Pixel, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
+                    }
+
+                    if (categoryHasEvents)
+                    {
+                        y += EventTableModule.ModuleInstance.EventHeight;
+                    }
+                }
+
+                this.UpdateSize(bounds.Width, y, true);
+
+                float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
+                spriteBatch.DrawLine(this, ContentService.Textures.Pixel, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
+
+                spriteBatch.End();
+
+                spriteBatch.GraphicsDevice.SetRenderTarget(null);
+
+                this._renderTargetIsEmpty = false;
+                this._lastDraw = TimeSpan.Zero;
+            }
+
+            spriteBatch.Begin(this.SpriteBatchParameters);
+            spriteBatch.Draw(_renderTarget, Vector2.Zero, Color.White);
+            spriteBatch.End();
+
+            spriteBatch.Begin(this.SpriteBatchParameters);
         }
 
         public new void Show()
@@ -209,6 +261,8 @@
             }
 
             this.Size = new Point(width, !overrideHeight ? this.Size.Y : height);
+
+            this.CreateRenderTarget();
         }
 
         protected override void DisposeControl()
@@ -219,7 +273,14 @@
             this.RightMouseButtonPressed -= this.EventTableContainer_Click;
             this.MouseMoved -= this.EventTableContainer_MouseMoved;
 
+            this._renderTarget.Dispose();
+
             base.DisposeControl();
+        }
+
+        public override void DoUpdate(GameTime gameTime)
+        {
+            this._lastDraw += gameTime.ElapsedGameTime;
         }
 
         public void UpdateBackgroundColor()
