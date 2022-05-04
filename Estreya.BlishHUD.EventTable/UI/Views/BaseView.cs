@@ -229,7 +229,6 @@ public abstract class BaseView : View
         };
     }
 
-
     protected StandardButton RenderButton(Panel parent, string text, Action action, Func<bool> disabledCallback = null)
     {
         return this.RenderButton(parent, text, () =>

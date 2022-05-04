@@ -836,7 +836,7 @@
                 this._editing = true;
             }
 
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 Texture2D backgroundTexture = await EventTableModule.ModuleInstance.IconState.GetIconAsync("controls/window/502049", false);
 
@@ -844,7 +844,6 @@
                 int contentRegionPaddingY = settingsWindowSize.Y - 15;
                 int contentRegionPaddingX = settingsWindowSize.X + 46;
                 Rectangle contentRegion = new Rectangle(contentRegionPaddingX, contentRegionPaddingY, settingsWindowSize.Width - 52, settingsWindowSize.Height - contentRegionPaddingY);
-
 
                 StandardWindow window = new StandardWindow(backgroundTexture, settingsWindowSize, contentRegion)
                 {

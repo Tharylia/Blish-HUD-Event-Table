@@ -183,7 +183,6 @@
                 ColorPicker.Colors.Add(tempColor);
                 ColorPicker.Colors.Remove(tempColor);
 
-
                 ColorPickerPanel.Visible = !ColorPickerPanel.Visible;
                 SelectedColorSetting = setting.EntryKey;
             };

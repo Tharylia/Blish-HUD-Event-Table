@@ -32,6 +32,7 @@ public class EditEventView : BaseView
             WidthSizingMode = SizingMode.Fill,
             Height = bounds.Height - 50,
             AutoSizePadding = new Point(0, 15),
+            CanScroll = true,
             Parent = parent
         };
 
