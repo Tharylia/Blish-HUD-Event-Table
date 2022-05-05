@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -711,11 +711,13 @@
   <data name="Setting_Opacity_Name" xml:space="preserve">
     <value>Opacity</value>
   </data>
-  <data name="Setting_RefreshRate_Description" xml:space="preserve">
-    <value>Defines the rate at which the event table is refreshing its drawings.\nMin: {0}ms\nMax: {1}ms</value>
+  <data name="Setting_RefreshRateDelay_Description" xml:space="preserve">
+    <value>Defines the delay for refreshing the event table drawings.
+Min: {0}ms
+Max: {1}ms</value>
   </data>
-  <data name="Setting_RefreshRate_Title" xml:space="preserve">
-    <value>Refresh Rate</value>
+  <data name="Setting_RefreshRateDelay_Title" xml:space="preserve">
+    <value>Refresh Rate Delay</value>
   </data>
   <data name="Setting_RegisterCornerIcon_Description" xml:space="preserve">
     <value>Whether the event table should add it's own corner icon to access settings.</value>

@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -321,7 +321,7 @@
             this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
         }
 
-        public bool Draw(SpriteBatch spriteBatch, Rectangle bounds, Control control, Texture2D baseTexture, int y, double pixelPerMinute, DateTime now, DateTime min, DateTime max, BitmapFont font)
+        public bool Draw(SpriteBatch spriteBatch, Rectangle bounds, Texture2D baseTexture, int y, double pixelPerMinute, DateTime now, DateTime min, DateTime max, BitmapFont font)
         {
             List<DateTime> occurences = new List<DateTime>();
             lock (this.Occurences)
@@ -348,7 +348,7 @@
                 RectangleF eventTexturePosition = new RectangleF(x, y, width, EventTableModule.ModuleInstance.EventHeight);
                 bool drawBorder = !this.Filler && EventTableModule.ModuleInstance.ModuleSettings.DrawEventBorder.Value;
 
-                spriteBatch.DrawRectangle(control, baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
+                spriteBatch.DrawRectangle(baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
 
                 #endregion
 
@@ -377,7 +377,7 @@
                     float eventTextWidth = this.MeasureStringWidth(eventName, font);
                     eventTextPosition = new RectangleF(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, eventTextWidth, eventTexturePosition.Height - 10);
 
-                    spriteBatch.DrawStringOnCtrl(control, eventName, font, eventTextPosition, textColor);
+                    spriteBatch.DrawString(eventName, font, eventTextPosition, textColor);
                 }
 
                 #endregion
@@ -402,7 +402,7 @@
                     if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
                     {
                         // Only draw if it fits in event bounds
-                        spriteBatch.DrawStringOnCtrl(control, timeRemainingString, font, eventTimeRemainingPosition, textColor);
+                        spriteBatch.DrawString(timeRemainingString, font, eventTimeRemainingPosition, textColor);
                     }
                 }
 
@@ -412,7 +412,7 @@
 
                 if ((this.EventCategory?.IsFinished() ?? false) || this.IsFinished())
                 {
-                    spriteBatch.DrawCrossOut(control, baseTexture, eventTexturePosition, Color.Red);
+                    spriteBatch.DrawCrossOut(baseTexture, eventTexturePosition, Color.Red);
                 }
                 #endregion
 

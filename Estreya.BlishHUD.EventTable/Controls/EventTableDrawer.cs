@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Controls
+namespace Estreya.BlishHUD.EventTable.Controls
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -118,8 +118,8 @@
 
         private void CreateRenderTarget()
         {
-            int width = (int)(this.Width * GameService.Graphics.UIScaleMultiplier);
-            int height = (int)(this.Height * GameService.Graphics.UIScaleMultiplier);
+            int width = Math.Max(this.Width, 1);
+            int height = Math.Max(this.Height,1);
 
             if (this._renderTarget != null && (this._renderTarget.Width != width || this._renderTarget.Height != height))
             {
@@ -147,7 +147,7 @@
             //spriteBatch.GraphicsDevice.Clear(Color.Transparent);
             spriteBatch.End();
 
-            int refreshInterval = EventTableModule.ModuleInstance.ModuleSettings.RefreshRate.Value;
+            int refreshInterval = EventTableModule.ModuleInstance.ModuleSettings.RefreshRateDelay.Value;
 
             if (this._renderTargetIsEmpty || this._lastDraw.TotalMilliseconds > refreshInterval)
             {
@@ -175,7 +175,7 @@
                             continue;
                         }
 
-                        _ = ev.Draw(spriteBatch, bounds, this, ContentService.Textures.Pixel, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
+                        _ = ev.Draw(spriteBatch, bounds, ContentService.Textures.Pixel, y, this.PixelPerMinute, now, min, max, EventTableModule.ModuleInstance.Font);
                     }
 
                     if (categoryHasEvents)
@@ -187,7 +187,7 @@
                 this.UpdateSize(bounds.Width, y, true);
 
                 float middleLineX = this.Size.X * EventTableModule.ModuleInstance.EventTimeSpanRatio;
-                spriteBatch.DrawLine(this, ContentService.Textures.Pixel, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
+                spriteBatch.DrawLine(ContentService.Textures.Pixel, new RectangleF(middleLineX, 0, 2, this.Size.Y), Color.LightGray);
 
                 spriteBatch.End();
 
@@ -198,7 +198,7 @@
             }
 
             spriteBatch.Begin(this.SpriteBatchParameters);
-            spriteBatch.Draw(_renderTarget, Vector2.Zero, Color.White);
+            spriteBatch.DrawOnCtrl(this, _renderTarget, bounds, Color.White);
             spriteBatch.End();
 
             spriteBatch.Begin(this.SpriteBatchParameters);
