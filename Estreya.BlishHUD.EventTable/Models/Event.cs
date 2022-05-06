@@ -590,16 +590,37 @@ namespace Estreya.BlishHUD.EventTable.Models
                 return; // Currently don't do anything when filler
             }
 
-            if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed)
+            if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed && EventTableModule.ModuleInstance.ModuleSettings.HandleLeftClick.Value)
             {
-                if (EventTableModule.ModuleInstance.ModuleSettings.CopyWaypointOnClick.Value)
+                if (EventTableModule.ModuleInstance.ModuleSettings.LeftClickAction.Value == LeftClickAction.CopyWaypoint)
                 {
                     this.CopyWaypoint();
                 }
+                else if (EventTableModule.ModuleInstance.ModuleSettings.LeftClickAction.Value == LeftClickAction.NavigateToWaypoint)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        if (EventTableModule.ModuleInstance.PointOfInterestState.Loading)
+                        {
+                            Controls.ScreenNotification.ShowNotification("Point of Interest State is currently loading...", ScreenNotification.NotificationType.Error);
             }
-            else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed)
+                        else
             {
-                if (EventTableModule.ModuleInstance.ModuleSettings.ShowContextMenuOnClick.Value)
+                            Gw2Sharp.WebApi.V2.Models.ContinentFloorRegionMapPoi waypoint = EventTableModule.ModuleInstance.PointOfInterestState.GetPointOfInterest(this.Waypoint);
+
+                            if (waypoint != null)
+                            {
+                                var navigationSuccess = await MapNavigationUtil.NavigateToPosition(waypoint);
+                                if (!navigationSuccess)
+                                {
+                                    Controls.ScreenNotification.ShowNotification("Navigation failed.", ScreenNotification.NotificationType.Error);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed && EventTableModule.ModuleInstance.ModuleSettings.ShowContextMenuOnClick.Value)
                 {
                     int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
                                     ? -this.ContextMenuStrip.Height

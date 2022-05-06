@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -140,8 +140,8 @@ namespace Estreya.BlishHUD.EventTable
         private List<EventCategory> _eventCategories = new List<EventCategory>();
 
         public List<EventCategory> EventCategories => this._eventCategories.Where(ec => !ec.IsDisabled).ToList();
-        #region States
 
+        #region States
         private readonly AsyncLock _stateLock = new AsyncLock();
         private Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
 
@@ -150,6 +150,7 @@ namespace Estreya.BlishHUD.EventTable
         public MapchestState MapchestState { get; private set; }
         public EventFileState EventFileState { get; private set; }
         public IconState IconState { get; private set; }
+        public PointOfInterestState PointOfInterestState { get; private set; }
         #endregion
 
         [ImportingConstructor]
@@ -351,6 +352,7 @@ namespace Estreya.BlishHUD.EventTable
             {
                 if (!beforeFileLoaded)
                 {
+                    this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager);
                     this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
                     this.WorldbossState.WorldbossCompleted += (s, e) =>
                     {
@@ -371,6 +373,7 @@ namespace Estreya.BlishHUD.EventTable
 
                 if (!beforeFileLoaded)
                 {
+                    this.States.Add(this.PointOfInterestState);
                     this.States.Add(this.WorldbossState);
                     this.States.Add(this.MapchestState);
                 }
@@ -387,7 +390,14 @@ namespace Estreya.BlishHUD.EventTable
                     try
                     {
                         // Order is important
-                        await state.Start();
+                        if (state.AwaitLoad)
+                        {
+                            await state.Start();
+                        }
+                        else
+                        {
+                            _ = state.Start();
+                        }
                     }
                     catch (Exception ex)
                     {

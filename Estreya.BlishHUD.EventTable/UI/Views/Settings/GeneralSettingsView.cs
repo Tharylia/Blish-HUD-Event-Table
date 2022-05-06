@@ -31,7 +31,9 @@
             this.RenderSetting(parent, this.ModuleSettings.HideInCombat);
             this.RenderSetting(parent, this.ModuleSettings.ShowTooltips);
             this.RenderSetting(parent, this.ModuleSettings.TooltipTimeMode);
-            this.RenderSetting(parent, this.ModuleSettings.CopyWaypointOnClick);
+            this.RenderSetting(parent, this.ModuleSettings.HandleLeftClick);
+            this.RenderSetting(parent, this.ModuleSettings.LeftClickAction);
+            this.RenderSetting(parent, this.ModuleSettings.DirectlyTeleportToWaypoint);
             this.RenderSetting(parent, this.ModuleSettings.ShowContextMenuOnClick);
             this.RenderSetting(parent, this.ModuleSettings.BuildDirection);
             if (EventTableModule.ModuleInstance.Debug)

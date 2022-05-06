@@ -12,14 +12,17 @@
         private static readonly Logger Logger = Logger.GetLogger<ManagedState>();
 
         private SemaphoreSlim _saveSemaphore = new SemaphoreSlim(1, 1);
+
         private int SaveInternal { get; set; }
 
         private TimeSpan TimeSinceSave { get; set; } = TimeSpan.Zero;
 
         public bool Running { get; private set; } = false;
+        public bool AwaitLoad { get; }
 
-        protected ManagedState(int saveInterval = 60000)
+        protected ManagedState(bool awaitLoad = true, int saveInterval = 60000)
         {
+            this.AwaitLoad = awaitLoad;
             this.SaveInternal = saveInterval;
         }
 

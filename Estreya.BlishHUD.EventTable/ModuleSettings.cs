@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -39,10 +39,12 @@ namespace Estreya.BlishHUD.EventTable
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<TooltipTimeMode> TooltipTimeMode { get; private set; }
-        public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
+        public SettingEntry<bool> HandleLeftClick { get; private set; }
+        public SettingEntry<LeftClickAction> LeftClickAction { get; private set; }
         public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
         public SettingEntry<BuildDirection> BuildDirection { get; private set; }
-        public SettingEntry<float> Opacity { get; set; }
+        public SettingEntry<float> Opacity { get; private set; }
+        public SettingEntry<bool> DirectlyTeleportToWaypoint { get; private set; }
         #endregion
 
         #region Location
@@ -229,8 +231,14 @@ namespace Estreya.BlishHUD.EventTable
             this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => Strings.Setting_TooltipTimeMode_Name, () => Strings.Setting_TooltipTimeMode_Description);
             this.TooltipTimeMode.SettingChanged += this.SettingChanged;
 
-            this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => Strings.Setting_CopyWaypointOnClick_Name, () => Strings.Setting_CopyWaypointOnClick_Description);
-            this.CopyWaypointOnClick.SettingChanged += this.SettingChanged;
+            this.HandleLeftClick = this.GlobalSettings.DefineSetting(nameof(this.HandleLeftClick), true, () => Strings.Setting_HandleLeftClick_Name, () => Strings.Setting_HandleLeftClick_Description);
+            this.HandleLeftClick.SettingChanged += this.SettingChanged;
+
+            this.LeftClickAction = this.GlobalSettings.DefineSetting(nameof(this.LeftClickAction), Models.LeftClickAction.CopyWaypoint, () => Strings.Setting_LeftClickAction_Title, () => Strings.Setting_LeftClickAction_Description);
+            this.LeftClickAction.SettingChanged += this.SettingChanged;
+
+            this.DirectlyTeleportToWaypoint = this.GlobalSettings.DefineSetting(nameof(this.DirectlyTeleportToWaypoint), false, () => Strings.Setting_DirectlyTeleportToWaypoint_Title, () => Strings.Setting_DirectlyTeleportToWaypoint_Description);
+            this.DirectlyTeleportToWaypoint.SettingChanged += this.SettingChanged;
 
             this.ShowContextMenuOnClick = this.GlobalSettings.DefineSetting(nameof(this.ShowContextMenuOnClick), true, () => Strings.Setting_ShowContextMenuOnClick_Name, () => Strings.Setting_ShowContextMenuOnClick_Description);
             this.ShowContextMenuOnClick.SettingChanged += this.SettingChanged;
