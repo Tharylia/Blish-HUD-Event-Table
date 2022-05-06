@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Controls
+﻿namespace Estreya.BlishHUD.EventTable.Controls
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -113,7 +113,7 @@ namespace Estreya.BlishHUD.EventTable.Controls
 
         protected override CaptureType CapturesInput()
         {
-            return CaptureType.DoNotBlock;
+            return CaptureType.Mouse;
         }
 
         private void CreateRenderTarget()
