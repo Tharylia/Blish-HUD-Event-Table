@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -18,7 +18,6 @@ namespace Estreya.BlishHUD.EventTable.Models
     using System.ComponentModel;
     using System.Diagnostics;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
 
     [Serializable]
@@ -138,7 +137,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             {
                 if (this._contextMenuStrip == null)
                 {
-                    this._contextMenuStrip = new ContextMenuStrip(GetContextMenu);
+                    this._contextMenuStrip = new ContextMenuStrip(this.GetContextMenu);
                 }
 
                 return this._contextMenuStrip;
@@ -603,9 +602,9 @@ namespace Estreya.BlishHUD.EventTable.Models
                         if (EventTableModule.ModuleInstance.PointOfInterestState.Loading)
                         {
                             Controls.ScreenNotification.ShowNotification("Point of Interest State is currently loading...", ScreenNotification.NotificationType.Error);
-            }
+                        }
                         else
-            {
+                        {
                             Gw2Sharp.WebApi.V2.Models.ContinentFloorRegionMapPoi waypoint = EventTableModule.ModuleInstance.PointOfInterestState.GetPointOfInterest(this.Waypoint);
 
                             if (waypoint != null)
@@ -621,18 +620,17 @@ namespace Estreya.BlishHUD.EventTable.Models
                 }
             }
             else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed && EventTableModule.ModuleInstance.ModuleSettings.ShowContextMenuOnClick.Value)
-                {
-                    int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
-                                    ? -this.ContextMenuStrip.Height
-                                    : 0;
+            {
+                int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
+                                ? -this.ContextMenuStrip.Height
+                                : 0;
 
-                    int leftPos = e.MousePosition.X + this.ContextMenuStrip.Width < GameService.Graphics.SpriteScreen.Width
-                                      ? 0
-                                      : -this.ContextMenuStrip.Width;
+                int leftPos = e.MousePosition.X + this.ContextMenuStrip.Width < GameService.Graphics.SpriteScreen.Width
+                                  ? 0
+                                  : -this.ContextMenuStrip.Width;
 
-                    Point menuPosition = e.MousePosition + new Point(leftPos, topPos);
-                    this.ContextMenuStrip.Show(menuPosition);
-                }
+                Point menuPosition = e.MousePosition + new Point(leftPos, topPos);
+                this.ContextMenuStrip.Show(menuPosition);
             }
         }
 
@@ -852,7 +850,10 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             lock (this)
             {
-                if (this._editing) return;
+                if (this._editing)
+                {
+                    return;
+                }
 
                 this._editing = true;
             }
@@ -877,7 +878,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                     Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
                 };
 
-                var editView = new EditEventView(this.Clone());
+                EditEventView editView = new EditEventView(this.Clone());
                 editView.SavePressed += (s, e) =>
                 {
                     window.Hide();
@@ -899,7 +900,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                         this.APICode = e.Value.APICode;
 
                         // Force update next tick. Don't need to lock since this is locked already.
-                        this.timeSinceUpdate = updateInterval.TotalMilliseconds;
+                        this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
 
                         this._editing = false;
                     }
