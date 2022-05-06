@@ -31,7 +31,7 @@
             {
                 Parent = buildPanel,
                 Location = new Point(MAIN_PADDING.X, MAIN_PADDING.Y),
-                Width = buildPanel.ContentRegion.Width - MAIN_PADDING.Y * 2,
+                Width = buildPanel.ContentRegion.Width - MAIN_PADDING.Y,
                 Height = buildPanel.ContentRegion.Height - MAIN_PADDING.X,
                 CanScroll = true
             };
@@ -46,7 +46,7 @@
                 HeightSizingMode = SizingMode.Standard,
             };
 
-            listView.Size = new Point(contentRegion.Width - listView.Left, contentRegion.Height - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
+            listView.Size = new Point(contentRegion.Width - listView.Left - MAIN_PADDING.X, contentRegion.Height - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
 
             Panel buttons = new Panel()
             {

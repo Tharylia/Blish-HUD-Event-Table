@@ -37,8 +37,8 @@
             {
                 Parent = buildPanel,
                 Location = new Point(MAIN_PADDING.X, MAIN_PADDING.Y),
-                Width = buildPanel.ContentRegion.Width - MAIN_PADDING.Y * 2,
-                Height = buildPanel.ContentRegion.Height - MAIN_PADDING.X,
+                Width = buildPanel.ContentRegion.Width - MAIN_PADDING.X * 1,
+                Height = buildPanel.ContentRegion.Height - MAIN_PADDING.Y,
                 CanScroll = true
             };
 
@@ -75,11 +75,11 @@
                 FlowDirection = ControlFlowDirection.LeftToRight,
                 CanScroll = true,
                 ShowBorder = true,
-                Parent = Panel,
-                Location = new Point(eventCategoriesPanel.Right + Panel.ControlStandard.ControlOffset.X, contentRegion.Y)
+                Location = new Point(eventCategoriesPanel.Right + Panel.ControlStandard.ControlOffset.X, contentRegion.Y),
+                Parent = Panel
             };
 
-            eventPanel.Size = new Point(contentRegion.Width - eventPanel.Left, contentRegion.Height - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
+            eventPanel.Size = new Point(contentRegion.Width - eventPanel.Left - MAIN_PADDING.X, contentRegion.Height - (int)(StandardButton.STANDARD_CONTROL_HEIGHT * 1.25));
 
             searchBox.TextChanged += (s, e) =>
             {
