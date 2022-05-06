@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -21,6 +21,7 @@
     using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
     using System.Linq;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -35,6 +36,8 @@
         internal static EventTableModule ModuleInstance;
 
         public bool IsPrerelease => !string.IsNullOrWhiteSpace(this.Version?.PreRelease);
+
+        private WebClient _webclient;
 
         private EventTableDrawer Drawer { get; set; }
 
@@ -610,6 +613,18 @@
                     this.ToggleContainer(show);
                 }
             }
+        }
+
+        public WebClient GetWebClient()
+        {
+            if (this._webclient == null)
+            {
+                this._webclient = new WebClient();
+
+                this._webclient.Headers.Add("user-agent", $"Event Table {this.Version}");
+            }
+
+            return this._webclient;
         }
 
         /// <inheritdoc />
