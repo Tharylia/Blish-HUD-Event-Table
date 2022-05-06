@@ -193,6 +193,6 @@ public class ListView<T> : FlowPanel
 
         RectangleF lineRectangle = new RectangleF(draggedOnEntry.Left, (addedLast ? draggedOnEntry.Bottom : draggedOnEntry.Top) - this.VerticalScrollOffset, draggedOnEntry.Width, 2);
 
-        spriteBatch.DrawLine(this, ContentService.Textures.Pixel, lineRectangle, Color.White);
+        spriteBatch.DrawLineOnCtrl(this, ContentService.Textures.Pixel, lineRectangle, Color.White);
     }
 }

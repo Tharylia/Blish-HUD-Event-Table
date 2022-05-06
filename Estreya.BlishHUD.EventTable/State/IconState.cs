@@ -38,7 +38,7 @@ public class IconState : ManagedState
         }
     }
 
-    public IconState(ContentsManager contentsManager, string basePath) : base((int)_saveInterval.TotalMilliseconds)
+    public IconState(ContentsManager contentsManager, string basePath) : base(true, (int)_saveInterval.TotalMilliseconds)
     {
         this._contentsManager = contentsManager;
         this._basePath = basePath;

@@ -52,7 +52,7 @@
 
         private List<VisibleStateInfo> Instances { get; set; } = new List<VisibleStateInfo>();
 
-        public EventState(string basePath) : base(30000)
+        public EventState(string basePath) : base(true, 30000)
         {
             this.BasePath = basePath;
         }

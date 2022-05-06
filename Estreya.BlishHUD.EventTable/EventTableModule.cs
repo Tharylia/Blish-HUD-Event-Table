@@ -21,6 +21,7 @@
     using System.Collections.ObjectModel;
     using System.ComponentModel.Composition;
     using System.Linq;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -35,6 +36,8 @@
         internal static EventTableModule ModuleInstance;
 
         public bool IsPrerelease => !string.IsNullOrWhiteSpace(this.Version?.PreRelease);
+
+        private WebClient _webclient;
 
         private EventTableDrawer Drawer { get; set; }
 
@@ -137,8 +140,8 @@
         private List<EventCategory> _eventCategories = new List<EventCategory>();
 
         public List<EventCategory> EventCategories => this._eventCategories.Where(ec => !ec.IsDisabled).ToList();
-        #region States
 
+        #region States
         private readonly AsyncLock _stateLock = new AsyncLock();
         private Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
 
@@ -147,6 +150,7 @@
         public MapchestState MapchestState { get; private set; }
         public EventFileState EventFileState { get; private set; }
         public IconState IconState { get; private set; }
+        public PointOfInterestState PointOfInterestState { get; private set; }
         #endregion
 
         [ImportingConstructor]
@@ -348,6 +352,7 @@
             {
                 if (!beforeFileLoaded)
                 {
+                    this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager);
                     this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
                     this.WorldbossState.WorldbossCompleted += (s, e) =>
                     {
@@ -368,6 +373,7 @@
 
                 if (!beforeFileLoaded)
                 {
+                    this.States.Add(this.PointOfInterestState);
                     this.States.Add(this.WorldbossState);
                     this.States.Add(this.MapchestState);
                 }
@@ -384,7 +390,14 @@
                     try
                     {
                         // Order is important
-                        await state.Start();
+                        if (state.AwaitLoad)
+                        {
+                            await state.Start();
+                        }
+                        else
+                        {
+                            _ = state.Start();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -610,6 +623,18 @@
                     this.ToggleContainer(show);
                 }
             }
+        }
+
+        public WebClient GetWebClient()
+        {
+            if (this._webclient == null)
+            {
+                this._webclient = new WebClient();
+
+                this._webclient.Headers.Add("user-agent", $"Event Table {this.Version}");
+            }
+
+            return this._webclient;
         }
 
         /// <inheritdoc />

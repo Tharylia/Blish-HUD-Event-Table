@@ -18,7 +18,6 @@
     using System.ComponentModel;
     using System.Diagnostics;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
 
     [Serializable]
@@ -138,7 +137,7 @@
             {
                 if (this._contextMenuStrip == null)
                 {
-                    this._contextMenuStrip = new ContextMenuStrip(GetContextMenu);
+                    this._contextMenuStrip = new ContextMenuStrip(this.GetContextMenu);
                 }
 
                 return this._contextMenuStrip;
@@ -321,7 +320,7 @@
             this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
         }
 
-        public bool Draw(SpriteBatch spriteBatch, Rectangle bounds, Control control, Texture2D baseTexture, int y, double pixelPerMinute, DateTime now, DateTime min, DateTime max, BitmapFont font)
+        public bool Draw(SpriteBatch spriteBatch, Rectangle bounds, Texture2D baseTexture, int y, double pixelPerMinute, DateTime now, DateTime min, DateTime max, BitmapFont font)
         {
             List<DateTime> occurences = new List<DateTime>();
             lock (this.Occurences)
@@ -348,7 +347,7 @@
                 RectangleF eventTexturePosition = new RectangleF(x, y, width, EventTableModule.ModuleInstance.EventHeight);
                 bool drawBorder = !this.Filler && EventTableModule.ModuleInstance.ModuleSettings.DrawEventBorder.Value;
 
-                spriteBatch.DrawRectangle(control, baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
+                spriteBatch.DrawRectangle(baseTexture, eventTexturePosition, this.BackgroundColor * EventTableModule.ModuleInstance.ModuleSettings.Opacity.Value, drawBorder ? 1 : 0, Color.Black);
 
                 #endregion
 
@@ -377,7 +376,7 @@
                     float eventTextWidth = this.MeasureStringWidth(eventName, font);
                     eventTextPosition = new RectangleF(eventTexturePosition.X + 5, eventTexturePosition.Y + 5, eventTextWidth, eventTexturePosition.Height - 10);
 
-                    spriteBatch.DrawStringOnCtrl(control, eventName, font, eventTextPosition, textColor);
+                    spriteBatch.DrawString(eventName, font, eventTextPosition, textColor);
                 }
 
                 #endregion
@@ -402,7 +401,7 @@
                     if (eventTimeRemainingPosition.X + eventTimeRemainingPosition.Width <= eventTexturePosition.X + eventTexturePosition.Width)
                     {
                         // Only draw if it fits in event bounds
-                        spriteBatch.DrawStringOnCtrl(control, timeRemainingString, font, eventTimeRemainingPosition, textColor);
+                        spriteBatch.DrawString(timeRemainingString, font, eventTimeRemainingPosition, textColor);
                     }
                 }
 
@@ -412,7 +411,7 @@
 
                 if ((this.EventCategory?.IsFinished() ?? false) || this.IsFinished())
                 {
-                    spriteBatch.DrawCrossOut(control, baseTexture, eventTexturePosition, Color.Red);
+                    spriteBatch.DrawCrossOut(baseTexture, eventTexturePosition, Color.Red);
                 }
                 #endregion
 
@@ -590,28 +589,48 @@
                 return; // Currently don't do anything when filler
             }
 
-            if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed)
+            if (e.EventType == Blish_HUD.Input.MouseEventType.LeftMouseButtonPressed && EventTableModule.ModuleInstance.ModuleSettings.HandleLeftClick.Value)
             {
-                if (EventTableModule.ModuleInstance.ModuleSettings.CopyWaypointOnClick.Value)
+                if (EventTableModule.ModuleInstance.ModuleSettings.LeftClickAction.Value == LeftClickAction.CopyWaypoint)
                 {
                     this.CopyWaypoint();
                 }
-            }
-            else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed)
-            {
-                if (EventTableModule.ModuleInstance.ModuleSettings.ShowContextMenuOnClick.Value)
+                else if (EventTableModule.ModuleInstance.ModuleSettings.LeftClickAction.Value == LeftClickAction.NavigateToWaypoint)
                 {
-                    int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
-                                    ? -this.ContextMenuStrip.Height
-                                    : 0;
+                    _ = Task.Run(async () =>
+                    {
+                        if (EventTableModule.ModuleInstance.PointOfInterestState.Loading)
+                        {
+                            Controls.ScreenNotification.ShowNotification("Point of Interest State is currently loading...", ScreenNotification.NotificationType.Error);
+                        }
+                        else
+                        {
+                            Gw2Sharp.WebApi.V2.Models.ContinentFloorRegionMapPoi waypoint = EventTableModule.ModuleInstance.PointOfInterestState.GetPointOfInterest(this.Waypoint);
 
-                    int leftPos = e.MousePosition.X + this.ContextMenuStrip.Width < GameService.Graphics.SpriteScreen.Width
-                                      ? 0
-                                      : -this.ContextMenuStrip.Width;
-
-                    Point menuPosition = e.MousePosition + new Point(leftPos, topPos);
-                    this.ContextMenuStrip.Show(menuPosition);
+                            if (waypoint != null)
+                            {
+                                var navigationSuccess = await MapNavigationUtil.NavigateToPosition(waypoint);
+                                if (!navigationSuccess)
+                                {
+                                    Controls.ScreenNotification.ShowNotification("Navigation failed.", ScreenNotification.NotificationType.Error);
+                                }
+                            }
+                        }
+                    });
                 }
+            }
+            else if (e.EventType == Blish_HUD.Input.MouseEventType.RightMouseButtonPressed && EventTableModule.ModuleInstance.ModuleSettings.ShowContextMenuOnClick.Value)
+            {
+                int topPos = e.MousePosition.Y + this.ContextMenuStrip.Height > GameService.Graphics.SpriteScreen.Height
+                                ? -this.ContextMenuStrip.Height
+                                : 0;
+
+                int leftPos = e.MousePosition.X + this.ContextMenuStrip.Width < GameService.Graphics.SpriteScreen.Width
+                                  ? 0
+                                  : -this.ContextMenuStrip.Width;
+
+                Point menuPosition = e.MousePosition + new Point(leftPos, topPos);
+                this.ContextMenuStrip.Show(menuPosition);
             }
         }
 
@@ -831,7 +850,10 @@
         {
             lock (this)
             {
-                if (this._editing) return;
+                if (this._editing)
+                {
+                    return;
+                }
 
                 this._editing = true;
             }
@@ -856,7 +878,7 @@
                     Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
                 };
 
-                var editView = new EditEventView(this.Clone());
+                EditEventView editView = new EditEventView(this.Clone());
                 editView.SavePressed += (s, e) =>
                 {
                     window.Hide();
@@ -878,7 +900,7 @@
                         this.APICode = e.Value.APICode;
 
                         // Force update next tick. Don't need to lock since this is locked already.
-                        this.timeSinceUpdate = updateInterval.TotalMilliseconds;
+                        this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
 
                         this._editing = false;
                     }

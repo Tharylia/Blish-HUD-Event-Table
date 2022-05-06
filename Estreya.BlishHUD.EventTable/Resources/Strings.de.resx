@@ -603,17 +603,17 @@
   <data name="Setting_BuildDirection_Name" xml:space="preserve">
     <value>Baurichtung</value>
   </data>
-  <data name="Setting_CopyWaypointOnClick_Description" xml:space="preserve">
-    <value>Gibt an, ob Wegpunkte kopiert werden sollen wenn mit links auf ein Event geklickt wird.</value>
-  </data>
-  <data name="Setting_CopyWaypointOnClick_Name" xml:space="preserve">
-    <value>Wegpunkte kopieren</value>
-  </data>
   <data name="Setting_DebugEnabled_Description" xml:space="preserve">
     <value>Gibt an, ob der Event Table im Modus Debug läuft.</value>
   </data>
   <data name="Setting_DebugEnabled_Name" xml:space="preserve">
     <value>Debug aktiviert</value>
+  </data>
+  <data name="Setting_DirectlyTeleportToWaypoint_Description" xml:space="preserve">
+    <value>Gibt an, ob der Event Table direkt zu einer Wegmarke teleportieren soll, nachdem zu dieser navigiert wurde.</value>
+  </data>
+  <data name="Setting_DirectlyTeleportToWaypoint_Title" xml:space="preserve">
+    <value>Direkter Teleport zu Wegmarken</value>
   </data>
   <data name="Setting_DrawEventBorder_Description" xml:space="preserve">
     <value>Gibt an, ob die einzelnen Events mit einem Rahmen angezeigt werden sollen.</value>
@@ -675,6 +675,12 @@
   <data name="Setting_GlobalEnabled_Name" xml:space="preserve">
     <value>Event Table aktiviert</value>
   </data>
+  <data name="Setting_HandleLeftClick_Description" xml:space="preserve">
+    <value>Gibt an, ob die gewählte Aktion ausgeführt werden soll wenn mit links auf ein Event geklickt wird.</value>
+  </data>
+  <data name="Setting_HandleLeftClick_Name" xml:space="preserve">
+    <value>Auf Linksklick reagieren</value>
+  </data>
   <data name="Setting_HideInCombat_Description" xml:space="preserve">
     <value>Gibt an, ob der Event Table sich im Kampf ausblenden soll.</value>
   </data>
@@ -692,6 +698,12 @@
   </data>
   <data name="Setting_HideOnMissingMumbleTicks_Name" xml:space="preserve">
     <value>Bei Zwischensequenzen ausblenden</value>
+  </data>
+  <data name="Setting_LeftClickAction_Description" xml:space="preserve">
+    <value>Gibt die Aktion an, welche bei einem Linksklick ausgeführt wird.</value>
+  </data>
+  <data name="Setting_LeftClickAction_Title" xml:space="preserve">
+    <value>Linksklick-Aktion</value>
   </data>
   <data name="Setting_LocationX_Description" xml:space="preserve">
     <value>Gibt an, welche Position der Event Table aus der X-Axe hat.</value>
@@ -711,11 +723,13 @@
   <data name="Setting_Opacity_Name" xml:space="preserve">
     <value>Deckkraft</value>
   </data>
-  <data name="Setting_RefreshRate_Description" xml:space="preserve">
-    <value>Definiert die Rate, in welcher der Event Table den Bildschirm aktualisiert.\nMin: {0}ms\nMax: {1}ms</value>
+  <data name="Setting_RefreshRateDelay_Description" xml:space="preserve">
+    <value>Definiert die Verzögerung, nach welcher der Event Table den Bildschirm aktualisiert.
+Min: {0}ms
+Max: {1}ms</value>
   </data>
-  <data name="Setting_RefreshRate_Title" xml:space="preserve">
-    <value>Aktualisierungsrate</value>
+  <data name="Setting_RefreshRateDelay_Title" xml:space="preserve">
+    <value>Verzögerung der Aktualisierungsrate</value>
   </data>
   <data name="Setting_RegisterCornerIcon_Description" xml:space="preserve">
     <value>Gibt an, ob der Event Table ein Eck-Icon anzeigen soll um schnell auf die Einstellungen zugreifen zu können.</value>

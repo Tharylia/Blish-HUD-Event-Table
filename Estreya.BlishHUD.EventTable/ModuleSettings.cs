@@ -29,7 +29,7 @@
         public SettingEntry<bool> GlobalEnabled { get; private set; }
         public SettingEntry<KeyBinding> GlobalEnabledHotkey { get; private set; }
         public SettingEntry<bool> RegisterCornerIcon { get; private set; }
-        public SettingEntry<int> RefreshRate { get; private set; }
+        public SettingEntry<int> RefreshRateDelay { get; private set; }
         public SettingEntry<bool> AutomaticallyUpdateEventFile { get; private set; }
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> BackgroundColor { get; private set; }
         public SettingEntry<float> BackgroundColorOpacity { get; private set; }
@@ -39,10 +39,12 @@
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<TooltipTimeMode> TooltipTimeMode { get; private set; }
-        public SettingEntry<bool> CopyWaypointOnClick { get; private set; }
+        public SettingEntry<bool> HandleLeftClick { get; private set; }
+        public SettingEntry<LeftClickAction> LeftClickAction { get; private set; }
         public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
         public SettingEntry<BuildDirection> BuildDirection { get; private set; }
-        public SettingEntry<float> Opacity { get; set; }
+        public SettingEntry<float> Opacity { get; private set; }
+        public SettingEntry<bool> DirectlyTeleportToWaypoint { get; private set; }
         #endregion
 
         #region Location
@@ -158,9 +160,9 @@
             this.RegisterCornerIcon = this.GlobalSettings.DefineSetting(nameof(this.RegisterCornerIcon), true, () => Strings.Setting_RegisterCornerIcon_Name, () => Strings.Setting_RegisterCornerIcon_Description);
             this.RegisterCornerIcon.SettingChanged += this.SettingChanged;
 
-            this.RefreshRate = this.GlobalSettings.DefineSetting(nameof(this.RefreshRate), 900, () => Strings.Setting_RefreshRate_Title, () => string.Format(Strings.Setting_RefreshRate_Description, this.RefreshRate.GetRange().Value.Min, this.RefreshRate.GetRange().Value.Max));
-            this.RefreshRate.SettingChanged += this.SettingChanged;
-            this.RefreshRate.SetRange(0, 900);
+            this.RefreshRateDelay = this.GlobalSettings.DefineSetting(nameof(this.RefreshRateDelay), 900, () => Strings.Setting_RefreshRateDelay_Title, () => string.Format(Strings.Setting_RefreshRateDelay_Description, this.RefreshRateDelay.GetRange().Value.Min, this.RefreshRateDelay.GetRange().Value.Max));
+            this.RefreshRateDelay.SettingChanged += this.SettingChanged;
+            this.RefreshRateDelay.SetRange(0, 900);
 
             this.AutomaticallyUpdateEventFile = this.GlobalSettings.DefineSetting(nameof(this.AutomaticallyUpdateEventFile), true, () => Strings.Setting_AutomaticallyUpdateEventFile_Name, () => Strings.Setting_AutomaticallyUpdateEventFile_Description);
             this.AutomaticallyUpdateEventFile.SettingChanged += this.SettingChanged;
@@ -229,8 +231,14 @@
             this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => Strings.Setting_TooltipTimeMode_Name, () => Strings.Setting_TooltipTimeMode_Description);
             this.TooltipTimeMode.SettingChanged += this.SettingChanged;
 
-            this.CopyWaypointOnClick = this.GlobalSettings.DefineSetting(nameof(this.CopyWaypointOnClick), true, () => Strings.Setting_CopyWaypointOnClick_Name, () => Strings.Setting_CopyWaypointOnClick_Description);
-            this.CopyWaypointOnClick.SettingChanged += this.SettingChanged;
+            this.HandleLeftClick = this.GlobalSettings.DefineSetting(nameof(this.HandleLeftClick), true, () => Strings.Setting_HandleLeftClick_Name, () => Strings.Setting_HandleLeftClick_Description);
+            this.HandleLeftClick.SettingChanged += this.SettingChanged;
+
+            this.LeftClickAction = this.GlobalSettings.DefineSetting(nameof(this.LeftClickAction), Models.LeftClickAction.CopyWaypoint, () => Strings.Setting_LeftClickAction_Title, () => Strings.Setting_LeftClickAction_Description);
+            this.LeftClickAction.SettingChanged += this.SettingChanged;
+
+            this.DirectlyTeleportToWaypoint = this.GlobalSettings.DefineSetting(nameof(this.DirectlyTeleportToWaypoint), false, () => Strings.Setting_DirectlyTeleportToWaypoint_Title, () => Strings.Setting_DirectlyTeleportToWaypoint_Description);
+            this.DirectlyTeleportToWaypoint.SettingChanged += this.SettingChanged;
 
             this.ShowContextMenuOnClick = this.GlobalSettings.DefineSetting(nameof(this.ShowContextMenuOnClick), true, () => Strings.Setting_ShowContextMenuOnClick_Name, () => Strings.Setting_ShowContextMenuOnClick_Description);
             this.ShowContextMenuOnClick.SettingChanged += this.SettingChanged;

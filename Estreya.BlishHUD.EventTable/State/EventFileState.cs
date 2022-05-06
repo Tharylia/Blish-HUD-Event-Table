@@ -116,7 +116,7 @@
             {
                 Logger.Debug("Loading json from web source.");
 
-                string webJson = await new WebClient().DownloadStringTaskAsync(new Uri(WEB_SOURCE_URL));
+                string webJson = await EventTableModule.ModuleInstance.GetWebClient().DownloadStringTaskAsync(new Uri(WEB_SOURCE_URL));
 
                 Logger.Debug($"Got content (length): {webJson?.Length ?? 0}");
 
