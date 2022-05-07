@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -781,7 +781,6 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         public Task LoadAsync()
         {
-            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
             EventTableModule.ModuleInstance.EventState.StateAdded += this.EventState_StateAdded;
             EventTableModule.ModuleInstance.EventState.StateRemoved += this.EventState_StateRemoved;
 
@@ -820,19 +819,15 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
+        public void ResetCachedStates()
         {
-            if (this.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant())
-            {
-                this._isDisabled = null;
-            }
+            this._isDisabled = null;
         }
 
         public void Unload()
         {
             Logger.Debug("Unload event: {0}", this.Key);
 
-            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
             EventTableModule.ModuleInstance.EventState.StateAdded -= this.EventState_StateAdded;
             EventTableModule.ModuleInstance.EventState.StateRemoved -= this.EventState_StateRemoved;
 

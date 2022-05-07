@@ -71,7 +71,14 @@
 
         private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
         {
-            if (this._originalEvents.Any(ev => ev.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant()))
+            var changedEvents = this._originalEvents.Where(ev => ev.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant()).ToList();
+
+            foreach (var ev in changedEvents)
+            {
+                ev.ResetCachedStates();
+            }
+
+            if (changedEvents.Count > 0)
             {
                 this.UpdateEventOccurences(null);
             }
