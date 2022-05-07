@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 public static class MapNavigationUtil
 {
     private static readonly Logger Logger = Logger.GetLogger(typeof(MapNavigationUtil));
+    public static int MouseMoveAndClickDelay { get; set; } = 50;
+    public static int KeyboardPressDelay { get; set; } = 20;
 
     private static double GetDistance(double x1, double y1, double x2, double y2)
     {
@@ -33,6 +35,12 @@ public static class MapNavigationUtil
 
     public static async Task<bool> OpenFullscreenMap()
     {
+        if (!IsInGame())
+        {
+            Logger.Debug("Not in game");
+            return false;
+        }
+
         if (GameService.Gw2Mumble.UI.IsMapOpen)
         {
             return true;
@@ -48,6 +56,12 @@ public static class MapNavigationUtil
 
     public static async Task<bool> CloseFullscreenMap()
     {
+        if (!IsInGame())
+        {
+            Logger.Debug("Not in game");
+            return false;
+        }
+
         if (!GameService.Gw2Mumble.UI.IsMapOpen)
         {
             return true;
@@ -55,13 +69,24 @@ public static class MapNavigationUtil
 
         Keyboard.Press(Blish_HUD.Controls.Extern.VirtualKeyShort.ESCAPE);
 
-        await WaitForTick(2);
+        await Task.Delay(500);
 
         return !GameService.Gw2Mumble.UI.IsMapOpen;
     }
 
+    private static bool IsInGame()
+    {
+        return GameService.GameIntegration.Gw2Instance.IsInGame;
+    }
+
     private static async Task<bool> Zoom(double requiredZoomLevel, int steps)
     {
+        if (!IsInGame())
+        {
+            Logger.Debug("Not in game");
+            return false;
+        }
+
         int maxTries = 10;
         int remainingTries = maxTries;
         double startZoom = GetMapScale();
@@ -126,6 +151,12 @@ public static class MapNavigationUtil
     {
         while (true)
         {
+            if (!IsInGame())
+            {
+                Logger.Debug("Not in game");
+                return false;
+            }
+
             await WaitForTick(2);
             if (!GameService.Gw2Mumble.UI.IsMapOpen)
             {
@@ -163,36 +194,55 @@ public static class MapNavigationUtil
 
             Mouse.Release(MouseButton.RIGHT);
 
-            await Task.Delay(20);
+            await Task.Delay(MouseMoveAndClickDelay);
         }
 
         return true;
     }
 
-    public static async Task ChangeMapLayer(ChangeMapLayerDirection direction)
+    public static async Task<bool> ChangeMapLayer(ChangeMapLayerDirection direction)
     {
+        if (!IsInGame())
+        {
+            Logger.Debug("Not in game");
+            return false;
+        }
+
         Keyboard.Press(Blish_HUD.Controls.Extern.VirtualKeyShort.SHIFT);
-        await Task.Delay(10);
+        await Task.Delay(KeyboardPressDelay);
         Mouse.RotateWheel(int.MaxValue * (direction == ChangeMapLayerDirection.Up ? 1 : -1));
-        await Task.Delay(10);
+        await Task.Delay(KeyboardPressDelay);
         Keyboard.Release(Blish_HUD.Controls.Extern.VirtualKeyShort.SHIFT);
+
+        return true;
     }
 
     public static Task<bool> NavigateToPosition(ContinentFloorRegionMapPoi poi)
     {
-        return NavigateToPosition(poi.Coord.X, poi.Coord.Y, poi.Type == PoiType.Waypoint);
+        return NavigateToPosition(poi, false);
+    }
+
+    public static Task<bool> NavigateToPosition(ContinentFloorRegionMapPoi poi, bool directTeleport)
+    {
+        return NavigateToPosition(poi.Coord.X, poi.Coord.Y, poi.Type == PoiType.Waypoint, directTeleport);
     }
 
     public static Task<bool> NavigateToPosition(double x, double y)
     {
 
-        return NavigateToPosition(x, y, false);
+        return NavigateToPosition(x, y, false, false);
     }
 
-    private static async Task<bool> NavigateToPosition(double x, double y, bool isWaypoint)
+    public static async Task<bool> NavigateToPosition(double x, double y, bool isWaypoint, bool directTeleport)
     {
         try
         {
+            if (!IsInGame())
+            {
+                Logger.Debug("Not in game");
+                return false;
+            }
+
             Controls.ScreenNotification.ShowNotification(new string[] { "DO NOT MOVE THE CURSOR!", "Close map to cancel." }, Blish_HUD.Controls.ScreenNotification.NotificationType.Warning, duration: 7);
 
             if (!await OpenFullscreenMap())
@@ -208,7 +258,11 @@ public static class MapNavigationUtil
 
             if (GameService.Gw2Mumble.CurrentMap.Id == 1206) // Mistlock Santuary
             {
-                await ChangeMapLayer(ChangeMapLayerDirection.Down);
+                if (!await ChangeMapLayer(ChangeMapLayerDirection.Down))
+                {
+                    Logger.Debug("Changing map layer failed.");
+                    return false;
+                }
             }
 
             if (!await ZoomOut(6))
@@ -229,8 +283,8 @@ public static class MapNavigationUtil
 
             await WaitForTick();
 
-            int finalMouseX = GameService.Graphics.WindowWidth / 2; // (int)(mapPos.X / GetMapScale());
-            int finalMouseY = GameService.Graphics.WindowHeight / 2;//(int)(mapPos.Y / GetMapScale());
+            int finalMouseX = GameService.Graphics.WindowWidth / 2;
+            int finalMouseY = GameService.Graphics.WindowHeight / 2;
 
             Logger.Debug($"Set mouse on waypoint: x = {finalMouseX}, y = {finalMouseY}");
 
@@ -254,20 +308,20 @@ public static class MapNavigationUtil
 
                 Mouse.SetPosition(finalMouseX, finalMouseY, true);
 
-                await Task.Delay(50);
+                await Task.Delay(MouseMoveAndClickDelay);
 
                 Mouse.Click(MouseButton.LEFT);
 
-                await Task.Delay(50);
+                await Task.Delay(MouseMoveAndClickDelay);
 
                 finalMouseX -= 50;
                 finalMouseY += 10;
                 Logger.Debug($"Set mouse on waypoint yes button: x = {finalMouseX}, y = {finalMouseY}");
                 Mouse.SetPosition(finalMouseX, finalMouseY, true);
 
-                if (EventTableModule.ModuleInstance.ModuleSettings.DirectlyTeleportToWaypoint.Value)
+                if (directTeleport)
                 {
-                    await Task.Delay(150);
+                    await Task.Delay(250); // Wait for teleport window to open.
                     Mouse.Click(MouseButton.LEFT);
                 }
             }
