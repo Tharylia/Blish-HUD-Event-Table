@@ -97,7 +97,7 @@ public class IconState : ManagedState
 
             foreach (string filePath in filePaths)
             {
-                string sanitizedFileName = SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
+                string sanitizedFileName = FileUtil.SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
                 if (currentLoadedTextures.Contains(sanitizedFileName))
                 {
                     _ = currentLoadedTextures.Remove(sanitizedFileName);
@@ -127,15 +127,7 @@ public class IconState : ManagedState
         }
     }
 
-    private static string SanitizeFileName(string fileName)
-    {
-        string invalidChars = System.Text.RegularExpressions.Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars()));
-        string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
-
-        return System.Text.RegularExpressions.Regex.Replace(fileName, invalidRegStr, "_");
-    }
-
-    private Task LoadImages()
+        private Task LoadImages()
     {
         Logger.Info("Load cached images from filesystem.");
 
@@ -171,7 +163,7 @@ public class IconState : ManagedState
                         asyncTexture.SwapTexture(texture);
                     });
 
-                    string fileName = SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
+                    string fileName = FileUtil.SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
                     this.HandleAsyncTextureSwap(asyncTexture, fileName);
                 }
                 catch (Exception ex)
@@ -205,7 +197,7 @@ public class IconState : ManagedState
 
     public bool HasIcon(string identifier)
     {
-        string sanitizedIdentifier = SanitizeFileName(identifier);
+        string sanitizedIdentifier = FileUtil.SanitizeFileName(identifier);
 
         return this._loadedTextures.ContainsKey(sanitizedIdentifier);
     }
@@ -217,7 +209,7 @@ public class IconState : ManagedState
             return null;
         }
 
-        string sanitizedIdentifier = SanitizeFileName(System.IO.Path.ChangeExtension(identifier, null));
+        string sanitizedIdentifier = FileUtil.SanitizeFileName(System.IO.Path.ChangeExtension(identifier, null));
 
         using (this._textureLock.Lock())
         {

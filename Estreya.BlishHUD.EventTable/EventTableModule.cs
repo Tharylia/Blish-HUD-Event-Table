@@ -352,7 +352,7 @@
             {
                 if (!beforeFileLoaded)
                 {
-                    this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager);
+                    this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager, eventsDirectory);
                     this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
                     this.WorldbossState.WorldbossCompleted += (s, e) =>
                     {

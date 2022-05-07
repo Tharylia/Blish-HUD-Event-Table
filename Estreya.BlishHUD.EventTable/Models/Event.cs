@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.Models
+namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -605,15 +605,19 @@
                         }
                         else
                         {
-                            Gw2Sharp.WebApi.V2.Models.ContinentFloorRegionMapPoi waypoint = EventTableModule.ModuleInstance.PointOfInterestState.GetPointOfInterest(this.Waypoint);
+                            PointOfInterest pointOfInterest = EventTableModule.ModuleInstance.PointOfInterestState.GetPointOfInterest(this.Waypoint);
 
-                            if (waypoint != null)
+                            if (pointOfInterest != null)
                             {
-                                var navigationSuccess = await MapNavigationUtil.NavigateToPosition(waypoint);
+                                var navigationSuccess = await MapNavigationUtil.NavigateToPosition(pointOfInterest, EventTableModule.ModuleInstance.ModuleSettings.DirectlyTeleportToWaypoint.Value);
                                 if (!navigationSuccess)
                                 {
                                     Controls.ScreenNotification.ShowNotification("Navigation failed.", ScreenNotification.NotificationType.Error);
                                 }
+                            }
+                            else
+                            {
+                                Controls.ScreenNotification.ShowNotification(Strings.Event_NoWaypointFound, ScreenNotification.NotificationType.Error);
                             }
                         }
                     });

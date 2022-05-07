@@ -64,7 +64,7 @@
 
             this.TimeSinceSave += gameTime.ElapsedGameTime;
 
-            if (this.TimeSinceSave.TotalMilliseconds >= this.SaveInternal)
+            if (this.SaveInternal != -1 && this.TimeSinceSave.TotalMilliseconds >= this.SaveInternal)
             {
                 // Prevent multiple threads running Save() at the same time.
                 if (_saveSemaphore.CurrentCount > 0)
@@ -76,6 +76,10 @@
                             await _saveSemaphore.WaitAsync();
                             await this.Save();
                             this.TimeSinceSave = TimeSpan.Zero;
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "{0} failed saving.", this.GetType().Name);
                         }
                         finally
                         {
