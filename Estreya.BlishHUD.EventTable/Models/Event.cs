@@ -4,6 +4,7 @@
     using Blish_HUD._Extensions;
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
+    using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Views.Edit;
@@ -315,6 +316,9 @@
         [JsonIgnore]
         public List<DateTime> Occurences { get; private set; } = new List<DateTime>();
 
+        [JsonProperty("markers")]
+        public List<EventPhaseMarker> EventPhaseMarkers { get; set; } = new List<EventPhaseMarker>();
+
         public Event()
         {
             this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
@@ -339,8 +343,10 @@
                     continue;
                 }
 
-                float x = (float)this.GetXPosition(eventStart, min, pixelPerMinute);
-                x = Math.Max(x, 0);
+                float originalX = (float)this.GetXPosition(eventStart, min, pixelPerMinute);
+                var x = Math.Max(originalX, 0);
+
+                bool running = eventStart <= now && eventStart.AddMinutes(this.Duration) > now;
 
                 #region Draw Event Rectangle
 
@@ -382,8 +388,6 @@
                 #endregion
 
                 #region Draw Event Remaining Time
-
-                bool running = eventStart <= now && eventStart.AddMinutes(this.Duration) > now;
                 if (running)
                 {
                     DateTime end = eventStart.AddMinutes(this.Duration);
@@ -402,6 +406,27 @@
                     {
                         // Only draw if it fits in event bounds
                         spriteBatch.DrawString(timeRemainingString, font, eventTimeRemainingPosition, textColor);
+                    }
+                }
+                #endregion
+
+                #region Draw Phase Markers
+
+                if (running && this.EventPhaseMarkers != null)
+                {
+                    int markerWidth = 2;
+
+                    foreach (EventPhaseMarker marker in this.EventPhaseMarkers)
+                    {
+                        var xPosition = originalX + (marker.Time * (float)pixelPerMinute);
+
+                        xPosition = Math.Min(xPosition, eventTexturePosition.Right - markerWidth);
+
+                        if (xPosition < 0) continue; // Marker not visible
+
+                        var markerRectangle = new RectangleF(xPosition, eventTexturePosition.Y, markerWidth, eventTexturePosition.Height);
+
+                        spriteBatch.DrawRectangle(baseTexture, markerRectangle, marker.Color);
                     }
                 }
 
@@ -877,7 +902,14 @@
                     Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
                 };
 
-                EditEventView editView = new EditEventView(this.Clone());
+                Event clonedEvent;
+
+                lock (this)
+                {
+                    clonedEvent = this.Clone();
+                }
+
+                EditEventView editView = new EditEventView(clonedEvent);
                 editView.SavePressed += (s, e) =>
                 {
                     window.Hide();
@@ -897,6 +929,8 @@
                         this.BackgroundColorCode = e.Value.BackgroundColorCode;
                         this.APICodeType = e.Value.APICodeType;
                         this.APICode = e.Value.APICode;
+
+                        this.EventPhaseMarkers = e.Value.EventPhaseMarkers;
 
                         // Force update next tick. Don't need to lock since this is locked already.
                         this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
@@ -923,7 +957,7 @@
 
         public Event Clone()
         {
-            return (Event)this.MemberwiseClone();
+            return this.Copy();
         }
     }
 }
