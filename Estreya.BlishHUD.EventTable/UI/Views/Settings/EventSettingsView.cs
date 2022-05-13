@@ -20,7 +20,12 @@
 
         protected override void BuildView(Panel parent)
         {
-            this.RenderSetting(parent, this.ModuleSettings.EventTimeSpan);
+            this.RenderChangedTypeSetting(parent, this.ModuleSettings.EventTimeSpan, (string val) =>
+            {
+                int.TryParse(val, out int result);
+
+                return result;
+            });
             this.RenderSetting(parent, this.ModuleSettings.EventHistorySplit);
             this.RenderSetting(parent, this.ModuleSettings.DrawEventBorder);
             this.RenderSetting(parent, this.ModuleSettings.UseEventTranslation);
