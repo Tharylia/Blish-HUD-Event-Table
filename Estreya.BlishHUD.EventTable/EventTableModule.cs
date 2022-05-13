@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -31,6 +31,7 @@ namespace Estreya.BlishHUD.EventTable
         private static readonly Logger Logger = Logger.GetLogger<EventTableModule>();
 
         public const string WEBSITE_ROOT_URL = "https://blishhud.estreya.de";
+        public const string WEBSITE_FILE_ROOT_URL = "https://files.blishhud.estreya.de";
         public const string WEBSITE_MODULE_URL = $"{WEBSITE_ROOT_URL}/modules/event-table";
 
         internal static EventTableModule ModuleInstance;
@@ -84,13 +85,13 @@ namespace Estreya.BlishHUD.EventTable
                 if (this._eventTimeSpan == TimeSpan.Zero)
                 {
                     int timespan = this.ModuleSettings.EventTimeSpan.Value;
-                        if (timespan > 1440)
-                        {
-                            timespan = 1440;
-                            Logger.Warn($"Event Timespan over 1440. Cap at 1440 for performance reasons.");
-                        }
+                    if (timespan > 1440)
+                    {
+                        timespan = 1440;
+                        Logger.Warn($"Event Timespan over 1440. Cap at 1440 for performance reasons.");
+                    }
 
-                        this._eventTimeSpan = TimeSpan.FromMinutes(timespan);
+                    this._eventTimeSpan = TimeSpan.FromMinutes(timespan);
                 }
 
                 return this._eventTimeSpan;
