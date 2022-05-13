@@ -61,7 +61,7 @@
         private const string EVENT_SETTINGS = "event-table-event-settings";
         private const string EVENT_LIST_SETTINGS = "event-table-event-list-settings";
         public SettingCollection EventSettings { get; private set; }
-        public SettingEntry<string> EventTimeSpan { get; private set; } // Is listed in global
+        public SettingEntry<int> EventTimeSpan { get; private set; } // Is listed in global
         public SettingEntry<int> EventHistorySplit { get; private set; } // Is listed in global
         public SettingEntry<int> EventHeight { get; private set; } // Is listed in global
         public SettingEntry<bool> DrawEventBorder { get; private set; } // Is listed in global
@@ -183,7 +183,7 @@
             this.BackgroundColorOpacity.SetRange(0.0f, 1f);
             this.BackgroundColorOpacity.SettingChanged += this.SettingChanged;
 
-            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), "120", () => Strings.Setting_EventTimeSpan_Name, () => Strings.Setting_EventTimeSpan_Description);
+            this.EventTimeSpan = this.GlobalSettings.DefineSetting(nameof(this.EventTimeSpan), 120, () => Strings.Setting_EventTimeSpan_Name, () => Strings.Setting_EventTimeSpan_Description);
             this.EventTimeSpan.SettingChanged += this.SettingChanged;
             this.EventTimeSpan.SetValidation(val =>
             {
@@ -191,18 +191,10 @@
                 string message = null;
                 double limit = 1440;
 
-                if (double.TryParse(val, out double timespan))
-                {
-                    if (timespan > limit)
-                    {
-                        isValid = false;
-                        message = string.Format(Strings.Setting_EventTimeSpan_Validation_OverLimit, limit);
-                    }
-                }
-                else
+                if (val > limit)
                 {
                     isValid = false;
-                    message = string.Format(Strings.Setting_EventTimeSpan_Validation_NoDouble, val);
+                    message = string.Format(Strings.Setting_EventTimeSpan_Validation_OverLimit, limit);
                 }
 
                 return new SettingValidationResult(isValid, message);

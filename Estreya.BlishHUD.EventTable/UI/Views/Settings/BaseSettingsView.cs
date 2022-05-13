@@ -2,19 +2,14 @@
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
-    using Blish_HUD.Graphics.UI;
-    using Blish_HUD.Input;
     using Blish_HUD.Settings;
     using Estreya.BlishHUD.EventTable.Extensions;
-    using Estreya.BlishHUD.EventTable.Helpers;
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.UI.Views.Controls;
     using Microsoft.Xna.Framework;
-    using MonoGame.Extended.BitmapFonts;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
 
     public abstract class BaseSettingsView : BaseView
@@ -120,17 +115,19 @@
 
         protected abstract void BuildView(Panel parent);
 
-        protected Panel RenderSetting<T>(Panel parent, SettingEntry<T> setting)
+        protected Panel RenderChangedTypeSetting<T, TOverride>(Panel parent, SettingEntry<T> setting, Func<TOverride, T> convertFunction)
         {
             Panel panel = this.GetPanel(parent);
 
             Label label = this.GetLabel(panel, setting.DisplayName);
 
-            Type type = setting.SettingType;
-
             try
             {
-                Control ctrl = ControlHandler.CreateFromSetting(setting, this.HandleValidation, BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
+                Control ctrl = ControlHandler.CreateFromChangedTypeSetting<T, TOverride>(setting, (settingEntry, val) =>
+                {
+                    T converted = convertFunction(val);
+                    return this.HandleValidation(settingEntry, converted);
+                }, BINDING_WIDTH, -1, label.Right + CONTROL_X_SPACING, 0);
                 ctrl.Parent = panel;
                 ctrl.BasicTooltipText = setting.Description;
             }
@@ -140,6 +137,11 @@
             }
 
             return panel;
+        }
+
+        protected Panel RenderSetting<T>(Panel parent, SettingEntry<T> setting)
+        {
+            return this.RenderChangedTypeSetting(parent, setting, (T val) => val);
         }
 
         protected Panel RenderSetting<T>(Panel parent, SettingEntry<T> setting, Action<T> onChangeAction)

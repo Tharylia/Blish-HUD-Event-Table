@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -83,8 +83,7 @@
             {
                 if (this._eventTimeSpan == TimeSpan.Zero)
                 {
-                    if (double.TryParse(this.ModuleSettings.EventTimeSpan.Value, out double timespan))
-                    {
+                    int timespan = this.ModuleSettings.EventTimeSpan.Value;
                         if (timespan > 1440)
                         {
                             timespan = 1440;
@@ -92,12 +91,6 @@
                         }
 
                         this._eventTimeSpan = TimeSpan.FromMinutes(timespan);
-                    }
-                    else
-                    {
-                        Logger.Error($"Event Timespan '{this.ModuleSettings.EventTimeSpan.Value}' no real number, default to 120");
-                        this._eventTimeSpan = TimeSpan.FromMinutes(120);
-                    }
                 }
 
                 return this._eventTimeSpan;
