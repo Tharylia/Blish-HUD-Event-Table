@@ -209,6 +209,7 @@
                         {
                             EventStates state = (EventStates)Enum.Parse(typeof(EventStates), parts[1]);
                             DateTime until = DateTime.Parse(parts[2]);
+                            until = DateTime.SpecifyKind(until, DateTimeKind.Utc);
 
                             var newInstance = new VisibleStateInfo()
                             {
