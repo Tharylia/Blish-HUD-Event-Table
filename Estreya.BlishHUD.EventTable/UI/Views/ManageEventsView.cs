@@ -104,20 +104,21 @@
 
             menus.ToList().ForEach(menuItemPair => menuItemPair.Value.Click += (s, e) =>
             {
-                MenuItem menuItem = s as MenuItem;
-
-                EventCategory category = EventTableModule.ModuleInstance.EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
-
-                eventPanel.FilterChildren<EventDetailsButton>(detailsButton =>
+                if (s is MenuItem menuItem)
                 {
-                    if (menuItem == menus[nameof(allEvents)])
-                    {
-                        return true;
-                    }
+                    EventCategory category = EventTableModule.ModuleInstance.EventCategories.Where(ec => ec.Name == menuItem.Text).FirstOrDefault();
 
-                    //IEnumerable<EventCategory> categories = EventCategories.Where(ec => ec.Events.Any(ev => ev.Name == detailsButton.Text));
-                    return category.Events.Any(ev => ev.EventCategory.Key == detailsButton.Event.EventCategory.Key && ev.Key == detailsButton.Event.Key);
-                });
+                    eventPanel.FilterChildren<EventDetailsButton>(detailsButton =>
+                    {
+                        if (menuItem == menus[nameof(allEvents)])
+                        {
+                            return true;
+                        }
+
+                        //IEnumerable<EventCategory> categories = EventCategories.Where(ec => ec.Events.Any(ev => ev.Name == detailsButton.Text));
+                        return category.Events.Any(ev => ev.EventCategory.Key == detailsButton.Event.EventCategory.Key && ev.Key == detailsButton.Event.Key);
+                    });
+                }
             });
 
             #endregion
@@ -145,12 +146,12 @@
                         // Check Yes - No
                     }
 
-                    EventDetailsButton detailsButton = control as EventDetailsButton;
-
-                    if (detailsButton.Visible)
+                    if (control is EventDetailsButton detailsButton && detailsButton.Visible)
                     {
-                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
-                        glowButton.Checked = true;
+                        if (detailsButton.Children.Last() is GlowButton glowButton)
+                        {
+                            glowButton.Checked = true;
+                        }
                     }
                 });
             };
@@ -171,12 +172,12 @@
                         // Check Yes - No
                     }
 
-                    EventDetailsButton detailsButton = control as EventDetailsButton;
-
-                    if (detailsButton.Visible)
+                    if (control is EventDetailsButton detailsButton && detailsButton.Visible)
                     {
-                        GlowButton glowButton = detailsButton.Children.Last() as GlowButton;
-                        glowButton.Checked = false;
+                        if (detailsButton.Children.Last() is GlowButton glowButton)
+                        {
+                            glowButton.Checked = false;
+                        }
                     }
                 });
             };
