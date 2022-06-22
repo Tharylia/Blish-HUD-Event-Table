@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -13,6 +13,7 @@ namespace Estreya.BlishHUD.EventTable
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.Utils;
+    using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended.BitmapFonts;
@@ -188,11 +189,6 @@ namespace Estreya.BlishHUD.EventTable
             Logger.Debug("Load events.");
             await this.LoadEvents();
 
-            lock (this._eventCategories)
-            {
-                this.ModuleSettings.InitializeEventSettings(this._eventCategories);
-            }
-
             Logger.Debug("Initialize states (after event file loading)");
             await this.InitializeStates(false);
 
@@ -293,6 +289,9 @@ namespace Estreya.BlishHUD.EventTable
                 {
                     Logger.Debug("Overwrite current categories with newly loaded.");
                     this._eventCategories = categories;
+
+                    // Add newly added events to settings
+                    this.ModuleSettings.InitializeEventSettings(this._eventCategories);
                 }
             }
             catch (Exception ex)
@@ -522,6 +521,9 @@ namespace Estreya.BlishHUD.EventTable
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
+#if DEBUG
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.DebugSettingsView(this.ModuleSettings), "Debug"));
+#endif
 
             Logger.Debug("Finished building settings window.");
 
