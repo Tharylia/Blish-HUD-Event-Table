@@ -112,7 +112,7 @@ public class ControlHandler
 
         var provider = providers.First();
 
-        return (provider as ControlProvider<TProperty, TOverrideType>).CreateControl(new BoxedValue<TProperty>(expression.Compile().Invoke(obj), val =>
+        var ctrl= (provider as ControlProvider<TProperty, TOverrideType>).CreateControl(new BoxedValue<TProperty>(expression.Compile().Invoke(obj), val =>
         {
             if (expression.Body is MemberExpression memberExpression)
             {
@@ -124,6 +124,16 @@ public class ControlHandler
             }
         }),
         (val) => isEnabled?.Invoke(obj) ?? true, validationFunction, range, width, heigth, x, y);
+
+        if (expression.Body is MemberExpression memberExpression)
+        {
+            if (memberExpression.Member is PropertyInfo property)
+            {
+                ctrl.BasicTooltipText = property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description ?? property.Name;
+            }
+        }
+
+        return ctrl;
     }
 
     public static Control Create<T>(int width, int heigth, int x, int y)

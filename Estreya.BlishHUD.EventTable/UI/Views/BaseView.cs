@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views;
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views;
 
 using Blish_HUD;
 using Blish_HUD.Controls;
@@ -142,22 +142,6 @@ public abstract class BaseView : View
     {
         Panel panel = this.GetPanel(parent);
 
-        if (expression.Body is MemberExpression memberExpression)
-        {
-            if (memberExpression.Member is PropertyInfo property)
-            {
-                if (title == null)
-                {
-                    title = property.Name;
-                }
-
-                if (description == null)
-                {
-                    description = property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description ?? property.Name;
-                }
-            }
-        }
-
         Label label = this.GetLabel(panel, title ?? string.Empty);
 
         try
@@ -173,7 +157,6 @@ public abstract class BaseView : View
                 return validationResult.Valid;
             }, range, width == -1 ? BINDING_WIDTH : width, -1, label.Right + CONTROL_X_SPACING, 0);
             ctrl.Parent = panel;
-            ctrl.BasicTooltipText = description;
         }
         catch (Exception ex)
         {
