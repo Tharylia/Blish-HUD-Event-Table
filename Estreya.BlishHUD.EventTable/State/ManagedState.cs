@@ -83,13 +83,13 @@
                         }
                         finally
                         {
-                            _saveSemaphore.Release();
+                            _ = _saveSemaphore.Release();
                         }
                     });
                 }
                 else
                 {
-                    Logger.Debug("Another thread is already running Save()");
+                    Logger.Debug("Another thread is already running Save() for {0}", this.GetType().Name);
                 }
             }
 
@@ -109,9 +109,9 @@
             await this.InternalReload();
         }
 
-        public abstract Task InternalReload();
+        protected abstract Task InternalReload();
 
-        private async Task Unload()
+        private void Unload()
         {
             if (!this.Running)
             {
@@ -121,7 +121,7 @@
 
             Logger.Debug("Unloading state: {0}", this.GetType().Name);
 
-            await this.Save();
+            this.InternalUnload();
         }
 
         public abstract Task Clear();
@@ -137,7 +137,7 @@
 
         public void Dispose()
         {
-            AsyncHelper.RunSync(this.Unload);
+            this.Unload();
             this.Stop();
         }
     }

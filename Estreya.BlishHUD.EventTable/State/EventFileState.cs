@@ -37,7 +37,7 @@
             this.FileName = fileName;
         }
 
-        public override async Task InternalReload()
+        protected override async Task InternalReload()
         {
             await this.CheckAndNotifyOrUpdate(null);
         }
@@ -52,24 +52,16 @@
             this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
         }
 
-        protected override void InternalUnload()
-        {
-        }
+        protected override void InternalUnload() { }
 
         protected override void InternalUpdate(GameTime gameTime)
         {
-            UpdateUtil.UpdateAsync(this.CheckAndNotifyOrUpdate, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
+            _ = UpdateUtil.UpdateAsync(this.CheckAndNotifyOrUpdate, gameTime, this.updateInterval.TotalMilliseconds, ref this.timeSinceUpdate);
         }
 
-        protected override Task Load()
-        {
-            return Task.CompletedTask;
-        }
+        protected override Task Load() => Task.CompletedTask;
 
-        protected override Task Save()
-        {
-            return Task.CompletedTask;
-        }
+        protected override Task Save() => Task.CompletedTask;
 
         private async Task CheckAndNotifyOrUpdate(GameTime gameTime)
         {

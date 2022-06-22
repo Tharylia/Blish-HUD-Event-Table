@@ -7,12 +7,15 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
 
     public class EventState : ManagedState
     {
+        private const string DATE_TIME_FORMAT = "yyyy-MM-ddTHH:mm:ss";
+
         public event EventHandler<ValueEventArgs<VisibleStateInfo>> StateAdded;
         public event EventHandler<ValueEventArgs<string>> StateRemoved;
         public enum EventStates
@@ -57,7 +60,7 @@
             this.BasePath = basePath;
         }
 
-        public override async Task InternalReload()
+        protected override async Task InternalReload()
         {
             await this.Clear();
 
@@ -91,7 +94,7 @@
 
                 until = until.ToUniversalTime();
 
-                Logger.Info($"Add event state for \"{name}\" with \"{state}\" until \"{until}\" UTC.");
+                Logger.Info($"Add event state for \"{name}\" with \"{state}\" until \"{until.ToString(DATE_TIME_FORMAT)}\" UTC.");
 
                 var newInstance = new VisibleStateInfo()
                 {
@@ -130,7 +133,7 @@
 
                 for (int i = instancesToRemove.Count - 1; i >= 0; i--)
                 {
-                    this.Instances.Remove(instancesToRemove[i]);
+                    _ = this.Instances.Remove(instancesToRemove[i]);
                 }
 
                 try
@@ -171,15 +174,15 @@
             }
         }
 
-        protected override Task Initialize()
-        {
-            return Task.CompletedTask;
-        }
+        protected override Task Initialize() => Task.CompletedTask;
 
         protected override async Task Load()
         {
+            Logger.Info("Load saved event states from filesystem.");
+
             if (!File.Exists(this.Path))
             {
+                Logger.Info("File does not exist.");
                 return;
             }
 
@@ -208,7 +211,7 @@
                         try
                         {
                             EventStates state = (EventStates)Enum.Parse(typeof(EventStates), parts[1]);
-                            DateTime until = DateTime.Parse(parts[2]);
+                            DateTime until = DateTime.ParseExact(parts[2], DATE_TIME_FORMAT, CultureInfo.InvariantCulture);
                             until = DateTime.SpecifyKind(until, DateTimeKind.Utc);
 
                             var newInstance = new VisibleStateInfo()
@@ -222,7 +225,7 @@
                         }
                         catch (Exception ex)
                         {
-                            Logger.Error(ex, "Loading line \"{0}\" failed.", name);
+                            Logger.Error(ex, "Loading line \"{0}\" failed. Parts: {1}", name, string.Join(", ", parts));
                         }
                     }
                 }
@@ -246,7 +249,7 @@
             {
                 foreach (var instance in this.Instances)
                 {
-                    lines.Add($"{instance.Key}{LINE_SPLIT}{instance.State}{LINE_SPLIT}{instance.Until}");
+                    lines.Add($"{instance.Key}{LINE_SPLIT}{instance.State}{LINE_SPLIT}{instance.Until.ToString(DATE_TIME_FORMAT)}");
                 }
             }
 
