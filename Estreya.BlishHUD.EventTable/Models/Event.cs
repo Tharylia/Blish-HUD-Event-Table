@@ -478,12 +478,24 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         private string FormatTime(TimeSpan ts)
         {
-            return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
+
+            if (ts.Days > 0)
+            {
+                return ts.ToString("dd\\.hh\\:mm\\:ss");
+            }
+            else if (ts.Hours > 0)
+            {
+                return ts.ToString("hh\\:mm\\:ss");
+            }
+            else
+            {
+                return ts.ToString("mm\\:ss");
+            }
         }
 
         private string FormatTime(DateTime dateTime)
         {
-            return dateTime.Hour > 0 ? dateTime.ToString("HH:mm:ss") : dateTime.ToString("mm:ss");
+            return this.FormatTime(dateTime.TimeOfDay);
         }
 
         private string GetLongestEventName(float maxSize, BitmapFont font)
@@ -714,8 +726,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                 {
                     DateTime hoveredOccurence = hoveredOccurences.First();
 
-                    if (EventTableModule.ModuleInstance.ModuleSettings.TooltipTimeMode.Value == TooltipTimeMode.Relative)
-                    {
+                    // Relative
                         bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
                         bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
                         bool isCurrent = !isPrev && !isNext;
@@ -734,12 +745,9 @@ namespace Estreya.BlishHUD.EventTable.Models
                         {
                             description += $"{Strings.Event_Tooltip_Remaining}: {this.FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
                         }
-                    }
-                    else
-                    {
+
                         // Absolute
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {this.FormatTime(hoveredOccurence)}";
-                    }
+                    description += $" ({Strings.Event_Tooltip_StartsAt}: {this.FormatTime(hoveredOccurence)})";
                 }
                 else
                 {
