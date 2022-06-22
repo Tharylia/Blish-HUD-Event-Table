@@ -320,29 +320,6 @@ namespace Estreya.BlishHUD.EventTable
         {
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
-            void CompleteEventAction(string apiCode)
-            {
-                lock (this._eventCategories)
-                {
-                    List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
-                    events.ForEach(ev =>
-                    {
-                        switch (this.ModuleSettings.EventCompletedAcion.Value)
-                        {
-                            case EventCompletedAction.Crossout:
-                                ev.Finish();
-                                break;
-                            case EventCompletedAction.Hide:
-                                ev.Hide();
-                                break;
-                            default:
-                                Logger.Warn("Unsupported event completion action: {0}", this.ModuleSettings.EventCompletedAcion.Value);
-                                break;
-                        }
-                    });
-                }
-            }
-
             using (await this._stateLock.LockAsync())
             {
                 if (!beforeFileLoaded)
@@ -350,16 +327,14 @@ namespace Estreya.BlishHUD.EventTable
                     this.AccountState = new AccountState(this.Gw2ApiManager);
 
                     this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager, eventsDirectory);
-                    this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
-                    this.WorldbossState.WorldbossCompleted += (s, e) =>
-                    {
-                        CompleteEventAction(e);
-                    };
-                    this.MapchestState = new MapchestState(this.Gw2ApiManager);
-                    this.MapchestState.MapchestCompleted += (s, e) =>
-                    {
-                        CompleteEventAction(e);
-                    };
+
+                    this.WorldbossState = new WorldbossState(this.Gw2ApiManager, this.AccountState);
+                    this.WorldbossState.WorldbossCompleted += this.State_EventCompleted;
+                    this.WorldbossState.WorldbossRemoved += this.State_EventRemoved;
+
+                    this.MapchestState = new MapchestState(this.Gw2ApiManager, this.AccountState);
+                    this.MapchestState.MapchestCompleted += this.State_EventCompleted;
+                    this.MapchestState.MapchestRemoved += this.State_EventRemoved;
                 }
                 else
                 {
@@ -394,7 +369,13 @@ namespace Estreya.BlishHUD.EventTable
                         }
                         else
                         {
-                            _ = state.Start();
+                            _ = state.Start().ContinueWith(task =>
+                            {
+                                if (task.IsFaulted)
+                                {
+                                    Logger.Error(task.Exception, "Not awaited state start failed for \"{0}\"", state.GetType().Name);
+                                }
+                            });
                         }
                     }
                     catch (Exception ex)
@@ -402,6 +383,41 @@ namespace Estreya.BlishHUD.EventTable
                         Logger.Error(ex, "Failed starting state \"{0}\"", state.GetType().Name);
                     }
                 }
+            }
+        }
+
+        private void State_EventRemoved(object sender, string apiCode)
+        {
+            lock (this._eventCategories)
+            {
+                List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
+                events.ForEach(ev =>
+                {
+                    this.EventState.Remove(ev.SettingKey);
+                });
+            }
+        }
+
+        private void State_EventCompleted(object sender, string apiCode)
+        {
+            lock (this._eventCategories)
+            {
+                List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
+                events.ForEach(ev =>
+                {
+                    switch (this.ModuleSettings.EventCompletedAcion.Value)
+                    {
+                        case EventCompletedAction.Crossout:
+                            ev.Finish();
+                            break;
+                        case EventCompletedAction.Hide:
+                            ev.Hide();
+                            break;
+                        default:
+                            Logger.Warn("Unsupported event completion action: {0}", this.ModuleSettings.EventCompletedAcion.Value);
+                            break;
+                    }
+                });
             }
         }
 
@@ -702,6 +718,12 @@ namespace Estreya.BlishHUD.EventTable
 
             using (this._stateLock.Lock())
             {
+                this.WorldbossState.WorldbossCompleted -= this.State_EventCompleted;
+                this.MapchestState.MapchestCompleted -= this.State_EventCompleted;
+
+                this.WorldbossState.WorldbossRemoved -= this.State_EventRemoved;
+                this.MapchestState.MapchestRemoved -= this.State_EventRemoved;
+
                 this.States.ToList().ForEach(state => state.Dispose());
             }
 
