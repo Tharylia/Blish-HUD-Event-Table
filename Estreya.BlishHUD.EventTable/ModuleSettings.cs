@@ -47,6 +47,7 @@ namespace Estreya.BlishHUD.EventTable
         public SettingEntry<BuildDirection> BuildDirection { get; private set; }
         public SettingEntry<float> Opacity { get; private set; }
         public SettingEntry<bool> DirectlyTeleportToWaypoint { get; private set; }
+        public SettingEntry<KeyBinding> MapKeybinding { get; private set; }
         #endregion
 
         #region Location
@@ -267,6 +268,11 @@ namespace Estreya.BlishHUD.EventTable
 
             this.UseEventTranslation = this.GlobalSettings.DefineSetting(nameof(this.UseEventTranslation), true, () => Strings.Setting_UseEventTranslation_Name, () => Strings.Setting_UseEventTranslation_Description);
             this.UseEventTranslation.SettingChanged += this.SettingChanged;
+
+            this.MapKeybinding = this.GlobalSettings.DefineSetting(nameof(this.MapKeybinding), new KeyBinding( Microsoft.Xna.Framework.Input.Keys.M), () => "Open Map Hotkey", () => "Defines the key used to open the fullscreen map.");
+            this.MapKeybinding.SettingChanged += this.SettingChanged;
+            this.MapKeybinding.Value.Enabled = true;
+            this.MapKeybinding.Value.BlockSequenceFromGw2 = false;
         }
 
         private void InitializeLocationSettings(SettingCollection settings)

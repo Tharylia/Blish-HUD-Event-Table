@@ -148,6 +148,8 @@ namespace Estreya.BlishHUD.EventTable
         public PointOfInterestState PointOfInterestState { get; private set; }
         #endregion
 
+        internal MapNavigationUtil MapNavigationUtil { get; private set; }
+
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
         {
@@ -224,6 +226,8 @@ namespace Estreya.BlishHUD.EventTable
                 }
             };
 
+
+            this.MapNavigationUtil = new MapNavigationUtil(this.ModuleSettings.MapKeybinding.Value);
         }
 
         /// <summary>

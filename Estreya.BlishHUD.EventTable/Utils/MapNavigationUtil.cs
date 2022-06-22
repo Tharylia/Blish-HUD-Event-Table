@@ -1,30 +1,40 @@
 ﻿namespace Estreya.BlishHUD.EventTable.Utils;
 
 using Blish_HUD;
+using Blish_HUD.Controls.Extern;
 using Blish_HUD.Controls.Intern;
+using Blish_HUD.Input;
+using Estreya.BlishHUD.EventTable.Extensions;
 using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using System;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading.Tasks;
 
-public static class MapNavigationUtil
+public class MapNavigationUtil
 {
     private static readonly Logger Logger = Logger.GetLogger(typeof(MapNavigationUtil));
+    private readonly KeyBinding _mapKeybinding;
+
     public static int MouseMoveAndClickDelay { get; set; } = 50;
     public static int KeyboardPressDelay { get; set; } = 20;
 
-    private static double GetDistance(double x1, double y1, double x2, double y2)
+    public MapNavigationUtil(KeyBinding mapKeybinding)
     {
-        return GetDistance(x2 - x1, y2 - y1);
+        this._mapKeybinding = mapKeybinding;
     }
 
-    private static double GetDistance(double offsetX, double offsetY)
+    private double GetDistance(double x1, double y1, double x2, double y2)
+    {
+        return this.GetDistance(x2 - x1, y2 - y1);
+    }
+
+    private double GetDistance(double offsetX, double offsetY)
     {
         return Math.Sqrt(Math.Pow(offsetX, 2) + Math.Pow(offsetY, 2));
     }
 
-    private static async Task WaitForTick(int ticks = 1)
+    private async Task WaitForTick(int ticks = 1)
     {
         int tick = GameService.Gw2Mumble.Tick;
         while (GameService.Gw2Mumble.Tick - tick < ticks * 2)
@@ -33,9 +43,9 @@ public static class MapNavigationUtil
         }
     }
 
-    public static async Task<bool> OpenFullscreenMap()
+    public async Task<bool> OpenFullscreenMap()
     {
-        if (!IsInGame())
+        if (!this.IsInGame())
         {
             Logger.Debug("Not in game");
             return false;
@@ -47,16 +57,28 @@ public static class MapNavigationUtil
         }
 
         // Consider pressing the open map icon in the UI.
-        Keyboard.Stroke(Blish_HUD.Controls.Extern.VirtualKeyShort.KEY_M);
+        if (this._mapKeybinding.ModifierKeys != Microsoft.Xna.Framework.Input.ModifierKeys.None)
+        {
+            var modifier = this._mapKeybinding.ModifierKeys.GetFlags().Select(flag => (VirtualKeyShort)flag).Aggregate((a, b) => a | b);
+            Keyboard.Press(modifier);
+        }
+
+        Keyboard.Stroke((VirtualKeyShort)this._mapKeybinding.PrimaryKey);
+
+        if (this._mapKeybinding.ModifierKeys != Microsoft.Xna.Framework.Input.ModifierKeys.None)
+        {
+            var modifier = this._mapKeybinding.ModifierKeys.GetFlags().Select(flag => (VirtualKeyShort)flag).Aggregate((a, b) => a | b);
+            Keyboard.Release(modifier);
+        }
 
         await Task.Delay(500);
 
         return GameService.Gw2Mumble.UI.IsMapOpen;
     }
 
-    public static async Task<bool> CloseFullscreenMap()
+    public async Task<bool> CloseFullscreenMap()
     {
-        if (!IsInGame())
+        if (!this.IsInGame())
         {
             Logger.Debug("Not in game");
             return false;
@@ -74,14 +96,14 @@ public static class MapNavigationUtil
         return !GameService.Gw2Mumble.UI.IsMapOpen;
     }
 
-    private static bool IsInGame()
+    private bool IsInGame()
     {
         return GameService.GameIntegration.Gw2Instance.IsInGame;
     }
 
-    private static async Task<bool> Zoom(double requiredZoomLevel, int steps)
+    private async Task<bool> Zoom(double requiredZoomLevel, int steps)
     {
-        if (!IsInGame())
+        if (!this.IsInGame())
         {
             Logger.Debug("Not in game");
             return false;
@@ -89,13 +111,13 @@ public static class MapNavigationUtil
 
         int maxTries = 10;
         int remainingTries = maxTries;
-        double startZoom = GetMapScale();
+        double startZoom = this.GetMapScale();
 
         bool isZoomIn = steps > 0;
 
         while (isZoomIn ? startZoom > requiredZoomLevel : startZoom < requiredZoomLevel)
         {
-            await WaitForTick(2);
+            await this.WaitForTick(2);
             if (!GameService.Gw2Mumble.UI.IsMapOpen)
             {
                 Logger.Debug("User closed map.");
@@ -106,9 +128,9 @@ public static class MapNavigationUtil
             Mouse.RotateWheel(steps);
             Mouse.RotateWheel(steps);
             Mouse.RotateWheel(steps);
-            await WaitForTick();
+            await this.WaitForTick();
 
-            double zoomAterScroll = GetMapScale();
+            double zoomAterScroll = this.GetMapScale();
 
             Logger.Debug($"Scrolled from {startZoom} to {zoomAterScroll}");
 
@@ -132,32 +154,32 @@ public static class MapNavigationUtil
         return true;
     }
 
-    public static Task<bool> ZoomOut(double requiredZoomLevel)
+    public Task<bool> ZoomOut(double requiredZoomLevel)
     {
-        return Zoom(requiredZoomLevel, -int.MaxValue);
+        return this.Zoom(requiredZoomLevel, -int.MaxValue);
     }
 
-    public static Task<bool> ZoomIn(double requiredZoomLevel)
+    public Task<bool> ZoomIn(double requiredZoomLevel)
     {
-        return Zoom(requiredZoomLevel, int.MaxValue);
+        return this.Zoom(requiredZoomLevel, int.MaxValue);
     }
 
-    private static double GetMapScale()
+    private double GetMapScale()
     {
         return GameService.Gw2Mumble.UI.MapScale * GameService.Graphics.UIScaleMultiplier;
     }
 
-    private static async Task<bool> MoveMap(double x, double y, double targetDistance)
+    private async Task<bool> MoveMap(double x, double y, double targetDistance)
     {
         while (true)
         {
-            if (!IsInGame())
+            if (!this.IsInGame())
             {
                 Logger.Debug("Not in game");
                 return false;
             }
 
-            await WaitForTick(2);
+            await this.WaitForTick(2);
             if (!GameService.Gw2Mumble.UI.IsMapOpen)
             {
                 Logger.Debug("User closed map.");
@@ -170,7 +192,7 @@ public static class MapNavigationUtil
             double offsetY = mapPos.Y - y;
 
 
-            Logger.Debug($"Distance remaining: {GetDistance(mapPos.X, mapPos.Y, x, y)}");
+            Logger.Debug($"Distance remaining: {this.GetDistance(mapPos.X, mapPos.Y, x, y)}");
             Logger.Debug($"Map Position: {GameService.Gw2Mumble.UI.MapPosition.X}, {GameService.Gw2Mumble.UI.MapPosition.Y}");
 
             double distance = Math.Sqrt(Math.Pow(offsetX, 2) + Math.Pow(offsetY, 2));
@@ -184,13 +206,13 @@ public static class MapNavigationUtil
 
             System.Drawing.Point startPos = Mouse.GetPosition();
             Mouse.Press(MouseButton.RIGHT);
-            Mouse.SetPosition(startPos.X + (int)MathHelper.Clamp((float)offsetX / (float)(GetMapScale() * 0.9d), -100000, 100000),
-                              startPos.Y + (int)MathHelper.Clamp((float)offsetY / (float)(GetMapScale() * 0.9d), -100000, 100000));
+            Mouse.SetPosition(startPos.X + (int)MathHelper.Clamp((float)offsetX / (float)(this.GetMapScale() * 0.9d), -100000, 100000),
+                              startPos.Y + (int)MathHelper.Clamp((float)offsetY / (float)(this.GetMapScale() * 0.9d), -100000, 100000));
 
-            await WaitForTick();
+            await this.WaitForTick();
             startPos = Mouse.GetPosition();
-            Mouse.SetPosition(startPos.X + (int)MathHelper.Clamp((float)offsetX / (float)(GetMapScale() * 0.9d), -100000, 100000),
-                              startPos.Y + (int)MathHelper.Clamp((float)offsetY / (float)(GetMapScale() * 0.9d), -100000, 100000));
+            Mouse.SetPosition(startPos.X + (int)MathHelper.Clamp((float)offsetX / (float)(this.GetMapScale() * 0.9d), -100000, 100000),
+                              startPos.Y + (int)MathHelper.Clamp((float)offsetY / (float)(this.GetMapScale() * 0.9d), -100000, 100000));
 
             Mouse.Release(MouseButton.RIGHT);
 
@@ -200,9 +222,9 @@ public static class MapNavigationUtil
         return true;
     }
 
-    public static async Task<bool> ChangeMapLayer(ChangeMapLayerDirection direction)
+    public async Task<bool> ChangeMapLayer(ChangeMapLayerDirection direction)
     {
-        if (!IsInGame())
+        if (!this.IsInGame())
         {
             Logger.Debug("Not in game");
             return false;
@@ -217,27 +239,27 @@ public static class MapNavigationUtil
         return true;
     }
 
-    public static Task<bool> NavigateToPosition(ContinentFloorRegionMapPoi poi)
+    public Task<bool> NavigateToPosition(ContinentFloorRegionMapPoi poi)
     {
-        return NavigateToPosition(poi, false);
+        return this.NavigateToPosition(poi, false);
     }
 
-    public static Task<bool> NavigateToPosition(ContinentFloorRegionMapPoi poi, bool directTeleport)
+    public Task<bool> NavigateToPosition(ContinentFloorRegionMapPoi poi, bool directTeleport)
     {
-        return NavigateToPosition(poi.Coord.X, poi.Coord.Y, poi.Type == PoiType.Waypoint, directTeleport);
+        return this.NavigateToPosition(poi.Coord.X, poi.Coord.Y, poi.Type == PoiType.Waypoint, directTeleport);
     }
 
-    public static Task<bool> NavigateToPosition(double x, double y)
+    public Task<bool> NavigateToPosition(double x, double y)
     {
 
-        return NavigateToPosition(x, y, false, false);
+        return this.NavigateToPosition(x, y, false, false);
     }
 
-    public static async Task<bool> NavigateToPosition(double x, double y, bool isWaypoint, bool directTeleport)
+    public async Task<bool> NavigateToPosition(double x, double y, bool isWaypoint, bool directTeleport)
     {
         try
         {
-            if (!IsInGame())
+            if (!this.IsInGame())
             {
                 Logger.Debug("Not in game");
                 return false;
@@ -245,12 +267,12 @@ public static class MapNavigationUtil
 
             Controls.ScreenNotification.ShowNotification(new string[] { "DO NOT MOVE THE CURSOR!", "Close map to cancel." }, Blish_HUD.Controls.ScreenNotification.NotificationType.Warning, duration: 7);
 
-            if (!await OpenFullscreenMap())
+            if (!await this.OpenFullscreenMap())
             {
                 Logger.Debug("Could not open map.");
             }
 
-            await WaitForTick();
+            await this.WaitForTick();
 
             Gw2Sharp.Models.Coordinates2 mapPos = GameService.Gw2Mumble.UI.MapCenter;
 
@@ -258,30 +280,30 @@ public static class MapNavigationUtil
 
             if (GameService.Gw2Mumble.CurrentMap.Id == 1206) // Mistlock Santuary
             {
-                if (!await ChangeMapLayer(ChangeMapLayerDirection.Down))
+                if (!await this.ChangeMapLayer(ChangeMapLayerDirection.Down))
                 {
                     Logger.Debug("Changing map layer failed.");
                     return false;
                 }
             }
 
-            if (!await ZoomOut(6))
+            if (!await this.ZoomOut(6))
             {
                 Logger.Debug($"Zooming out did not work.");
                 return false;
             }
 
-            double totalDist = GetDistance(mapPos.X, mapPos.Y, x, y) / (GetMapScale() * 0.9d);
+            double totalDist = this.GetDistance(mapPos.X, mapPos.Y, x, y) / (this.GetMapScale() * 0.9d);
 
             Logger.Debug($"Distance: {totalDist}");
 
-            if (!await MoveMap(x, y, 50))
+            if (!await this.MoveMap(x, y, 50))
             {
                 Logger.Debug($"Moving the map did not work.");
                 return false;
             }
 
-            await WaitForTick();
+            await this.WaitForTick();
 
             int finalMouseX = GameService.Graphics.WindowWidth / 2;
             int finalMouseY = GameService.Graphics.WindowHeight / 2;
@@ -290,13 +312,13 @@ public static class MapNavigationUtil
 
             Mouse.SetPosition(finalMouseX, finalMouseY, true);
 
-            if (!await ZoomIn(2))
+            if (!await this.ZoomIn(2))
             {
                 Logger.Debug($"Zooming in did not work.");
                 return false;
             }
 
-            if (!await MoveMap(x, y, 5))
+            if (!await this.MoveMap(x, y, 5))
             {
                 Logger.Debug($"Moving the map did not work.");
                 return false;
