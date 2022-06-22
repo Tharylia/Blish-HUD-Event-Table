@@ -204,17 +204,37 @@ namespace Estreya.BlishHUD.EventTable.Models
                 ContextMenuStripItem finishCategory = new ContextMenuStripItem
                 {
                     Text = "Finish Category",
-                    BasicTooltipText = "Completes the event category until reset."
+                    BasicTooltipText = "Completes the event category until reset. Click again to reset."
                 };
-                finishCategory.Click += (s, e) => this.FinishCategory();
+                finishCategory.Click += (s, e) =>
+                {
+                    if (!this.EventCategory?.IsFinished() ?? false)
+                    {
+                        this.EventCategory?.Finish();
+                    }
+                    else
+                    {
+                        this.EventCategory?.Unfinish();
+                    }
+                };
                 items.Add(finishCategory);
 
                 ContextMenuStripItem finishEvent = new ContextMenuStripItem
                 {
                     Text = "Finish Event",
-                    BasicTooltipText = "Completes the event until reset."
+                    BasicTooltipText = "Completes the event until reset. Click again to reset."
                 };
-                finishEvent.LeftMouseButtonPressed += (s, e) => this.Finish();
+                finishEvent.LeftMouseButtonPressed += (s, e) =>
+                {
+                    if (!this.IsFinished())
+                    {
+                        this.Finish();
+                    }
+                    else
+                    {
+                        this.Unfinish();
+                    }
+                };
                 items.Add(finishEvent);
 
                 return items;
@@ -763,9 +783,9 @@ namespace Estreya.BlishHUD.EventTable.Models
             EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Completed);
         }
 
-        private void FinishCategory()
+        public void Unfinish()
         {
-            this.EventCategory?.Finish();
+            EventTableModule.ModuleInstance.EventState.Remove(this.SettingKey);
         }
 
         public bool IsFinished()
