@@ -71,7 +71,14 @@
 
         private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
         {
-            if (this._originalEvents.Any(ev => ev.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant()))
+            var changedEvents = this._originalEvents.Where(ev => ev.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant()).ToList();
+
+            foreach (var ev in changedEvents)
+            {
+                ev.ResetCachedStates();
+            }
+
+            if (changedEvents.Count > 0)
             {
                 this.UpdateEventOccurences(null);
             }
@@ -272,15 +279,20 @@
         public void Hide()
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, System.DateTimeKind.Utc).AddDays(1);
             EventTableModule.ModuleInstance.EventState.Add(this.Key, until, EventState.EventStates.Hidden);
         }
 
         public void Finish()
         {
             DateTime now = EventTableModule.ModuleInstance.DateTimeNow.ToUniversalTime();
-            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0).AddDays(1);
+            DateTime until = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, System.DateTimeKind.Utc).AddDays(1);
             EventTableModule.ModuleInstance.EventState.Add(this.Key, until, EventState.EventStates.Completed);
+        }
+
+        public void Unfinish()
+        {
+            EventTableModule.ModuleInstance.EventState.Remove(this.Key);
         }
 
         public bool IsFinished()

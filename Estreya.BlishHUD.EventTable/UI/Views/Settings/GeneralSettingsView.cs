@@ -29,11 +29,13 @@
             this.RenderSetting(parent, this.ModuleSettings.HideOnOpenMap);
             this.RenderSetting(parent, this.ModuleSettings.HideOnMissingMumbleTicks);
             this.RenderSetting(parent, this.ModuleSettings.HideInCombat);
+            this.RenderSetting(parent, this.ModuleSettings.HideInWvW);
+            this.RenderSetting(parent, this.ModuleSettings.HideInPvP);
             this.RenderSetting(parent, this.ModuleSettings.ShowTooltips);
-            this.RenderSetting(parent, this.ModuleSettings.TooltipTimeMode);
             this.RenderSetting(parent, this.ModuleSettings.HandleLeftClick);
             this.RenderSetting(parent, this.ModuleSettings.LeftClickAction);
             this.RenderSetting(parent, this.ModuleSettings.DirectlyTeleportToWaypoint);
+            this.RenderSetting(parent, this.ModuleSettings.MapKeybinding);
             this.RenderSetting(parent, this.ModuleSettings.ShowContextMenuOnClick);
             this.RenderSetting(parent, this.ModuleSettings.BuildDirection);
             if (EventTableModule.ModuleInstance.Debug)

@@ -4,6 +4,7 @@
     using Blish_HUD._Extensions;
     using Blish_HUD.Controls;
     using Blish_HUD.Settings;
+    using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.UI.Views.Edit;
@@ -46,11 +47,11 @@
         [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
 
-        [JsonProperty("convertOffset")]
-        public bool ConvertOffset { get; set; } = true;
-
         [JsonProperty("repeat"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Repeat { get; set; }
+
+        [JsonProperty("startingDate"), JsonConverter(typeof(Json.DateJsonConverter))]
+        public DateTime? StartingDate { get; set; }
 
         [JsonProperty("location")]
         public string Location { get; set; }
@@ -203,17 +204,37 @@
                 ContextMenuStripItem finishCategory = new ContextMenuStripItem
                 {
                     Text = "Finish Category",
-                    BasicTooltipText = "Completes the event category until reset."
+                    BasicTooltipText = "Completes the event category until reset. Click again to reset."
                 };
-                finishCategory.Click += (s, e) => this.FinishCategory();
+                finishCategory.Click += (s, e) =>
+                {
+                    if (!this.EventCategory?.IsFinished() ?? false)
+                    {
+                        this.EventCategory?.Finish();
+                    }
+                    else
+                    {
+                        this.EventCategory?.Unfinish();
+                    }
+                };
                 items.Add(finishCategory);
 
                 ContextMenuStripItem finishEvent = new ContextMenuStripItem
                 {
                     Text = "Finish Event",
-                    BasicTooltipText = "Completes the event until reset."
+                    BasicTooltipText = "Completes the event until reset. Click again to reset."
                 };
-                finishEvent.LeftMouseButtonPressed += (s, e) => this.Finish();
+                finishEvent.LeftMouseButtonPressed += (s, e) =>
+                {
+                    if (!this.IsFinished())
+                    {
+                        this.Finish();
+                    }
+                    else
+                    {
+                        this.Unfinish();
+                    }
+                };
                 items.Add(finishEvent);
 
                 return items;
@@ -315,6 +336,9 @@
         [JsonIgnore]
         public List<DateTime> Occurences { get; private set; } = new List<DateTime>();
 
+        [JsonProperty("markers")]
+        public List<EventPhaseMarker> EventPhaseMarkers { get; set; } = new List<EventPhaseMarker>();
+
         public Event()
         {
             this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
@@ -339,8 +363,10 @@
                     continue;
                 }
 
-                float x = (float)this.GetXPosition(eventStart, min, pixelPerMinute);
-                x = Math.Max(x, 0);
+                float originalX = (float)this.GetXPosition(eventStart, min, pixelPerMinute);
+                float x = Math.Max(originalX, 0);
+
+                bool running = eventStart <= now && eventStart.AddMinutes(this.Duration) > now;
 
                 #region Draw Event Rectangle
 
@@ -382,8 +408,6 @@
                 #endregion
 
                 #region Draw Event Remaining Time
-
-                bool running = eventStart <= now && eventStart.AddMinutes(this.Duration) > now;
                 if (running)
                 {
                     DateTime end = eventStart.AddMinutes(this.Duration);
@@ -402,6 +426,30 @@
                     {
                         // Only draw if it fits in event bounds
                         spriteBatch.DrawString(timeRemainingString, font, eventTimeRemainingPosition, textColor);
+                    }
+                }
+                #endregion
+
+                #region Draw Phase Markers
+
+                if (running && this.EventPhaseMarkers != null)
+                {
+                    int markerWidth = 2;
+
+                    foreach (EventPhaseMarker marker in this.EventPhaseMarkers)
+                    {
+                        float xPosition = originalX + (marker.Time * (float)pixelPerMinute);
+
+                        xPosition = Math.Min(xPosition, eventTexturePosition.Right - markerWidth);
+
+                        if (xPosition < 0)
+                        {
+                            continue; // Marker not visible
+                        }
+
+                        RectangleF markerRectangle = new RectangleF(xPosition, eventTexturePosition.Y, markerWidth, eventTexturePosition.Height);
+
+                        spriteBatch.DrawRectangle(baseTexture, markerRectangle, marker.Color);
                     }
                 }
 
@@ -427,12 +475,24 @@
 
         private string FormatTime(TimeSpan ts)
         {
-            return ts.Hours > 0 ? ts.ToString("hh\\:mm\\:ss") : ts.ToString("mm\\:ss");
+
+            if (ts.Days > 0)
+            {
+                return ts.ToString("dd\\.hh\\:mm\\:ss");
+            }
+            else if (ts.Hours > 0)
+            {
+                return ts.ToString("hh\\:mm\\:ss");
+            }
+            else
+            {
+                return ts.ToString("mm\\:ss");
+            }
         }
 
         private string FormatTime(DateTime dateTime)
         {
-            return dateTime.Hour > 0 ? dateTime.ToString("HH:mm:ss") : dateTime.ToString("mm:ss");
+            return this.FormatTime(dateTime.TimeOfDay);
         }
 
         private string GetLongestEventName(float maxSize, BitmapFont font)
@@ -472,7 +532,7 @@
         {
             if (!string.IsNullOrWhiteSpace(this.Waypoint))
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync(this.Waypoint);
+                _ = ClipboardUtil.WindowsClipboardService.SetTextAsync(this.Waypoint);
                 Controls.ScreenNotification.ShowNotification(new[] { $"{this.Name}", Strings.Event_WaypointCopied });
                 //ScreenNotification.ShowNotification($"Waypoint copied to clipboard!");
                 //ScreenNotification.ShowNotification($"{this.Name}");
@@ -489,34 +549,29 @@
         {
             if (!string.IsNullOrWhiteSpace(this.Wiki))
             {
-                Process.Start(this.Wiki);
+                _ = Process.Start(this.Wiki);
             }
         }
 
-        private List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
+        private List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min)
         {
             List<DateTime> startOccurences = new List<DateTime>();
 
-            DateTime zero = new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
+            DateTime zero = this.StartingDate ?? new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
-            TimeSpan offset = this.Offset;
-            if (this.ConvertOffset && addTimezoneOffset)
-            {
-                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(now));
-            }
+            TimeSpan offset = this.Offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(now));
 
             DateTime eventStart = zero.Add(offset);
 
             while (eventStart < max)
             {
-
                 bool startAfterMin = eventStart > min;
+                bool startBeforeMax = eventStart < max;
                 bool endAfterMin = eventStart.AddMinutes(this.Duration) > min;
-                bool endBeforeMax = eventStart.AddMinutes(this.Duration) < max;
 
-                bool inRange = limitsBetweenRanges ? (startAfterMin && endBeforeMax) : (startAfterMin || endAfterMin);
+                bool inRange = (startAfterMin || endAfterMin) && startBeforeMax;
 
-                if (inRange && eventStart < max)
+                if (inRange)
                 {
                     startOccurences.Add(eventStart);
                 }
@@ -527,13 +582,13 @@
             return startOccurences;
         }
 
-        public double GetXPosition(DateTime start, DateTime min, double pixelPerMinute)
+        private double GetXPosition(DateTime start, DateTime min, double pixelPerMinute)
         {
             double minutesSinceMin = start.Subtract(min).TotalMinutes;
             return minutesSinceMin * pixelPerMinute;
         }
 
-        public double GetWidth(DateTime eventOccurence, DateTime min, Rectangle bounds, double pixelPerMinute)
+        private double GetWidth(DateTime eventOccurence, DateTime min, Rectangle bounds, double pixelPerMinute)
         {
             double eventWidth = this.Duration * pixelPerMinute;
 
@@ -605,15 +660,19 @@
                         }
                         else
                         {
-                            Gw2Sharp.WebApi.V2.Models.ContinentFloorRegionMapPoi waypoint = EventTableModule.ModuleInstance.PointOfInterestState.GetPointOfInterest(this.Waypoint);
+                            PointOfInterest pointOfInterest = EventTableModule.ModuleInstance.PointOfInterestState.GetPointOfInterest(this.Waypoint);
 
-                            if (waypoint != null)
+                            if (pointOfInterest != null)
                             {
-                                var navigationSuccess = await MapNavigationUtil.NavigateToPosition(waypoint);
+                                bool navigationSuccess = await EventTableModule.ModuleInstance.MapNavigationUtil.NavigateToPosition(pointOfInterest, EventTableModule.ModuleInstance.ModuleSettings.DirectlyTeleportToWaypoint.Value);
                                 if (!navigationSuccess)
                                 {
                                     Controls.ScreenNotification.ShowNotification("Navigation failed.", ScreenNotification.NotificationType.Error);
                                 }
+                            }
+                            else
+                            {
+                                Controls.ScreenNotification.ShowNotification(Strings.Event_NoWaypointFound, ScreenNotification.NotificationType.Error);
                             }
                         }
                     });
@@ -634,7 +693,7 @@
             }
         }
 
-        public void HandleHover(object sender, Input.MouseEventArgs e, double pixelPerMinute)
+        public void HandleHover(object _, Input.MouseEventArgs e, double pixelPerMinute)
         {
             if (this.Filler)
             {
@@ -659,32 +718,28 @@
                 {
                     DateTime hoveredOccurence = hoveredOccurences.First();
 
-                    if (EventTableModule.ModuleInstance.ModuleSettings.TooltipTimeMode.Value == TooltipTimeMode.Relative)
-                    {
-                        bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
-                        bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
-                        bool isCurrent = !isPrev && !isNext;
+                    // Relative
+                    bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
+                    bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
+                    bool isCurrent = !isPrev && !isNext;
 
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n";
+                    description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n";
 
-                        if (isPrev)
-                        {
-                            description += $"{Strings.Event_Tooltip_FinishedSince}: {this.FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
-                        }
-                        else if (isNext)
-                        {
-                            description += $"{Strings.Event_Tooltip_StartsIn}: {this.FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
-                        }
-                        else if (isCurrent)
-                        {
-                            description += $"{Strings.Event_Tooltip_Remaining}: {this.FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
-                        }
-                    }
-                    else
+                    if (isPrev)
                     {
-                        // Absolute
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n{Strings.Event_Tooltip_StartsAt}: {this.FormatTime(hoveredOccurence)}";
+                        description += $"{Strings.Event_Tooltip_FinishedSince}: {this.FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
                     }
+                    else if (isNext)
+                    {
+                        description += $"{Strings.Event_Tooltip_StartsIn}: {this.FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                    }
+                    else if (isCurrent)
+                    {
+                        description += $"{Strings.Event_Tooltip_Remaining}: {this.FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
+                    }
+
+                    // Absolute
+                    description += $" ({Strings.Event_Tooltip_StartsAt}: {this.FormatTime(hoveredOccurence)})";
                 }
                 else
                 {
@@ -696,7 +751,7 @@
             }
         }
 
-        public void HandleNonHover(object sender, Input.MouseEventArgs e)
+        public void HandleNonHover(object _, Input.MouseEventArgs e)
         {
             if (this.Tooltip.Visible)
             {
@@ -734,9 +789,9 @@
             EventTableModule.ModuleInstance.EventState.Add(this.SettingKey, until, EventState.EventStates.Completed);
         }
 
-        private void FinishCategory()
+        public void Unfinish()
         {
-            this.EventCategory?.Finish();
+            EventTableModule.ModuleInstance.EventState.Remove(this.SettingKey);
         }
 
         public bool IsFinished()
@@ -777,7 +832,6 @@
 
         public Task LoadAsync()
         {
-            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged += this.ModuleSettings_EventSettingChanged;
             EventTableModule.ModuleInstance.EventState.StateAdded += this.EventState_StateAdded;
             EventTableModule.ModuleInstance.EventState.StateRemoved += this.EventState_StateRemoved;
 
@@ -816,19 +870,15 @@
             }
         }
 
-        private void ModuleSettings_EventSettingChanged(object sender, ModuleSettings.EventSettingsChangedEventArgs e)
+        public void ResetCachedStates()
         {
-            if (this.SettingKey.ToLowerInvariant() == e.Name.ToLowerInvariant())
-            {
-                this._isDisabled = null;
-            }
+            this._isDisabled = null;
         }
 
         public void Unload()
         {
             Logger.Debug("Unload event: {0}", this.Key);
 
-            EventTableModule.ModuleInstance.ModuleSettings.EventSettingChanged -= this.ModuleSettings_EventSettingChanged;
             EventTableModule.ModuleInstance.EventState.StateAdded -= this.EventState_StateAdded;
             EventTableModule.ModuleInstance.EventState.StateRemoved -= this.EventState_StateRemoved;
 
@@ -878,7 +928,14 @@
                     Id = $"{nameof(EventTableModule)}_f925849b-44bd-4c9f-aaac-76826d93ba6f"
                 };
 
-                EditEventView editView = new EditEventView(this.Clone());
+                Event clonedEvent;
+
+                lock (this)
+                {
+                    clonedEvent = this.Clone();
+                }
+
+                EditEventView editView = new EditEventView(clonedEvent);
                 editView.SavePressed += (s, e) =>
                 {
                     window.Hide();
@@ -898,6 +955,8 @@
                         this.BackgroundColorCode = e.Value.BackgroundColorCode;
                         this.APICodeType = e.Value.APICodeType;
                         this.APICode = e.Value.APICode;
+
+                        this.EventPhaseMarkers = e.Value.EventPhaseMarkers;
 
                         // Force update next tick. Don't need to lock since this is locked already.
                         this.timeSinceUpdate = this.updateInterval.TotalMilliseconds;
@@ -924,7 +983,7 @@
 
         public Event Clone()
         {
-            return (Event)this.MemberwiseClone();
+            return this.Copy();
         }
     }
 }

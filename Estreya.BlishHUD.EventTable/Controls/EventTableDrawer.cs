@@ -135,7 +135,7 @@
                 height,
                 false,
                 GameService.Graphics.GraphicsDevice.PresentationParameters.BackBufferFormat,
-                DepthFormat.Depth24, 1, RenderTargetUsage.PreserveContents);
+                DepthFormat.Depth24Stencil8, 1, RenderTargetUsage.PreserveContents);
 
                 _renderTargetIsEmpty = true;
             }
@@ -153,7 +153,7 @@
             {
                 spriteBatch.GraphicsDevice.SetRenderTarget(this._renderTarget);
 
-                spriteBatch.Begin();
+                spriteBatch.Begin(samplerState: SamplerState.PointClamp);
                 spriteBatch.GraphicsDevice.Clear(Color.Transparent); // Clear render target to transparent. Backgroundcolor is set on the control
 
                 List<EventCategory> eventCategories = EventTableModule.ModuleInstance.EventCategories; // Already checks for IsDisabled()

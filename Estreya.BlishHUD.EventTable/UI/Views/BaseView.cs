@@ -128,34 +128,19 @@ public abstract class BaseView : View
         settingContainer.Show(new EmptySettingsLineView(25));
     }
 
-    protected Panel RenderPropertyWithValidation<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TProperty, (bool Valid, string Message)> validationFunction, string title = null, string description = null, int width = -1)
+    protected Panel RenderProperty<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, (float Min, float Max)? range = null, string title = null, string description = null, int width = -1)
     {
-        return this.RenderPropertyWithChangedTypeValidation<TObject, TProperty,TProperty>(parent, obj, expression, isEnabled, validationFunction, title, description, width);
+        return this.RenderPropertyWithValidation<TObject, TProperty>(parent, obj, expression, isEnabled, null, range, title, description, width);
     }
 
-    protected Panel RenderProperty<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, string title = null, string description = null, int width = -1)
+    protected Panel RenderPropertyWithValidation<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TProperty, (bool Valid, string Message)> validationFunction, (float Min, float Max)? range = null, string title = null, string description = null, int width = -1)
     {
-        return this.RenderPropertyWithValidation<TObject, TProperty>(parent, obj, expression, isEnabled, null, title, description, width);
+        return this.RenderPropertyWithChangedTypeValidation<TObject, TProperty, TProperty>(parent, obj, expression, isEnabled, validationFunction, range, title, description, width);
     }
 
-    protected Panel RenderPropertyWithChangedTypeValidation<TObject, TProperty, TOverrideType>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TOverrideType, (bool Valid, string Message)> validationFunction, string title = null, string description = null, int width = -1)
+    protected Panel RenderPropertyWithChangedTypeValidation<TObject, TProperty, TOverrideType>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TOverrideType, (bool Valid, string Message)> validationFunction, (float Min, float Max)? range = null, string title = null, string description = null, int width = -1)
     {
         Panel panel = this.GetPanel(parent);
-
-        if (expression.Body is MemberExpression memberExpression)
-        {
-            PropertyInfo property = memberExpression.Member as PropertyInfo;
-
-            if (title == null)
-            {
-                title = property.Name;
-            }
-
-            if (description == null)
-            {
-                description = property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description ?? property.Name;
-            }
-        }
 
         Label label = this.GetLabel(panel, title ?? string.Empty);
 
@@ -170,9 +155,8 @@ public abstract class BaseView : View
                 }
 
                 return validationResult.Valid;
-            }, width == -1 ? BINDING_WIDTH : width, -1, label.Right + CONTROL_X_SPACING, 0);
+            }, range, width == -1 ? BINDING_WIDTH : width, -1, label.Right + CONTROL_X_SPACING, 0);
             ctrl.Parent = panel;
-            ctrl.BasicTooltipText = description;
         }
         catch (Exception ex)
         {
@@ -272,18 +256,18 @@ public abstract class BaseView : View
         return button;
     }
 
-    protected void RenderLabel(Panel parent, string title, string value = null, Color? textColor = null)
+    protected void RenderLabel(Panel parent, string title, string value = null, Color? textColorTitle = null, Color? textColorValue = null)
     {
         Panel panel = this.GetPanel(parent);
 
         Label titleLabel = this.GetLabel(panel, title);
-        titleLabel.TextColor = textColor ?? titleLabel.TextColor;
+        titleLabel.TextColor = textColorTitle ?? titleLabel.TextColor;
 
         if (value != null)
         {
             Label valueLabel = this.GetLabel(panel, value);
             valueLabel.Left = titleLabel.Right + CONTROL_X_SPACING;
-            valueLabel.TextColor = textColor ?? valueLabel.TextColor;
+            valueLabel.TextColor = textColorValue ?? valueLabel.TextColor;
         }
         else
         {

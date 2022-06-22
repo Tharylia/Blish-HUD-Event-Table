@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 public class EditEventView : BaseView
 {
+    private const int CONTROL_WIDTH = 500;
+
     public event EventHandler<ValueEventArgs<Event>> SavePressed;
     public event EventHandler CancelPressed;
 
@@ -36,16 +38,11 @@ public class EditEventView : BaseView
             Parent = parent
         };
 
-        // TODO: Remove when ready
-        this.RenderLabel(parentPanel, "THIS IS A WIP WINDOW.\nEXPECT BUGS!", null, Color.Red);
-        this.RenderEmptyLine(parentPanel);
-        this.RenderEmptyLine(parentPanel);
-
         StandardButton saveButton;
         StandardButton cancelButton;
 
-        this.RenderProperty(parentPanel, this.Event, ev => ev.Key, ev => false);
-        this.RenderProperty(parentPanel, this.Event, ev => ev.Name, ev => true);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.Key, ev => false, width: CONTROL_WIDTH);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.Name, ev => true, width: CONTROL_WIDTH);
         this.RenderPropertyWithChangedTypeValidation(parentPanel, this.Event, ev => ev.Offset, ev => true, (string val) =>
         {
             try
@@ -57,7 +54,7 @@ public class EditEventView : BaseView
             {
                 return (false, ex.Message);
             }
-        });
+        }, width: CONTROL_WIDTH);
         this.RenderPropertyWithChangedTypeValidation(parentPanel, this.Event, ev => ev.Repeat, ev => true, (string val) =>
         {
             try
@@ -69,10 +66,10 @@ public class EditEventView : BaseView
             {
                 return (false, ex.Message);
             }
-        });
-        this.RenderProperty(parentPanel, this.Event, ev => ev.Location, ev => true);
-        this.RenderProperty(parentPanel, this.Event, ev => ev.Waypoint, ev => true);
-        this.RenderProperty(parentPanel, this.Event, ev => ev.Wiki, ev => true, null, null, MathHelper.Clamp((int)GameService.Content.DefaultFont14.MeasureString(this.Event.Wiki).Width + 20, 0, parentPanel.Width));
+        }, width: CONTROL_WIDTH);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.Location, ev => true, width: CONTROL_WIDTH);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.Waypoint, ev => true, width: CONTROL_WIDTH);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.Wiki, ev => true, width: CONTROL_WIDTH);
         this.RenderPropertyWithChangedTypeValidation(parentPanel, this.Event, ev => ev.Duration, ev => true, (string val) =>
         {
             try
@@ -84,8 +81,8 @@ public class EditEventView : BaseView
             {
                 return (false, ex.Message);
             }
-        });
-        this.RenderProperty(parentPanel, this.Event, ev => ev.Icon, ev => true);
+        }, width: CONTROL_WIDTH);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.Icon, ev => true, width: CONTROL_WIDTH);
         this.RenderPropertyWithValidation(parentPanel, this.Event, ev => ev.BackgroundColorCode, ev => true, val =>
         {
             if (string.IsNullOrWhiteSpace(val)) return (true, null);
@@ -99,11 +96,12 @@ public class EditEventView : BaseView
             {
                 return (false, ex.Message);
             }
+        }, width: CONTROL_WIDTH);
 
-        });
+        this.RenderProperty(parentPanel, this.Event, ev => ev.APICodeType, ev => true, width: CONTROL_WIDTH);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.APICode, ev => true, width: CONTROL_WIDTH);
 
-        this.RenderProperty(parentPanel, this.Event, ev => ev.APICodeType, ev => true);
-        this.RenderProperty(parentPanel, this.Event, ev => ev.APICode, ev => true);
+        this.RenderProperty(parentPanel, this.Event, ev => ev.EventPhaseMarkers, ev => true, width: CONTROL_WIDTH);
 
         FlowPanel buttonPanel = new FlowPanel
         {

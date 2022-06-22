@@ -3,6 +3,7 @@
 using Blish_HUD;
 using Blish_HUD.Content;
 using Blish_HUD.Modules.Managers;
+using Estreya.BlishHUD.EventTable.Helpers;
 using Estreya.BlishHUD.EventTable.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -44,18 +45,17 @@ public class IconState : ManagedState
         this._basePath = basePath;
     }
 
-    public override async Task InternalReload()
+    protected override async Task InternalReload()
     {
         await this.LoadImages();
     }
 
-    protected override Task Initialize()
-    {
-        return Task.CompletedTask;
-    }
+    protected override Task Initialize() => Task.CompletedTask;
 
     protected override void InternalUnload()
     {
+        AsyncHelper.RunSync(this.Save);
+
         using (this._textureLock.Lock())
         {
             foreach (KeyValuePair<string, Texture2D> texture in this._loadedTextures)
@@ -67,9 +67,7 @@ public class IconState : ManagedState
         }
     }
 
-    protected override void InternalUpdate(GameTime gameTime)
-    {
-    }
+    protected override void InternalUpdate(GameTime gameTime) { }
 
     protected override async Task Load()
     {
@@ -97,7 +95,7 @@ public class IconState : ManagedState
 
             foreach (string filePath in filePaths)
             {
-                string sanitizedFileName = SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
+                string sanitizedFileName = FileUtil.SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
                 if (currentLoadedTextures.Contains(sanitizedFileName))
                 {
                     _ = currentLoadedTextures.Remove(sanitizedFileName);
@@ -127,15 +125,7 @@ public class IconState : ManagedState
         }
     }
 
-    private static string SanitizeFileName(string fileName)
-    {
-        string invalidChars = System.Text.RegularExpressions.Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars()));
-        string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
-
-        return System.Text.RegularExpressions.Regex.Replace(fileName, invalidRegStr, "_");
-    }
-
-    private Task LoadImages()
+        private Task LoadImages()
     {
         Logger.Info("Load cached images from filesystem.");
 
@@ -171,7 +161,7 @@ public class IconState : ManagedState
                         asyncTexture.SwapTexture(texture);
                     });
 
-                    string fileName = SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
+                    string fileName = FileUtil.SanitizeFileName(System.IO.Path.GetFileNameWithoutExtension(filePath));
                     this.HandleAsyncTextureSwap(asyncTexture, fileName);
                 }
                 catch (Exception ex)
@@ -205,7 +195,7 @@ public class IconState : ManagedState
 
     public bool HasIcon(string identifier)
     {
-        string sanitizedIdentifier = SanitizeFileName(identifier);
+        string sanitizedIdentifier = FileUtil.SanitizeFileName(identifier);
 
         return this._loadedTextures.ContainsKey(sanitizedIdentifier);
     }
@@ -217,7 +207,7 @@ public class IconState : ManagedState
             return null;
         }
 
-        string sanitizedIdentifier = SanitizeFileName(System.IO.Path.ChangeExtension(identifier, null));
+        string sanitizedIdentifier = FileUtil.SanitizeFileName(System.IO.Path.ChangeExtension(identifier, null));
 
         using (this._textureLock.Lock())
         {
@@ -226,7 +216,7 @@ public class IconState : ManagedState
                 return this._loadedTextures[sanitizedIdentifier];
             }
 
-            Texture2D icon = null;
+            Texture2D icon = ContentService.Textures.Error;
             if (!string.IsNullOrWhiteSpace(identifier))
             {
                 if (checkRenderAPI && identifier.Contains("/"))
@@ -240,20 +230,27 @@ public class IconState : ManagedState
                     }
                     catch (Exception ex)
                     {
-                        Logger.Warn($"Could not load icon from render api: {ex.Message}");
+                        Logger.Warn(ex, "Could not load icon from render api:");
                     }
                 }
                 else
                 {
-                    // Load from module ref folder.
-                    Texture2D texture = this._contentsManager.GetTexture(identifier);
-                    if (texture == ContentService.Textures.Error)
+                    try
                     {
-                        // Load from base ref folder.
-                        texture = GameService.Content.GetTexture(identifier);
-                    }
+                        // Load from module ref folder.
+                        Texture2D texture = this._contentsManager.GetTexture(identifier);
+                        if (texture == ContentService.Textures.Error)
+                        {
+                            // Load from base ref folder.
+                            texture = GameService.Content.GetTexture(identifier);
+                        }
 
-                    icon = texture;
+                        icon = texture;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warn(ex, "Could not load icon from ref folders:");
+                    }
                 }
             }
 
@@ -271,10 +268,5 @@ public class IconState : ManagedState
         });
     }
 
-    public override Task Clear()
-    {
-        // Clearing loaded icons only makes problems.
-
-        return Task.CompletedTask;
-    }
+    public override Task Clear() => Task.CompletedTask;
 }

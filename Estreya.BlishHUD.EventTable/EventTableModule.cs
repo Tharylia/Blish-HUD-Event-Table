@@ -13,6 +13,7 @@
     using Estreya.BlishHUD.EventTable.Resources;
     using Estreya.BlishHUD.EventTable.State;
     using Estreya.BlishHUD.EventTable.Utils;
+    using Gw2Sharp.Models;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using MonoGame.Extended.BitmapFonts;
@@ -31,6 +32,7 @@
         private static readonly Logger Logger = Logger.GetLogger<EventTableModule>();
 
         public const string WEBSITE_ROOT_URL = "https://blishhud.estreya.de";
+        public const string WEBSITE_FILE_ROOT_URL = "https://files.blishhud.estreya.de";
         public const string WEBSITE_MODULE_URL = $"{WEBSITE_ROOT_URL}/modules/event-table";
 
         internal static EventTableModule ModuleInstance;
@@ -83,21 +85,14 @@
             {
                 if (this._eventTimeSpan == TimeSpan.Zero)
                 {
-                    if (double.TryParse(this.ModuleSettings.EventTimeSpan.Value, out double timespan))
+                    int timespan = this.ModuleSettings.EventTimeSpan.Value;
+                    if (timespan > 1440)
                     {
-                        if (timespan > 1440)
-                        {
-                            timespan = 1440;
-                            Logger.Warn($"Event Timespan over 1440. Cap at 1440 for performance reasons.");
-                        }
+                        timespan = 1440;
+                        Logger.Warn($"Event Timespan over 1440. Cap at 1440 for performance reasons.");
+                    }
 
-                        this._eventTimeSpan = TimeSpan.FromMinutes(timespan);
-                    }
-                    else
-                    {
-                        Logger.Error($"Event Timespan '{this.ModuleSettings.EventTimeSpan.Value}' no real number, default to 120");
-                        this._eventTimeSpan = TimeSpan.FromMinutes(120);
-                    }
+                    this._eventTimeSpan = TimeSpan.FromMinutes(timespan);
                 }
 
                 return this._eventTimeSpan;
@@ -143,15 +138,18 @@
 
         #region States
         private readonly AsyncLock _stateLock = new AsyncLock();
-        private Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
+        internal Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
 
         public EventState EventState { get; private set; }
+        public AccountState AccountState { get;private set; }
         public WorldbossState WorldbossState { get; private set; }
         public MapchestState MapchestState { get; private set; }
         public EventFileState EventFileState { get; private set; }
         public IconState IconState { get; private set; }
         public PointOfInterestState PointOfInterestState { get; private set; }
         #endregion
+
+        internal MapNavigationUtil MapNavigationUtil { get; private set; }
 
         [ImportingConstructor]
         public EventTableModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -191,11 +189,6 @@
             Logger.Debug("Load events.");
             await this.LoadEvents();
 
-            lock (this._eventCategories)
-            {
-                this.ModuleSettings.InitializeEventSettings(this._eventCategories);
-            }
-
             Logger.Debug("Initialize states (after event file loading)");
             await this.InitializeStates(false);
 
@@ -229,6 +222,8 @@
                 }
             };
 
+
+            this.MapNavigationUtil = new MapNavigationUtil(this.ModuleSettings.MapKeybinding.Value);
         }
 
         /// <summary>
@@ -294,6 +289,9 @@
                 {
                     Logger.Debug("Overwrite current categories with newly loaded.");
                     this._eventCategories = categories;
+
+                    // Add newly added events to settings
+                    this.ModuleSettings.InitializeEventSettings(this._eventCategories);
                 }
             }
             catch (Exception ex)
@@ -325,44 +323,21 @@
         {
             string eventsDirectory = this.DirectoriesManager.GetFullDirectoryPath("events");
 
-            void CompleteEventAction(string apiCode)
-            {
-                lock (this._eventCategories)
-                {
-                    List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
-                    events.ForEach(ev =>
-                    {
-                        switch (this.ModuleSettings.EventCompletedAcion.Value)
-                        {
-                            case EventCompletedAction.Crossout:
-                                ev.Finish();
-                                break;
-                            case EventCompletedAction.Hide:
-                                ev.Hide();
-                                break;
-                            default:
-                                Logger.Warn("Unsupported event completion action: {0}", this.ModuleSettings.EventCompletedAcion.Value);
-                                break;
-                        }
-                    });
-                }
-            }
-
             using (await this._stateLock.LockAsync())
             {
                 if (!beforeFileLoaded)
                 {
-                    this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager);
-                    this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
-                    this.WorldbossState.WorldbossCompleted += (s, e) =>
-                    {
-                        CompleteEventAction(e);
-                    };
-                    this.MapchestState = new MapchestState(this.Gw2ApiManager);
-                    this.MapchestState.MapchestCompleted += (s, e) =>
-                    {
-                        CompleteEventAction(e);
-                    };
+                    this.AccountState = new AccountState(this.Gw2ApiManager);
+
+                    this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager, eventsDirectory);
+
+                    this.WorldbossState = new WorldbossState(this.Gw2ApiManager, this.AccountState);
+                    this.WorldbossState.WorldbossCompleted += this.State_EventCompleted;
+                    this.WorldbossState.WorldbossRemoved += this.State_EventRemoved;
+
+                    this.MapchestState = new MapchestState(this.Gw2ApiManager, this.AccountState);
+                    this.MapchestState.MapchestCompleted += this.State_EventCompleted;
+                    this.MapchestState.MapchestRemoved += this.State_EventRemoved;
                 }
                 else
                 {
@@ -373,6 +348,7 @@
 
                 if (!beforeFileLoaded)
                 {
+                    this.States.Add(this.AccountState);
                     this.States.Add(this.PointOfInterestState);
                     this.States.Add(this.WorldbossState);
                     this.States.Add(this.MapchestState);
@@ -396,7 +372,13 @@
                         }
                         else
                         {
-                            _ = state.Start();
+                            _ = state.Start().ContinueWith(task =>
+                            {
+                                if (task.IsFaulted)
+                                {
+                                    Logger.Error(task.Exception, "Not awaited state start failed for \"{0}\"", state.GetType().Name);
+                                }
+                            });
                         }
                     }
                     catch (Exception ex)
@@ -404,6 +386,41 @@
                         Logger.Error(ex, "Failed starting state \"{0}\"", state.GetType().Name);
                     }
                 }
+            }
+        }
+
+        private void State_EventRemoved(object sender, string apiCode)
+        {
+            lock (this._eventCategories)
+            {
+                List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
+                events.ForEach(ev =>
+                {
+                    this.EventState.Remove(ev.SettingKey);
+                });
+            }
+        }
+
+        private void State_EventCompleted(object sender, string apiCode)
+        {
+            lock (this._eventCategories)
+            {
+                List<Event> events = this._eventCategories.SelectMany(ec => ec.Events).Where(ev => ev.APICode == apiCode).ToList();
+                events.ForEach(ev =>
+                {
+                    switch (this.ModuleSettings.EventCompletedAcion.Value)
+                    {
+                        case EventCompletedAction.Crossout:
+                            ev.Finish();
+                            break;
+                        case EventCompletedAction.Hide:
+                            ev.Hide();
+                            break;
+                        default:
+                            Logger.Warn("Unsupported event completion action: {0}", this.ModuleSettings.EventCompletedAcion.Value);
+                            break;
+                    }
+                });
             }
         }
 
@@ -504,6 +521,9 @@
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"156736"), () => new UI.Views.Settings.GeneralSettingsView(this.ModuleSettings), Strings.SettingsWindow_GeneralSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"images\graphics_settings.png"), () => new UI.Views.Settings.GraphicsSettingsView(this.ModuleSettings), Strings.SettingsWindow_GraphicSettings_Title));
             this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.EventSettingsView(this.ModuleSettings), Strings.SettingsWindow_EventSettings_Title));
+#if DEBUG
+            this.SettingsWindow.Tabs.Add(new Tab(this.IconState.GetIcon(@"155052"), () => new UI.Views.Settings.DebugSettingsView(this.ModuleSettings), "Debug"));
+#endif
 
             Logger.Debug("Finished building settings window.");
 
@@ -618,6 +638,20 @@
                         show &= !GameService.Gw2Mumble.PlayerCharacter.IsInCombat;
                     }
 
+                    if (this.ModuleSettings.HideInWvW.Value)
+                    {
+                        MapType[] wvwMapTypes = new[] { MapType.EternalBattlegrounds, MapType.GreenBorderlands, MapType.RedBorderlands, MapType.BlueBorderlands, MapType.EdgeOfTheMists };
+
+                        show &= !(GameService.Gw2Mumble.CurrentMap.IsCompetitiveMode && wvwMapTypes.Any(type => type == GameService.Gw2Mumble.CurrentMap.Type));
+                    }
+
+                    if (this.ModuleSettings.HideInPvP.Value)
+                    {
+                        MapType[] pvpMapTypes = new[] { MapType.Pvp, MapType.Tournament };
+
+                        show &= !(GameService.Gw2Mumble.CurrentMap.IsCompetitiveMode && pvpMapTypes.Any(type => type == GameService.Gw2Mumble.CurrentMap.Type));
+                    }
+
                     //show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
 
                     this.ToggleContainer(show);
@@ -690,6 +724,12 @@
 
             using (this._stateLock.Lock())
             {
+                this.WorldbossState.WorldbossCompleted -= this.State_EventCompleted;
+                this.MapchestState.MapchestCompleted -= this.State_EventCompleted;
+
+                this.WorldbossState.WorldbossRemoved -= this.State_EventRemoved;
+                this.MapchestState.MapchestRemoved -= this.State_EventRemoved;
+
                 this.States.ToList().ForEach(state => state.Dispose());
             }
 

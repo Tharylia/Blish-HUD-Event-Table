@@ -11,11 +11,11 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal class IntTextBoxProvider : ControlProvider<int,string>
+    internal class FloatTextBoxProvider : ControlProvider<float,string>
     {
         private static readonly Logger Logger = Logger.GetLogger<IntTextBoxProvider>();
 
-        public override Control CreateControl(BoxedValue<int> value, Func<int, bool> isEnabled, Func<string, bool> isValid, (float Min, float Max)? range, int width, int heigth, int x, int y)
+        public override Control CreateControl(BoxedValue<float> value, Func<float, bool> isEnabled, Func<string, bool> isValid, (float Min, float Max)? range, int width, int heigth, int x, int y)
         {
             TextBox textBox = new TextBox()
             {

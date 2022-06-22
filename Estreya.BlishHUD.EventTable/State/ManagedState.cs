@@ -64,7 +64,7 @@
 
             this.TimeSinceSave += gameTime.ElapsedGameTime;
 
-            if (this.TimeSinceSave.TotalMilliseconds >= this.SaveInternal)
+            if (this.SaveInternal != -1 && this.TimeSinceSave.TotalMilliseconds >= this.SaveInternal)
             {
                 // Prevent multiple threads running Save() at the same time.
                 if (_saveSemaphore.CurrentCount > 0)
@@ -77,15 +77,19 @@
                             await this.Save();
                             this.TimeSinceSave = TimeSpan.Zero;
                         }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "{0} failed saving.", this.GetType().Name);
+                        }
                         finally
                         {
-                            _saveSemaphore.Release();
+                            _ = _saveSemaphore.Release();
                         }
                     });
                 }
                 else
                 {
-                    Logger.Debug("Another thread is already running Save()");
+                    Logger.Debug("Another thread is already running Save() for {0}", this.GetType().Name);
                 }
             }
 
@@ -105,9 +109,9 @@
             await this.InternalReload();
         }
 
-        public abstract Task InternalReload();
+        protected abstract Task InternalReload();
 
-        private async Task Unload()
+        private void Unload()
         {
             if (!this.Running)
             {
@@ -117,7 +121,7 @@
 
             Logger.Debug("Unloading state: {0}", this.GetType().Name);
 
-            await this.Save();
+            this.InternalUnload();
         }
 
         public abstract Task Clear();
@@ -133,7 +137,7 @@
 
         public void Dispose()
         {
-            AsyncHelper.RunSync(this.Unload);
+            this.Unload();
             this.Stop();
         }
     }
