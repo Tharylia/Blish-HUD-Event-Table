@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Controls;
@@ -137,9 +137,10 @@
 
         #region States
         private readonly AsyncLock _stateLock = new AsyncLock();
-        private Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
+        internal Collection<ManagedState> States { get; set; } = new Collection<ManagedState>();
 
         public EventState EventState { get; private set; }
+        public AccountState AccountState { get;private set; }
         public WorldbossState WorldbossState { get; private set; }
         public MapchestState MapchestState { get; private set; }
         public EventFileState EventFileState { get; private set; }
@@ -346,6 +347,8 @@
             {
                 if (!beforeFileLoaded)
                 {
+                    this.AccountState = new AccountState(this.Gw2ApiManager);
+
                     this.PointOfInterestState = new PointOfInterestState(this.Gw2ApiManager, eventsDirectory);
                     this.WorldbossState = new WorldbossState(this.Gw2ApiManager);
                     this.WorldbossState.WorldbossCompleted += (s, e) =>
@@ -367,6 +370,7 @@
 
                 if (!beforeFileLoaded)
                 {
+                    this.States.Add(this.AccountState);
                     this.States.Add(this.PointOfInterestState);
                     this.States.Add(this.WorldbossState);
                     this.States.Add(this.MapchestState);
