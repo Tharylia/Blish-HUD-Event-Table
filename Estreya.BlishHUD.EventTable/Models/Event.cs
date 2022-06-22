@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.Models
+﻿namespace Estreya.BlishHUD.EventTable.Models
 {
     using Blish_HUD;
     using Blish_HUD._Extensions;
@@ -46,9 +46,6 @@ namespace Estreya.BlishHUD.EventTable.Models
 
         [JsonProperty("offset"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Offset { get; set; }
-
-        [JsonProperty("convertOffset")]
-        public bool ConvertOffset { get; set; } = true;
 
         [JsonProperty("repeat"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Repeat { get; set; }
@@ -556,30 +553,25 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        private List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min, bool addTimezoneOffset = true, bool limitsBetweenRanges = false)
+        private List<DateTime> GetStartOccurences(DateTime now, DateTime max, DateTime min)
         {
             List<DateTime> startOccurences = new List<DateTime>();
 
             DateTime zero = this.StartingDate ?? new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
-            TimeSpan offset = this.Offset;
-            if (this.ConvertOffset && addTimezoneOffset)
-            {
-                offset = offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(now));
-            }
+            TimeSpan offset = this.Offset.Add(TimeZone.CurrentTimeZone.GetUtcOffset(now));
 
             DateTime eventStart = zero.Add(offset);
 
             while (eventStart < max)
             {
-
                 bool startAfterMin = eventStart > min;
+                bool startBeforeMax = eventStart < max;
                 bool endAfterMin = eventStart.AddMinutes(this.Duration) > min;
-                bool endBeforeMax = eventStart.AddMinutes(this.Duration) < max;
 
-                bool inRange = limitsBetweenRanges ? (startAfterMin && endBeforeMax) : (startAfterMin || endAfterMin);
+                bool inRange = (startAfterMin || endAfterMin) && startBeforeMax;
 
-                if (inRange && eventStart < max)
+                if (inRange)
                 {
                     startOccurences.Add(eventStart);
                 }
@@ -727,26 +719,26 @@ namespace Estreya.BlishHUD.EventTable.Models
                     DateTime hoveredOccurence = hoveredOccurences.First();
 
                     // Relative
-                        bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
-                        bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
-                        bool isCurrent = !isPrev && !isNext;
+                    bool isPrev = hoveredOccurence.AddMinutes(this.Duration) < EventTableModule.ModuleInstance.DateTimeNow;
+                    bool isNext = !isPrev && hoveredOccurence > EventTableModule.ModuleInstance.DateTimeNow;
+                    bool isCurrent = !isPrev && !isNext;
 
-                        description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n";
+                    description = $"{this.Location}{(!string.IsNullOrWhiteSpace(this.Location) ? "\n" : string.Empty)}\n";
 
-                        if (isPrev)
-                        {
-                            description += $"{Strings.Event_Tooltip_FinishedSince}: {this.FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
-                        }
-                        else if (isNext)
-                        {
-                            description += $"{Strings.Event_Tooltip_StartsIn}: {this.FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
-                        }
-                        else if (isCurrent)
-                        {
-                            description += $"{Strings.Event_Tooltip_Remaining}: {this.FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
-                        }
+                    if (isPrev)
+                    {
+                        description += $"{Strings.Event_Tooltip_FinishedSince}: {this.FormatTime(EventTableModule.ModuleInstance.DateTimeNow - hoveredOccurence.AddMinutes(this.Duration))}";
+                    }
+                    else if (isNext)
+                    {
+                        description += $"{Strings.Event_Tooltip_StartsIn}: {this.FormatTime(hoveredOccurence - EventTableModule.ModuleInstance.DateTimeNow)}";
+                    }
+                    else if (isCurrent)
+                    {
+                        description += $"{Strings.Event_Tooltip_Remaining}: {this.FormatTime(hoveredOccurence.AddMinutes(this.Duration) - EventTableModule.ModuleInstance.DateTimeNow)}";
+                    }
 
-                        // Absolute
+                    // Absolute
                     description += $" ({Strings.Event_Tooltip_StartsAt}: {this.FormatTime(hoveredOccurence)})";
                 }
                 else
