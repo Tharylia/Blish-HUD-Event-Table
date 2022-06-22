@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views
+namespace Estreya.BlishHUD.EventTable.UI.Views
 {
     using Blish_HUD;
     using Blish_HUD.Common.UI.Views;
@@ -56,15 +56,16 @@
                 AutoSizeHeight = true,
                 AutoSizeWidth = false,
                 Location = new Point(nameLabel.Left, image.Top + image.Height / 2),
-                Width = Math.Max(nameLabel.Width, 200),
                 Padding = new Thickness(0, 8, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Middle,
                 TextColor = Control.StandardColors.DisabledText,
-                WrapText = true,
+                WrapText = false,
                 Text = this.Description,
                 Parent = buildPanel
             };
+
+            descriptionLabel.Width = (int)Math.Ceiling(Math.Max(nameLabel.Width, descriptionLabel.Font.MeasureString(descriptionLabel.Text).Width));
 
             /*_achievementRequirementLabel = new Label()
             {
