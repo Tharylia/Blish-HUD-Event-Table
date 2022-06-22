@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ public class EventPhaseMarker
     /// <summary>
     /// Describes the time the marker occures after event start.
     /// </summary>
-    [JsonProperty("time"), TypeOverride(typeof(string))]
+    [JsonProperty("time"), TypeOverride(typeof(string)), Description("Specifies the time in minutes after the event started.")]
     public float Time { get; set; }
 
     [JsonIgnore]
