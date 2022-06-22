@@ -193,7 +193,7 @@
                     }
 
                     // Check with .ToLower() because settings define is case insensitive
-                    IEnumerable<SettingEntry<bool>> settings = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.SettingKey.ToLowerInvariant());
+                    IEnumerable<SettingEntry<bool>> settings = EventTableModule.ModuleInstance.ModuleSettings.AllEvents.ToList().FindAll(eventSetting => eventSetting.EntryKey.ToLowerInvariant() == e.SettingKey.ToLowerInvariant());
 
                     SettingEntry<bool> setting = settings.First();
                     bool enabled = setting.Value;

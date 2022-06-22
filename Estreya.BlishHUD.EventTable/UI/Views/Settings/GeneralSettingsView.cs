@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
+﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
     using System;
@@ -36,6 +36,7 @@ namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
             this.RenderSetting(parent, this.ModuleSettings.HandleLeftClick);
             this.RenderSetting(parent, this.ModuleSettings.LeftClickAction);
             this.RenderSetting(parent, this.ModuleSettings.DirectlyTeleportToWaypoint);
+            this.RenderSetting(parent, this.ModuleSettings.MapKeybinding);
             this.RenderSetting(parent, this.ModuleSettings.ShowContextMenuOnClick);
             this.RenderSetting(parent, this.ModuleSettings.BuildDirection);
             if (EventTableModule.ModuleInstance.Debug)
