@@ -1,4 +1,4 @@
-namespace Estreya.BlishHUD.EventTable
+﻿namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -6,9 +6,11 @@ namespace Estreya.BlishHUD.EventTable
     using Estreya.BlishHUD.EventTable.Extensions;
     using Estreya.BlishHUD.EventTable.Models;
     using Estreya.BlishHUD.EventTable.Resources;
+    using Estreya.BlishHUD.EventTable.Utils;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -16,6 +18,9 @@ namespace Estreya.BlishHUD.EventTable
     {
         private static readonly Logger Logger = Logger.GetLogger<ModuleSettings>();
         private Gw2Sharp.WebApi.V2.Models.Color _defaultColor;
+
+        private AsyncLock _eventSettingsLock = new AsyncLock();
+
         public Gw2Sharp.WebApi.V2.Models.Color DefaultGW2Color { get => this._defaultColor; private set => this._defaultColor = value; }
 
         public event EventHandler<ModuleSettingsChangedEventArgs> ModuleSettingsChanged;
@@ -75,7 +80,15 @@ namespace Estreya.BlishHUD.EventTable
         public SettingEntry<Gw2Sharp.WebApi.V2.Models.Color> FillerTextColor { get; private set; } // Is listed in global
         public SettingEntry<EventCompletedAction> EventCompletedAcion { get; private set; }
         public SettingEntry<bool> UseEventTranslation { get; private set; }
-        public List<SettingEntry<bool>> AllEvents { get; private set; } = new List<SettingEntry<bool>>();
+
+        private ReadOnlyCollection<SettingEntry<bool>> _allEvents;
+        public ReadOnlyCollection<SettingEntry<bool>> AllEvents
+        {
+            get
+            {
+                using (_eventSettingsLock.Lock()) return _allEvents;
+            }
+        }
         #endregion
 
         public ModuleSettings(SettingCollection settings)
@@ -297,29 +310,37 @@ namespace Estreya.BlishHUD.EventTable
 
         public void InitializeEventSettings(IEnumerable<EventCategory> eventCategories)
         {
-            this.EventSettings = this.Settings.AddSubCollection(EVENT_SETTINGS);
-
-            SettingCollection eventList = this.EventSettings.AddSubCollection(EVENT_LIST_SETTINGS);
-            foreach (EventCategory category in eventCategories)
+            using (_eventSettingsLock.Lock())
             {
-                IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
-                foreach (Event e in events)
+                this.EventSettings = this.Settings.AddSubCollection(EVENT_SETTINGS);
+
+                SettingCollection eventList = this.EventSettings.AddSubCollection(EVENT_LIST_SETTINGS);
+
+                var eventSettingList = new List<SettingEntry<bool>>();
+
+                foreach (EventCategory category in eventCategories)
                 {
-                    SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.SettingKey, true);
-                    setting.SettingChanged += (s, e) =>
+                    IEnumerable<Event> events = category.ShowCombined ? category.Events.GroupBy(e => e.Key).Select(eg => eg.First()) : category.Events;
+                    foreach (Event e in events)
                     {
-                        SettingEntry<bool> settingEntry = (SettingEntry<bool>)s;
-                        this.EventSettingChanged?.Invoke(s, new EventSettingsChangedEventArgs()
+                        SettingEntry<bool> setting = eventList.DefineSetting<bool>(e.SettingKey, true);
+                        setting.SettingChanged += (s, e) =>
                         {
-                            Name = settingEntry.EntryKey,
-                            Enabled = e.NewValue
-                        });
+                            SettingEntry<bool> settingEntry = (SettingEntry<bool>)s;
+                            this.EventSettingChanged?.Invoke(s, new EventSettingsChangedEventArgs()
+                            {
+                                Name = settingEntry.EntryKey,
+                                Enabled = e.NewValue
+                            });
 
-                        this.SettingChanged(s, e);
-                    };
+                            this.SettingChanged(s, e);
+                        };
 
-                    this.AllEvents.Add(setting);
+                        eventSettingList.Add(setting);
+                    }
                 }
+
+                this._allEvents = eventSettingList.AsReadOnly();
             }
         }
 
