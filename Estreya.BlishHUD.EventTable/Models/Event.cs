@@ -53,6 +53,9 @@ namespace Estreya.BlishHUD.EventTable.Models
         [JsonProperty("repeat"), JsonConverter(typeof(Json.TimeSpanJsonConverter), "dd\\.hh\\:mm", new string[] { "dd\\.hh\\:mm", "hh\\:mm" })]
         public TimeSpan Repeat { get; set; }
 
+        [JsonProperty("startingDate"), JsonConverter(typeof(Json.DateJsonConverter))]
+        public DateTime? StartingDate { get; set; }
+
         [JsonProperty("location")]
         public string Location { get; set; }
 
@@ -542,7 +545,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             List<DateTime> startOccurences = new List<DateTime>();
 
-            DateTime zero = new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
+            DateTime zero = this.StartingDate ?? new DateTime(min.Year, min.Month, min.Day, 0, 0, 0).AddDays(this.Repeat.TotalMinutes == 0 ? 0 : -1);
 
             TimeSpan offset = this.Offset;
             if (this.ConvertOffset && addTimezoneOffset)
