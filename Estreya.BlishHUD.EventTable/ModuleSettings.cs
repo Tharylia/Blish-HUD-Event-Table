@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable
+namespace Estreya.BlishHUD.EventTable
 {
     using Blish_HUD;
     using Blish_HUD.Input;
@@ -36,6 +36,8 @@
         public SettingEntry<bool> HideOnMissingMumbleTicks { get; private set; }
         public SettingEntry<bool> HideInCombat { get; private set; }
         public SettingEntry<bool> HideOnOpenMap { get; private set; }
+        public SettingEntry<bool> HideInWvW { get; private set; }
+        public SettingEntry<bool> HideInPvP { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
         public SettingEntry<TooltipTimeMode> TooltipTimeMode { get; private set; }
@@ -175,6 +177,12 @@
 
             this.HideInCombat = this.GlobalSettings.DefineSetting(nameof(this.HideInCombat), false, () => Strings.Setting_HideInCombat_Name, () => Strings.Setting_HideInCombat_Description);
             this.HideInCombat.SettingChanged += this.SettingChanged;
+
+            this.HideInWvW = this.GlobalSettings.DefineSetting(nameof(this.HideInWvW), false, () => "Hide in WvW", () => "Whether the event table should hide when in world vs. world.");
+            this.HideInWvW.SettingChanged += this.SettingChanged;
+
+            this.HideInPvP = this.GlobalSettings.DefineSetting(nameof(this.HideInPvP), false, () => "Hide in PvP", () => "Whether the event table should hide when in player vs. player.");
+            this.HideInPvP.SettingChanged += this.SettingChanged;
 
             this.BackgroundColor = this.GlobalSettings.DefineSetting(nameof(this.BackgroundColor), this.DefaultGW2Color, () => Strings.Setting_BackgroundColor_Name, () => Strings.Setting_BackgroundColor_Description);
             this.BackgroundColor.SettingChanged += this.SettingChanged;

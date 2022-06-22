@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
+namespace Estreya.BlishHUD.EventTable.UI.Views.Settings
 {
     using Blish_HUD.Controls;
     using System;
@@ -29,6 +29,8 @@
             this.RenderSetting(parent, this.ModuleSettings.HideOnOpenMap);
             this.RenderSetting(parent, this.ModuleSettings.HideOnMissingMumbleTicks);
             this.RenderSetting(parent, this.ModuleSettings.HideInCombat);
+            this.RenderSetting(parent, this.ModuleSettings.HideInWvW);
+            this.RenderSetting(parent, this.ModuleSettings.HideInPvP);
             this.RenderSetting(parent, this.ModuleSettings.ShowTooltips);
             this.RenderSetting(parent, this.ModuleSettings.TooltipTimeMode);
             this.RenderSetting(parent, this.ModuleSettings.HandleLeftClick);

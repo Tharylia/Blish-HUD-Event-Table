@@ -616,6 +616,20 @@ namespace Estreya.BlishHUD.EventTable
                         show &= !GameService.Gw2Mumble.PlayerCharacter.IsInCombat;
                     }
 
+                    if (this.ModuleSettings.HideInWvW.Value)
+                    {
+                        MapType[] wvwMapTypes = new[] { MapType.EternalBattlegrounds, MapType.GreenBorderlands, MapType.RedBorderlands, MapType.BlueBorderlands, MapType.EdgeOfTheMists };
+
+                        show &= !(GameService.Gw2Mumble.CurrentMap.IsCompetitiveMode && wvwMapTypes.Any(type => type == GameService.Gw2Mumble.CurrentMap.Type));
+                    }
+
+                    if (this.ModuleSettings.HideInPvP.Value)
+                    {
+                        MapType[] pvpMapTypes = new[] { MapType.Pvp, MapType.Tournament };
+
+                        show &= !(GameService.Gw2Mumble.CurrentMap.IsCompetitiveMode && pvpMapTypes.Any(type => type == GameService.Gw2Mumble.CurrentMap.Type));
+                    }
+
                     //show &= GameService.Gw2Mumble.CurrentMap.Type != MapType.CharacterCreate;
 
                     this.ToggleContainer(show);
