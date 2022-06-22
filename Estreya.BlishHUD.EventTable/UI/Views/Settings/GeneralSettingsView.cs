@@ -32,7 +32,6 @@
             this.RenderSetting(parent, this.ModuleSettings.HideInWvW);
             this.RenderSetting(parent, this.ModuleSettings.HideInPvP);
             this.RenderSetting(parent, this.ModuleSettings.ShowTooltips);
-            this.RenderSetting(parent, this.ModuleSettings.TooltipTimeMode);
             this.RenderSetting(parent, this.ModuleSettings.HandleLeftClick);
             this.RenderSetting(parent, this.ModuleSettings.LeftClickAction);
             this.RenderSetting(parent, this.ModuleSettings.DirectlyTeleportToWaypoint);

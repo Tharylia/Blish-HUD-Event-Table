@@ -45,7 +45,6 @@
         public SettingEntry<bool> HideInPvP { get; private set; }
         public SettingEntry<bool> DebugEnabled { get; private set; }
         public SettingEntry<bool> ShowTooltips { get; private set; }
-        public SettingEntry<TooltipTimeMode> TooltipTimeMode { get; private set; }
         public SettingEntry<bool> HandleLeftClick { get; private set; }
         public SettingEntry<LeftClickAction> LeftClickAction { get; private set; }
         public SettingEntry<bool> ShowContextMenuOnClick { get; private set; }
@@ -241,9 +240,6 @@
 
             this.ShowTooltips = this.GlobalSettings.DefineSetting(nameof(this.ShowTooltips), true, () => Strings.Setting_ShowTooltips_Name, () => Strings.Setting_ShowTooltips_Description);
             this.ShowTooltips.SettingChanged += this.SettingChanged;
-
-            this.TooltipTimeMode = this.GlobalSettings.DefineSetting(nameof(this.TooltipTimeMode), Models.TooltipTimeMode.Relative, () => Strings.Setting_TooltipTimeMode_Name, () => Strings.Setting_TooltipTimeMode_Description);
-            this.TooltipTimeMode.SettingChanged += this.SettingChanged;
 
             this.HandleLeftClick = this.GlobalSettings.DefineSetting(nameof(this.HandleLeftClick), true, () => Strings.Setting_HandleLeftClick_Name, () => Strings.Setting_HandleLeftClick_Description);
             this.HandleLeftClick.SettingChanged += this.SettingChanged;
