@@ -5,13 +5,7 @@ using Estreya.BlishHUD.EventTable.Models.GW2API.Converter;
 using Gw2Sharp.Models;
 using Gw2Sharp.WebApi;
 using Gw2Sharp.WebApi.V2.Models;
-using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public class PointOfInterest
 {
@@ -73,7 +67,7 @@ public class PointOfInterest
 
     public static implicit operator ContinentFloorRegionMapPoi(PointOfInterest poi)
     {
-        var mapPoi = new ContinentFloorRegionMapPoi
+        ContinentFloorRegionMapPoi mapPoi = new ContinentFloorRegionMapPoi
         {
             Id = poi.Id,
             Name = poi.Name,
@@ -85,5 +79,10 @@ public class PointOfInterest
         };
 
         return mapPoi;
+    }
+
+    public override string ToString()
+    {
+        return $"Continent: {this.Continent?.Name ?? "Unknown"} - Map: {this.Map?.Name ?? "Unknown"} - Region: {this.Region?.Name ?? "Unknown"} - Floor: {this.Floor?.Id.ToString() ?? "Unknown"} - Name: {this.Name}";
     }
 }

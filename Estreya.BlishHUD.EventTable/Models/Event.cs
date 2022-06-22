@@ -367,7 +367,7 @@ namespace Estreya.BlishHUD.EventTable.Models
                 }
 
                 float originalX = (float)this.GetXPosition(eventStart, min, pixelPerMinute);
-                var x = Math.Max(originalX, 0);
+                float x = Math.Max(originalX, 0);
 
                 bool running = eventStart <= now && eventStart.AddMinutes(this.Duration) > now;
 
@@ -441,13 +441,16 @@ namespace Estreya.BlishHUD.EventTable.Models
 
                     foreach (EventPhaseMarker marker in this.EventPhaseMarkers)
                     {
-                        var xPosition = originalX + (marker.Time * (float)pixelPerMinute);
+                        float xPosition = originalX + (marker.Time * (float)pixelPerMinute);
 
                         xPosition = Math.Min(xPosition, eventTexturePosition.Right - markerWidth);
 
-                        if (xPosition < 0) continue; // Marker not visible
+                        if (xPosition < 0)
+                        {
+                            continue; // Marker not visible
+                        }
 
-                        var markerRectangle = new RectangleF(xPosition, eventTexturePosition.Y, markerWidth, eventTexturePosition.Height);
+                        RectangleF markerRectangle = new RectangleF(xPosition, eventTexturePosition.Y, markerWidth, eventTexturePosition.Height);
 
                         spriteBatch.DrawRectangle(baseTexture, markerRectangle, marker.Color);
                     }
@@ -520,7 +523,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             if (!string.IsNullOrWhiteSpace(this.Waypoint))
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync(this.Waypoint);
+                _ = ClipboardUtil.WindowsClipboardService.SetTextAsync(this.Waypoint);
                 Controls.ScreenNotification.ShowNotification(new[] { $"{this.Name}", Strings.Event_WaypointCopied });
                 //ScreenNotification.ShowNotification($"Waypoint copied to clipboard!");
                 //ScreenNotification.ShowNotification($"{this.Name}");
@@ -537,7 +540,7 @@ namespace Estreya.BlishHUD.EventTable.Models
         {
             if (!string.IsNullOrWhiteSpace(this.Wiki))
             {
-                Process.Start(this.Wiki);
+                _ = Process.Start(this.Wiki);
             }
         }
 
@@ -575,13 +578,13 @@ namespace Estreya.BlishHUD.EventTable.Models
             return startOccurences;
         }
 
-        public double GetXPosition(DateTime start, DateTime min, double pixelPerMinute)
+        private double GetXPosition(DateTime start, DateTime min, double pixelPerMinute)
         {
             double minutesSinceMin = start.Subtract(min).TotalMinutes;
             return minutesSinceMin * pixelPerMinute;
         }
 
-        public double GetWidth(DateTime eventOccurence, DateTime min, Rectangle bounds, double pixelPerMinute)
+        private double GetWidth(DateTime eventOccurence, DateTime min, Rectangle bounds, double pixelPerMinute)
         {
             double eventWidth = this.Duration * pixelPerMinute;
 
@@ -686,7 +689,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        public void HandleHover(object sender, Input.MouseEventArgs e, double pixelPerMinute)
+        public void HandleHover(object _, Input.MouseEventArgs e, double pixelPerMinute)
         {
             if (this.Filler)
             {
@@ -748,7 +751,7 @@ namespace Estreya.BlishHUD.EventTable.Models
             }
         }
 
-        public void HandleNonHover(object sender, Input.MouseEventArgs e)
+        public void HandleNonHover(object _, Input.MouseEventArgs e)
         {
             if (this.Tooltip.Visible)
             {
