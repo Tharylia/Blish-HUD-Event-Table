@@ -1,4 +1,4 @@
-﻿namespace Estreya.BlishHUD.EventTable.UI.Views;
+namespace Estreya.BlishHUD.EventTable.UI.Views;
 
 using Blish_HUD;
 using Blish_HUD.Controls;
@@ -273,18 +273,18 @@ public abstract class BaseView : View
         return button;
     }
 
-    protected void RenderLabel(Panel parent, string title, string value = null, Color? textColor = null)
+    protected void RenderLabel(Panel parent, string title, string value = null, Color? textColorTitle = null, Color? textColorValue = null)
     {
         Panel panel = this.GetPanel(parent);
 
         Label titleLabel = this.GetLabel(panel, title);
-        titleLabel.TextColor = textColor ?? titleLabel.TextColor;
+        titleLabel.TextColor = textColorTitle ?? titleLabel.TextColor;
 
         if (value != null)
         {
             Label valueLabel = this.GetLabel(panel, value);
             valueLabel.Left = titleLabel.Right + CONTROL_X_SPACING;
-            valueLabel.TextColor = textColor ?? valueLabel.TextColor;
+            valueLabel.TextColor = textColorValue ?? valueLabel.TextColor;
         }
         else
         {
