@@ -128,19 +128,30 @@ public abstract class BaseView : View
         settingContainer.Show(new EmptySettingsLineView(25));
     }
 
-    protected Panel RenderProperty<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, (float Min, float Max)? range = null, string title = null, string description = null, int width = -1)
+    protected Panel RenderProperty<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, (float Min, float Max)? range = null, string title = null, int width = -1)
     {
-        return this.RenderPropertyWithValidation<TObject, TProperty>(parent, obj, expression, isEnabled, null, range, title, description, width);
+        return this.RenderPropertyWithValidation<TObject, TProperty>(parent, obj, expression, isEnabled, null, range, title, width);
     }
 
-    protected Panel RenderPropertyWithValidation<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TProperty, (bool Valid, string Message)> validationFunction, (float Min, float Max)? range = null, string title = null, string description = null, int width = -1)
+    protected Panel RenderPropertyWithValidation<TObject, TProperty>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TProperty, (bool Valid, string Message)> validationFunction, (float Min, float Max)? range = null, string title = null, int width = -1)
     {
-        return this.RenderPropertyWithChangedTypeValidation<TObject, TProperty, TProperty>(parent, obj, expression, isEnabled, validationFunction, range, title, description, width);
+        return this.RenderPropertyWithChangedTypeValidation<TObject, TProperty, TProperty>(parent, obj, expression, isEnabled, validationFunction, range, title, width);
     }
 
-    protected Panel RenderPropertyWithChangedTypeValidation<TObject, TProperty, TOverrideType>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TOverrideType, (bool Valid, string Message)> validationFunction, (float Min, float Max)? range = null, string title = null, string description = null, int width = -1)
+    protected Panel RenderPropertyWithChangedTypeValidation<TObject, TProperty, TOverrideType>(Panel parent, TObject obj, Expression<Func<TObject, TProperty>> expression, Func<TObject, bool> isEnabled, Func<TOverrideType, (bool Valid, string Message)> validationFunction, (float Min, float Max)? range = null, string title = null, int width = -1)
     {
         Panel panel = this.GetPanel(parent);
+
+        if (expression.Body is MemberExpression memberExpression)
+        {
+            if (memberExpression.Member is PropertyInfo property)
+            {
+                if (title == null)
+                {
+                    title = property.Name;
+                }
+            }
+        }
 
         Label label = this.GetLabel(panel, title ?? string.Empty);
 
